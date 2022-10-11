@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using NetBolt.Server;
 using NetBolt.Shared.Utility;
 #if CLIENT
 using Sandbox;
@@ -163,7 +164,7 @@ public abstract class BaseNetworkable : INetworkable
 
 	internal static IReadOnlyDictionary<int, BaseNetworkable> All => AllNetworkables;
 	private static readonly Dictionary<int, BaseNetworkable> AllNetworkables = new();
-	private static int _nextNetworkId = SharedConstants.MaxEntities + 1;
+	private static int _nextNetworkId = -1;
 
 	/// <summary>
 	/// Creates a new <see cref="BaseNetworkable"/>.
@@ -186,6 +187,8 @@ public abstract class BaseNetworkable : INetworkable
 	/// <returns>A unique network identifier.</returns>
 	public static int StepNextId()
 	{
+		if ( _nextNetworkId == -1 )
+			_nextNetworkId = NetBoltGame.Current.Options.MaxEntities + 1;
 		return _nextNetworkId++;
 	}
 }
