@@ -122,10 +122,10 @@ public static class Log
 	/// </summary>
 	/// <param name="exception">The <see cref="Exception"/> to log then throw.</param>
 	/// <exception cref="Exception">The <see cref="Exception"/> passed.</exception>
-	public static void Fatal( Exception exception )
+	public static void Fatal( Exception exception, bool throwException = true )
 	{
 		_logger.Fatal( exception, "A fatal exception occurred during runtime" );
-
-		throw exception;
+		if ( throwException )
+			throw exception;
 	}
 }

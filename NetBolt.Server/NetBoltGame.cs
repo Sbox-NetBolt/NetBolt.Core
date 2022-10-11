@@ -289,7 +289,7 @@ public class NetBoltGame
 	/// <param name="e">The event arguments for the unhandled exception.</param>
 	private void OnUnhandledException( object sender, UnhandledExceptionEventArgs e )
 	{
-		Log.Fatal( (Exception)e.ExceptionObject );
+		Log.Fatal( (Exception)e.ExceptionObject, false );
 		OnProcessExit( null, EventArgs.Empty );
 	}
 }
