@@ -1,11 +1,14 @@
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using NetBolt.Shared;
 using NetBolt.Shared.Entities;
 using NetBolt.Shared.Messages;
 using NetBolt.Shared.RemoteProcedureCalls;
 using NetBolt.Shared.Utility;
 using NetBolt.WebSocket;
+using NetBolt.WebSocket.Options;
 
 namespace NetBolt.Server;
 
@@ -32,6 +35,19 @@ public class BaseGame
 	/// The maximum tick rate of the server. In the event of severe performance hits the tick rate can drop below this desired number.
 	/// </summary>
 	protected virtual int TickRate => 60;
+	/// <summary>
+	/// The target delta time for the server.
+	/// </summary>
+	protected float TickRateDt => (float)1000 / TickRate;
+
+	/// <summary>
+	/// The whole programs cancellation source. If you want to exit the program then cancel this and the program will exit at the end of the tick.
+	/// </summary>
+	private static readonly CancellationTokenSource ProgramCancellation = new();
+	/// <summary>
+	/// The network server handling communication of the game.
+	/// </summary>
+	private static NetworkServer _server = null!;
 
 	public BaseGame()
 	{
@@ -39,6 +55,15 @@ public class BaseGame
 			Logging.Fatal( new InvalidOperationException( $"An instance of {nameof( BaseGame )} already exists." ) );
 
 		Current = this;
+		
+		Logging.Initialize();
+		Logging.Info( "Log started" );
+
+		AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+		AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+		_server = new NetworkServer( WebSocketServerOptions.Default.WithPort( SharedConstants.Port ) );
+		NetworkServer.Instance = _server;
+		_server.Start();
 	}
 
 	/// <summary>
@@ -47,13 +72,27 @@ public class BaseGame
 	/// </summary>
 	public virtual void Start()
 	{
-		Program.TickRate = TickRate;
 		NetworkServer.Instance.HandleMessage<RpcCallMessage>( Rpc.HandleRpcCallMessage );
 		NetworkServer.Instance.HandleMessage<RpcCallResponseMessage>( Rpc.HandleRpcCallResponseMessage );
 		NetworkServer.Instance.HandleMessage<ClientPawnUpdateMessage>( HandleClientPawnUpdateMessage );
 
 		SharedEntityManager.EntityCreated += OnNetworkedEntityCreated;
 		SharedEntityManager.EntityDeleted += OnNetworkedEntityDeleted;
+		
+		var sw = Stopwatch.StartNew();
+		while ( !ProgramCancellation.IsCancellationRequested )
+		{
+			// TODO: Cooking the CPU is not a very cool way of doing this
+			while ( sw.Elapsed.TotalMilliseconds < TickRateDt )
+			{
+			}
+
+			Time.Delta = (float)sw.Elapsed.TotalMilliseconds;
+			sw.Restart();
+
+			_server.DispatchIncoming();
+			Update();
+		}
 	}
 
 	/// <summary>
@@ -205,5 +244,25 @@ public class BaseGame
 		var reader = new NetworkReader( new MemoryStream( clientPawnUpdateMessage.PartialPawnData ) );
 		client.Pawn.DeserializeChanges( reader );
 		reader.Close();
+	}
+	
+	/// <summary>
+	/// Handler for when the program is shutting down.
+	/// </summary>
+	private void OnProcessExit( object? sender, EventArgs e )
+	{
+		Logging.Info( "Shutting down..." );
+		Shutdown();
+		ProgramCancellation.Cancel();
+		_server.StopAsync().Wait();
+
+		Logging.Info( "Log finished" );
+		Logging.Dispose();
+	}
+
+	private void OnUnhandledException( object sender, UnhandledExceptionEventArgs e )
+	{
+		Logging.Fatal( (Exception)e.ExceptionObject );
+		OnProcessExit( null, EventArgs.Empty );
 	}
 }
