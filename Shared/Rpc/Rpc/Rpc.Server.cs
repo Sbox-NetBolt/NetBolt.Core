@@ -27,7 +27,7 @@ public partial class Rpc
 	/// <param name="parameters">The parameters to pass to the method.</param>
 	public static void Call( IEntity entity, string methodName, params INetworkable[] parameters )
 	{
-		Call( To.All( NetworkServer.Instance ), entity, methodName, parameters );
+		Call( To.All( GameServer.Instance ), entity, methodName, parameters );
 	}
 
 	/// <summary>
@@ -42,7 +42,7 @@ public partial class Rpc
 		params INetworkable[] parameters )
 	{
 		var message = CreateRpc( true, entity, methodName, parameters );
-		NetworkServer.Instance.QueueSend( To.Single( client ), message );
+		GameServer.Instance.QueueSend( To.Single( client ), message );
 		return await WaitForResponseAsync( message.CallGuid );
 	}
 
@@ -54,7 +54,7 @@ public partial class Rpc
 	/// <param name="parameters">The parameters to pass to the method.</param>
 	public static void Call( Type type, string methodName, params INetworkable[] parameters )
 	{
-		Call( To.All( NetworkServer.Instance ), type, methodName, parameters );
+		Call( To.All( GameServer.Instance ), type, methodName, parameters );
 	}
 
 	/// <summary>
@@ -69,7 +69,7 @@ public partial class Rpc
 		params INetworkable[] parameters )
 	{
 		var message = CreateRpc( true, type, methodName, parameters );
-		NetworkServer.Instance.QueueSend( To.Single( client ), message );
+		GameServer.Instance.QueueSend( To.Single( client ), message );
 		return await WaitForResponseAsync( message.CallGuid );
 	}
 
@@ -82,7 +82,7 @@ public partial class Rpc
 	/// <param name="parameters">The parameters to pass to the method.</param>
 	public static void Call( To to, IEntity entity, string methodName, params INetworkable[] parameters )
 	{
-		NetworkServer.Instance.QueueSend( to, CreateRpc( false, entity, methodName, parameters ) );
+		GameServer.Instance.QueueSend( to, CreateRpc( false, entity, methodName, parameters ) );
 	}
 
 	/// <summary>
@@ -94,7 +94,7 @@ public partial class Rpc
 	/// <param name="parameters">The parameters to pass to the method.</param>
 	public static void Call( To to, Type type, string methodName, params INetworkable[] parameters )
 	{
-		NetworkServer.Instance.QueueSend( to, CreateRpc( false, type, methodName, parameters ) );
+		GameServer.Instance.QueueSend( to, CreateRpc( false, type, methodName, parameters ) );
 	}
 
 	/// <summary>
@@ -133,14 +133,14 @@ public partial class Rpc
 		if ( returnValue is not INetworkable && returnValue is not null )
 		{
 			var failedMessage = new RpcCallResponseMessage( rpcCall.CallGuid, RpcCallState.Failed );
-			NetworkServer.Instance.QueueSend( To.Single( client ), failedMessage );
+			GameServer.Instance.QueueSend( To.Single( client ), failedMessage );
 			throw new InvalidOperationException(
 				$"Failed to handle RPC call (\"{rpcCall.MethodName}\" returned a non-networkable value)." );
 		}
 
 		var response = new RpcCallResponseMessage( rpcCall.CallGuid, RpcCallState.Completed,
 			returnValue as INetworkable ?? null );
-		NetworkServer.Instance.QueueSend( To.Single( client ), response );
+		GameServer.Instance.QueueSend( To.Single( client ), response );
 	}
 
 	/// <summary>

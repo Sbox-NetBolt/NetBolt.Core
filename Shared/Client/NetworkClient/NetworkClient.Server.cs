@@ -35,7 +35,7 @@ public partial class NetworkClient
 		var message = NetworkMessage.DeserializeMessage( reader );
 		reader.Close();
 
-		NetworkServer.Instance.QueueIncoming( this, message );
+		GameServer.Instance.QueueIncoming( this, message );
 	}
 
 	protected override ValueTask<bool> VerifyHandshake( IReadOnlyDictionary<string, string> headers, string request )
@@ -46,7 +46,7 @@ public partial class NetworkClient
 		if ( !long.TryParse( clientIdStr, out var clientId ) )
 			return new ValueTask<bool>( false );
 
-		if ( NetworkServer.Instance.GetClientById( clientId ) is not null )
+		if ( GameServer.Instance.GetClientById( clientId ) is not null )
 			return new ValueTask<bool>( false );
 
 		ClientId = clientId;

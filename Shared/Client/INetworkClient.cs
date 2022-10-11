@@ -59,12 +59,12 @@ public interface INetworkClient
 	/// Contains all currently connected players in the server.
 	/// <remarks>This contains all bots as well.</remarks>
 	/// </summary>
-	public static IReadOnlyList<INetworkClient> All => NetworkServer.Instance.Clients;
+	public static IReadOnlyList<INetworkClient> All => GameServer.Instance.Clients;
 
 	/// <summary>
 	/// Contains all currently connected bots in the server.
 	/// </summary>
-	public static IReadOnlyList<BotClient> Bots => NetworkServer.Instance.Bots;
+	public static IReadOnlyList<BotClient> Bots => GameServer.Instance.Bots;
 #endif
 
 #if CLIENT

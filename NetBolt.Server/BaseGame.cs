@@ -47,7 +47,7 @@ public class BaseGame
 	/// <summary>
 	/// The network server handling communication of the game.
 	/// </summary>
-	private static NetworkServer _server = null!;
+	private static GameServer _server = null!;
 
 	public BaseGame()
 	{
@@ -61,8 +61,8 @@ public class BaseGame
 
 		AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 		AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
-		_server = new NetworkServer( WebSocketServerOptions.Default.WithPort( SharedConstants.Port ) );
-		NetworkServer.Instance = _server;
+		_server = new GameServer( WebSocketServerOptions.Default.WithPort( SharedConstants.Port ) );
+		GameServer.Instance = _server;
 		_server.Start();
 	}
 
@@ -72,9 +72,9 @@ public class BaseGame
 	/// </summary>
 	public virtual void Start()
 	{
-		NetworkServer.Instance.HandleMessage<RpcCallMessage>( Rpc.HandleRpcCallMessage );
-		NetworkServer.Instance.HandleMessage<RpcCallResponseMessage>( Rpc.HandleRpcCallResponseMessage );
-		NetworkServer.Instance.HandleMessage<ClientPawnUpdateMessage>( HandleClientPawnUpdateMessage );
+		GameServer.Instance.HandleMessage<RpcCallMessage>( Rpc.HandleRpcCallMessage );
+		GameServer.Instance.HandleMessage<RpcCallResponseMessage>( Rpc.HandleRpcCallResponseMessage );
+		GameServer.Instance.HandleMessage<ClientPawnUpdateMessage>( HandleClientPawnUpdateMessage );
 
 		SharedEntityManager.EntityCreated += OnNetworkedEntityCreated;
 		SharedEntityManager.EntityDeleted += OnNetworkedEntityDeleted;
@@ -141,7 +141,7 @@ public class BaseGame
 		writer.Close();
 
 		if ( count != 0 )
-			NetworkServer.Instance.QueueSend( To.All( NetworkServer.Instance ), new MultiEntityUpdateMessage( stream.ToArray() ) );
+			GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new MultiEntityUpdateMessage( stream.ToArray() ) );
 	}
 
 	/// <summary>
@@ -153,9 +153,9 @@ public class BaseGame
 		Logging.Info( $"{client} has connected" );
 
 		var toClient = To.Single( client );
-		NetworkServer.Instance.QueueSend( toClient, new ClientListMessage( NetworkServer.Instance.Clients ) );
-		NetworkServer.Instance.QueueSend( toClient, new EntityListMessage( SharedEntityManager.Entities.Values ) );
-		NetworkServer.Instance.QueueSend( To.AllExcept( NetworkServer.Instance, client ), new ClientStateChangedMessage( client.ClientId, ClientState.Connected ) );
+		GameServer.Instance.QueueSend( toClient, new ClientListMessage( GameServer.Instance.Clients ) );
+		GameServer.Instance.QueueSend( toClient, new EntityListMessage( SharedEntityManager.Entities.Values ) );
+		GameServer.Instance.QueueSend( To.AllExcept( GameServer.Instance, client ), new ClientStateChangedMessage( client.ClientId, ClientState.Connected ) );
 
 		client.PawnChanged += ClientOnPawnChanged;
 		client.Pawn = SharedEntityManager.Create<BasePlayer>();
@@ -170,7 +170,7 @@ public class BaseGame
 	{
 		Logging.Info( $"{client} has disconnected" );
 
-		NetworkServer.Instance.QueueSend( To.AllExcept( NetworkServer.Instance, client ), new ClientStateChangedMessage( client.ClientId, ClientState.Disconnected ) );
+		GameServer.Instance.QueueSend( To.AllExcept( GameServer.Instance, client ), new ClientStateChangedMessage( client.ClientId, ClientState.Disconnected ) );
 		if ( client.Pawn is not null )
 			SharedEntityManager.DeleteEntity( client.Pawn );
 		client.PawnChanged -= ClientOnPawnChanged;
@@ -202,7 +202,7 @@ public class BaseGame
 	/// <param name="entity">The <see cref="IEntity"/> that has been created.</param>
 	protected virtual void OnNetworkedEntityCreated( IEntity entity )
 	{
-		NetworkServer.Instance.QueueSend( To.All( NetworkServer.Instance ), new CreateEntityMessage( entity ) );
+		GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new CreateEntityMessage( entity ) );
 	}
 
 	/// <summary>
@@ -211,7 +211,7 @@ public class BaseGame
 	/// <param name="entity">The <see cref="IEntity"/> that has been deleted.</param>
 	protected virtual void OnNetworkedEntityDeleted( IEntity entity )
 	{
-		NetworkServer.Instance.QueueSend( To.All( NetworkServer.Instance ), new DeleteEntityMessage( entity ) );
+		GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new DeleteEntityMessage( entity ) );
 	}
 
 	/// <summary>
@@ -222,7 +222,7 @@ public class BaseGame
 	/// <param name="newPawn">The new <see cref="IEntity"/> the <see ref="client"/> is now controlling.</param>
 	protected virtual void ClientOnPawnChanged( INetworkClient client, IEntity? oldpawn, IEntity? newPawn )
 	{
-		NetworkServer.Instance.QueueSend( To.All( NetworkServer.Instance ), new ClientPawnChangedMessage( client, oldpawn, newPawn ) );
+		GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new ClientPawnChangedMessage( client, oldpawn, newPawn ) );
 	}
 
 	/// <summary>

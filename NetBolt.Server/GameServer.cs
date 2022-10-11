@@ -16,12 +16,12 @@ namespace NetBolt.Server;
 /// <summary>
 /// The game server instance.
 /// </summary>
-internal sealed class NetworkServer : WebSocketServer
+internal sealed class GameServer : WebSocketServer
 {
 	/// <summary>
 	/// The game server instance.
 	/// </summary>
-	internal static NetworkServer Instance { get; set; } = null!;
+	internal static GameServer Instance { get; set; } = null!;
 
 	/// <summary>
 	/// 
@@ -49,7 +49,7 @@ internal sealed class NetworkServer : WebSocketServer
 	/// </summary>
 	private readonly ConcurrentQueue<(INetworkClient, NetworkMessage)> _incomingQueue = new();
 
-	internal NetworkServer( IReadOnlyWebSocketServerOptions options ) : base( options )
+	internal GameServer( IReadOnlyWebSocketServerOptions options ) : base( options )
 	{
 	}
 
