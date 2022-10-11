@@ -24,19 +24,20 @@ internal sealed class GameServer : WebSocketServer
 	internal static GameServer Instance { get; set; } = null!;
 
 	/// <summary>
-	/// 
+	/// A read-only list of all clients in the server.
 	/// </summary>
 	internal new IReadOnlyList<INetworkClient> Clients => _networkClients;
 	/// <summary>
-	/// 
+	/// A list of all clients in the server.
 	/// </summary>
 	private readonly List<INetworkClient> _networkClients = new();
+	
 	/// <summary>
-	/// 
+	/// A read-only list of all bots in the server.
 	/// </summary>
 	internal IReadOnlyList<BotClient> Bots => _botClients;
 	/// <summary>
-	/// 
+	/// A list of all bots in the server.
 	/// </summary>
 	private readonly List<BotClient> _botClients = new();
 
@@ -49,10 +50,19 @@ internal sealed class GameServer : WebSocketServer
 	/// </summary>
 	private readonly ConcurrentQueue<(INetworkClient, NetworkMessage)> _incomingQueue = new();
 
+	/// <summary>
+	/// Initializes a new instance of <see cref="GameServer"/> with the provided configuration.
+	/// </summary>
+	/// <param name="options">The configuration of the server.</param>
 	internal GameServer( IReadOnlyWebSocketServerOptions options ) : base( options )
 	{
 	}
 
+	/// <summary>
+	/// Gets a client by its identifier.
+	/// </summary>
+	/// <param name="clientId">The identifier of the client to find.</param>
+	/// <returns>The client if found. Null if not found.</returns>
 	public INetworkClient? GetClientById( long clientId )
 	{
 		return Clients.FirstOrDefault( client => client.ClientId == clientId );

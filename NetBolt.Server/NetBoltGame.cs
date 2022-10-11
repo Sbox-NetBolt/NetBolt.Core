@@ -22,6 +22,9 @@ public class NetBoltGame
 	/// </summary>
 	public static NetBoltGame Current = null!;
 	
+	/// <summary>
+	/// A read-only instance of game options this game was created with.
+	/// </summary>
 	public IReadOnlyGameOptions Options { get; }
 
 	/// <summary>
@@ -43,7 +46,7 @@ public class NetBoltGame
 	protected float TickRateDt => (float)1000 / TickRate;
 
 	/// <summary>
-	/// The whole programs cancellation source. If you want to exit the program then cancel this and the program will exit at the end of the tick.
+	/// The games cancellation source. If you want to exit the game then cancel this and the game will exit at the end of the tick.
 	/// </summary>
 	private static readonly CancellationTokenSource ProgramCancellation = new();
 	/// <summary>
@@ -51,6 +54,10 @@ public class NetBoltGame
 	/// </summary>
 	private static GameServer _server = null!;
 
+	/// <summary>
+	/// Initializes a new instance of <see cref="NetBoltGame"/> with the provided configuration.
+	/// </summary>
+	/// <param name="options">The configuration of the game.</param>
 	public NetBoltGame( IReadOnlyGameOptions options )
 	{
 		if ( Current is not null )
@@ -263,6 +270,11 @@ public class NetBoltGame
 		Log.Dispose();
 	}
 
+	/// <summary>
+	/// Handler for when an unhandled exception has been thrown.
+	/// </summary>
+	/// <param name="sender">The sender of the event.</param>
+	/// <param name="e">The event arguments for the unhandled exception.</param>
 	private void OnUnhandledException( object sender, UnhandledExceptionEventArgs e )
 	{
 		Log.Fatal( (Exception)e.ExceptionObject );

@@ -14,6 +14,10 @@ public sealed class ClientListMessage : NetworkMessage
 	public List<(long, int)> ClientIds { get; private set; } = null!;
 
 #if SERVER
+	/// <summary>
+	/// Initializes a new instance of <see cref="ClientListMessage"/> with the clients provided.
+	/// </summary>
+	/// <param name="clients">The clients to notify a client about.</param>
 	public ClientListMessage( IReadOnlyCollection<INetworkClient> clients )
 	{
 		ClientIds = new List<(long, int)> { Capacity = clients.Count };
@@ -22,6 +26,10 @@ public sealed class ClientListMessage : NetworkMessage
 	}
 #endif
 
+	/// <summary>
+	/// Deserializes all information relating to the <see cref="ClientListMessage"/>.
+	/// </summary>
+	/// <param name="reader">The reader to read from.</param>
 	public override void Deserialize( NetworkReader reader )
 	{
 		var list = new List<(long, int)> { Capacity = reader.ReadInt32() };
@@ -31,6 +39,10 @@ public sealed class ClientListMessage : NetworkMessage
 		ClientIds = list;
 	}
 
+	/// <summary>
+	/// Serializes all information relating to the <see cref="ClientListMessage"/>.
+	/// </summary>
+	/// <param name="writer">The writer to write to.</param>
 	public override void Serialize( NetworkWriter writer )
 	{
 		writer.Write( ClientIds.Count );

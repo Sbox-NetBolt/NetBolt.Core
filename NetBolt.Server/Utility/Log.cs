@@ -9,6 +9,9 @@ namespace NetBolt.Shared.Utility;
 /// </summary>
 public static class Log
 {
+	/// <summary>
+	/// The Serilog logger instance.
+	/// </summary>
 	private static Logger _logger = null!;
 
 	/// <summary>

@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using NetBolt.Shared.Entities;
 using NetBolt.Shared.Utility;
@@ -24,6 +23,12 @@ public sealed class ClientPawnChangedMessage : NetworkMessage
 	public IEntity? NewPawn { get; private set; }
 
 #if SERVER
+	/// <summary>
+	/// Initializes a new instance of <see cref="ClientPawnChangedMessage"/> with the information provided.
+	/// </summary>
+	/// <param name="client">The client whose pawn has changed.</param>
+	/// <param name="oldEntity">The old pawn the client was controlling.</param>
+	/// <param name="newEntity">The new pawn the client is controlling.</param>
 	public ClientPawnChangedMessage( INetworkClient client, IEntity? oldEntity, IEntity? newEntity )
 	{
 		Client = client;
@@ -32,6 +37,10 @@ public sealed class ClientPawnChangedMessage : NetworkMessage
 	}
 #endif
 
+	/// <summary>
+	/// Deserializes all information relating to the <see cref="ClientPawnChangedMessage"/>.
+	/// </summary>
+	/// <param name="reader">The reader to read from.</param>
 	public override void Deserialize( NetworkReader reader )
 	{
 		var clientId = reader.ReadInt64();
@@ -49,6 +58,10 @@ public sealed class ClientPawnChangedMessage : NetworkMessage
 			NewPawn = IEntity.All.GetEntityById( reader.ReadInt32() );
 	}
 
+	/// <summary>
+	/// Serializes all information relating to the <see cref="ClientPawnChangedMessage"/>.
+	/// </summary>
+	/// <param name="writer">The writer to write to.</param>
 	public override void Serialize( NetworkWriter writer )
 	{
 		writer.Write( Client.ClientId );
