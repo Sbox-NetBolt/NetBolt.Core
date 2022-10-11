@@ -121,7 +121,7 @@ public partial class Rpc
 		if ( method.GetCustomAttribute( typeof( ServerAttribute ) ) is null )
 			throw new InvalidOperationException( "Failed to handle RPC call (Attempted to invoke a non-RPC method)." );
 
-		var entity = BaseGame.Current.GetNetworkedEntityById( rpcCall.EntityId );
+		var entity = NetBoltGame.Current.GetNetworkedEntityById( rpcCall.EntityId );
 		if ( entity is null && rpcCall.EntityId != -1 )
 			throw new InvalidOperationException(
 				"Failed to handle RPC call (Attempted to call RPC on a non-existant entity)." );

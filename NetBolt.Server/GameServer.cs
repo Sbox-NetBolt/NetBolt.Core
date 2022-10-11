@@ -120,14 +120,14 @@ internal sealed class GameServer : WebSocketServer
 	{
 		base.OnClientUpgraded( client );
 
-		BaseGame.Current.OnClientConnected( (client as INetworkClient)! );
+		NetBoltGame.Current.OnClientConnected( (client as INetworkClient)! );
 	}
 
 	public override void OnClientDisconnected( IWebSocketClient client, WebSocketDisconnectReason reason, WebSocketError? error )
 	{
 		base.OnClientDisconnected( client, reason, error );
 
-		BaseGame.Current.OnClientDisconnected( (client as INetworkClient)! );
+		NetBoltGame.Current.OnClientDisconnected( (client as INetworkClient)! );
 	}
 
 	/// <summary>

@@ -41,11 +41,11 @@ public interface IEntity : INetworkable
 	/// <summary>
 	/// Contains all networked entities in the server.
 	/// </summary>
-	public static EntityManager All => BaseGame.Current.SharedEntityManager;
+	public static EntityManager All => NetBoltGame.Current.SharedEntityManager;
 	/// <summary>
 	/// Contains all entities that only exist on the server.
 	/// </summary>
-	public static EntityManager Local => BaseGame.Current.ServerEntityManager;
+	public static EntityManager Local => NetBoltGame.Current.ServerEntityManager;
 #endif
 #if CLIENT
 	/// <summary>

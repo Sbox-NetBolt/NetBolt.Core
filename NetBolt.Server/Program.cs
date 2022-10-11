@@ -8,7 +8,7 @@ public static class Program
 	/// <summary>
 	/// The game to run.
 	/// </summary>
-	private static BaseGame _game = null!;
+	private static NetBoltGame _game = null!;
 
 	/// <summary>
 	/// The entry point to the program.
@@ -16,7 +16,7 @@ public static class Program
 	/// <param name="args">The command line arguments.</param>
 	public static void Main( string[] args )
 	{
-		_game = new BaseGame();
+		_game = new NetBoltGame( GameOptions.Default );
 		_game.Start();
 	}
 }

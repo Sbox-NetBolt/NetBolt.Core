@@ -15,12 +15,14 @@ namespace NetBolt.Server;
 /// <summary>
 /// The base class for any game servers.
 /// </summary>
-public class BaseGame
+public class NetBoltGame
 {
 	/// <summary>
 	/// The only instance of the game in existence.
 	/// </summary>
-	public static BaseGame Current = null!;
+	public static NetBoltGame Current = null!;
+	
+	public GameOptions Options { get; }
 
 	/// <summary>
 	/// Manages all server-side only entities.
@@ -49,19 +51,20 @@ public class BaseGame
 	/// </summary>
 	private static GameServer _server = null!;
 
-	public BaseGame()
+	public NetBoltGame( GameOptions options )
 	{
 		if ( Current is not null )
-			Logging.Fatal( new InvalidOperationException( $"An instance of {nameof( BaseGame )} already exists." ) );
+			Logging.Fatal( new InvalidOperationException( $"An instance of {nameof( NetBoltGame )} already exists." ) );
 
 		Current = this;
+		Options = options;
 
 		Logging.Initialize();
 		Logging.Info( "Log started" );
 
 		AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 		AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
-		_server = new GameServer( WebSocketServerOptions.Default.WithPort( SharedConstants.Port ) );
+		_server = new GameServer( options.NetworkingOptions );
 		GameServer.Instance = _server;
 		_server.Start();
 	}
