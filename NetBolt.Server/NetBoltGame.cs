@@ -35,6 +35,11 @@ public class NetBoltGame
 	/// Manages all networked entities.
 	/// </summary>
 	internal readonly EntityManager SharedEntityManager = new();
+	
+	/// <summary>
+	/// Whether or not the game is currently running.
+	/// </summary>
+	protected bool Running { get; private set; }
 
 	/// <summary>
 	/// The maximum tick rate of the server. In the event of severe performance hits the tick rate can drop below this desired number.
@@ -48,7 +53,8 @@ public class NetBoltGame
 	/// <summary>
 	/// The games cancellation source. If you want to exit the game then cancel this and the game will exit at the end of the tick.
 	/// </summary>
-	private static readonly CancellationTokenSource ProgramCancellation = new();
+	protected static readonly CancellationTokenSource ProgramCancellation = new();
+	
 	/// <summary>
 	/// The network server handling communication of the game.
 	/// </summary>
@@ -82,6 +88,8 @@ public class NetBoltGame
 	/// </summary>
 	public virtual void Start()
 	{
+		Running = true;
+		
 		GameServer.Instance.HandleMessage<RpcCallMessage>( Rpc.HandleRpcCallMessage );
 		GameServer.Instance.HandleMessage<RpcCallResponseMessage>( Rpc.HandleRpcCallResponseMessage );
 		GameServer.Instance.HandleMessage<ClientPawnUpdateMessage>( HandleClientPawnUpdateMessage );
@@ -109,10 +117,14 @@ public class NetBoltGame
 	/// Called at the end of the program. Use this to cleanup any resources you have collected over the duration of running.
 	/// <remarks>At this point the networking server is still running but do not expect it to send any messages at this point.</remarks>
 	/// </summary>
-	public virtual void Shutdown()
+	protected virtual void Shutdown()
 	{
+		Running = false;
+		ProgramCancellation.Cancel();
 		ServerEntityManager.DeleteAllEntities();
 		SharedEntityManager.DeleteAllEntities();
+		
+		_server.StopAsync().Wait();
 	}
 
 	/// <summary>
@@ -263,8 +275,6 @@ public class NetBoltGame
 	{
 		Log.Info( "Shutting down..." );
 		Shutdown();
-		ProgramCancellation.Cancel();
-		_server.StopAsync().Wait();
 
 		Log.Info( "Log finished" );
 		Log.Dispose();
