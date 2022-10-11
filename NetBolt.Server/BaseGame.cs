@@ -55,7 +55,7 @@ public class BaseGame
 			Logging.Fatal( new InvalidOperationException( $"An instance of {nameof( BaseGame )} already exists." ) );
 
 		Current = this;
-		
+
 		Logging.Initialize();
 		Logging.Info( "Log started" );
 
@@ -78,7 +78,7 @@ public class BaseGame
 
 		SharedEntityManager.EntityCreated += OnNetworkedEntityCreated;
 		SharedEntityManager.EntityDeleted += OnNetworkedEntityDeleted;
-		
+
 		var sw = Stopwatch.StartNew();
 		while ( !ProgramCancellation.IsCancellationRequested )
 		{
@@ -245,7 +245,7 @@ public class BaseGame
 		client.Pawn.DeserializeChanges( reader );
 		reader.Close();
 	}
-	
+
 	/// <summary>
 	/// Handler for when the program is shutting down.
 	/// </summary>
