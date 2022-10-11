@@ -177,7 +177,7 @@ public abstract class BaseNetworkable : INetworkable
 		if ( networkable is not null )
 			return networkable;
 
-		Logging.Error( $"Failed to create networkable type {typeof( T )}" );
+		Log.Error( $"Failed to create networkable type {typeof( T )}" );
 		return default!;
 	}
 

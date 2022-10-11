@@ -58,7 +58,7 @@ public static partial class Rpc
 		RpcResponses.Remove( callGuid, out var response );
 		if ( response is null )
 		{
-			Logging.Error( $"Failed to return RPC response (\"{callGuid}\" became invalid unexpectedly)." );
+			Log.Error( $"Failed to return RPC response (\"{callGuid}\" became invalid unexpectedly)." );
 			return default!;
 		}
 

@@ -38,7 +38,7 @@ public sealed class ClientPawnChangedMessage : NetworkMessage
 		var client = INetworkClient.All.FirstOrDefault( client => client.ClientId == clientId );
 		if ( client is null )
 		{
-			Logging.Error( $"Failed to get client with ID \"{clientId}\"" );
+			Log.Error( $"Failed to get client with ID \"{clientId}\"" );
 			return;
 		}
 

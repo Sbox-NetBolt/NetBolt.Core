@@ -1,17 +1,14 @@
 using System;
-#if SERVER
 using Serilog;
 using Serilog.Core;
-#endif
 
 namespace NetBolt.Shared.Utility;
 
 /// <summary>
 /// An abstraction layer for logging.
 /// </summary>
-public static class Logging
+public static class Log
 {
-#if SERVER
 	private static Logger _logger = null!;
 
 	/// <summary>
@@ -33,7 +30,6 @@ public static class Logging
 	{
 		_logger.Dispose();
 	}
-#endif
 
 	/// <summary>
 	/// Logs information.
@@ -41,12 +37,7 @@ public static class Logging
 	/// <param name="message">The message to log.</param>
 	public static void Info( string message )
 	{
-#if SERVER
 		_logger.Information( "{A}", message );
-#endif
-#if CLIENT
-		Log.Info( message );
-#endif
 	}
 
 	/// <summary>
@@ -56,12 +47,7 @@ public static class Logging
 	/// <typeparam name="T">The type of <see ref="obj"/>.</typeparam>
 	public static void Info<T>( T obj )
 	{
-#if SERVER
 		_logger.Information( "{A}", obj );
-#endif
-#if CLIENT
-		Log.Info( obj );
-#endif
 	}
 
 	/// <summary>
@@ -73,12 +59,7 @@ public static class Logging
 	/// <typeparam name="T2">The type of <see ref="obj1"/>.</typeparam>
 	public static void Info<T1, T2>( T1 obj0, T2 obj1 )
 	{
-#if SERVER
 		_logger.Information( "{A}\t{B}", obj0, obj1 );
-#endif
-#if CLIENT
-		Log.Info( $"{obj0}\t{obj1}" );
-#endif
 	}
 
 	/// <summary>
@@ -92,12 +73,7 @@ public static class Logging
 	/// <typeparam name="T3">The type of <see ref="obj2"/>.</typeparam>
 	public static void Info<T1, T2, T3>( T1 obj0, T2 obj1, T3 obj2 )
 	{
-#if SERVER
 		_logger.Information( "{A}\t{B}\t{C}", obj0, obj1, obj2 );
-#endif
-#if CLIENT
-		Log.Info( $"{obj0}\t{obj1}\t{obj2}" );
-#endif
 	}
 
 	/// <summary>
@@ -107,12 +83,7 @@ public static class Logging
 	/// <param name="exception">The <see cref="Exception"/> attached to this warning.</param>
 	public static void Warning( string message, Exception? exception = null )
 	{
-#if SERVER
 		_logger.Warning( exception, "{A}", message );
-#endif
-#if CLIENT
-		Log.Warning( exception, message );
-#endif
 	}
 
 	/// <summary>
@@ -121,12 +92,7 @@ public static class Logging
 	/// <param name="exception">The exception to log.</param>
 	public static void Warning( Exception exception )
 	{
-#if SERVER
 		_logger.Warning( exception, "An exception occurred during runtime" );
-#endif
-#if CLIENT
-		Log.Warning( exception );
-#endif
 	}
 
 	/// <summary>
@@ -136,12 +102,7 @@ public static class Logging
 	/// <param name="exception">The <see cref="Exception"/> attached to this error.</param>
 	public static void Error( string message, Exception? exception = null )
 	{
-#if SERVER
 		_logger.Information( exception, "{A}", message );
-#endif
-#if CLIENT
-		Log.Error( exception, message );
-#endif
 	}
 
 	/// <summary>
@@ -150,12 +111,7 @@ public static class Logging
 	/// <param name="exception">The exception to log.</param>
 	public static void Error( Exception exception )
 	{
-#if SERVER
 		_logger.Information( exception, "An exception occurred during runtime" );
-#endif
-#if CLIENT
-		Log.Error( exception );
-#endif
 	}
 
 	/// <summary>
@@ -165,12 +121,7 @@ public static class Logging
 	/// <exception cref="Exception">The <see cref="Exception"/> passed.</exception>
 	public static void Fatal( Exception exception )
 	{
-#if SERVER
 		_logger.Fatal( exception, "A fatal exception occurred during runtime" );
-#endif
-#if CLIENT
-		Log.Error( exception );
-#endif
 
 		throw exception;
 	}

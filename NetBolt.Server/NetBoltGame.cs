@@ -54,13 +54,13 @@ public class NetBoltGame
 	public NetBoltGame( GameOptions options )
 	{
 		if ( Current is not null )
-			Logging.Fatal( new InvalidOperationException( $"An instance of {nameof( NetBoltGame )} already exists." ) );
+			Log.Fatal( new InvalidOperationException( $"An instance of {nameof( NetBoltGame )} already exists." ) );
 
 		Current = this;
 		Options = options;
 
-		Logging.Initialize();
-		Logging.Info( "Log started" );
+		Log.Initialize();
+		Log.Info( "Log started" );
 
 		AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 		AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
@@ -153,7 +153,7 @@ public class NetBoltGame
 	/// <param name="client">The handle of the client that has connected.</param>
 	public virtual void OnClientConnected( INetworkClient client )
 	{
-		Logging.Info( $"{client} has connected" );
+		Log.Info( $"{client} has connected" );
 
 		var toClient = To.Single( client );
 		GameServer.Instance.QueueSend( toClient, new ClientListMessage( GameServer.Instance.Clients ) );
@@ -171,7 +171,7 @@ public class NetBoltGame
 	/// <param name="client">The handle of the client that has disconnected.</param>
 	public virtual void OnClientDisconnected( INetworkClient client )
 	{
-		Logging.Info( $"{client} has disconnected" );
+		Log.Info( $"{client} has disconnected" );
 
 		GameServer.Instance.QueueSend( To.AllExcept( GameServer.Instance, client ), new ClientStateChangedMessage( client.ClientId, ClientState.Disconnected ) );
 		if ( client.Pawn is not null )
@@ -240,7 +240,7 @@ public class NetBoltGame
 
 		if ( client.Pawn is null )
 		{
-			Logging.Error( $"Received a {nameof( ClientPawnUpdateMessage )} when the client has no pawn." );
+			Log.Error( $"Received a {nameof( ClientPawnUpdateMessage )} when the client has no pawn." );
 			return;
 		}
 
@@ -254,18 +254,18 @@ public class NetBoltGame
 	/// </summary>
 	private void OnProcessExit( object? sender, EventArgs e )
 	{
-		Logging.Info( "Shutting down..." );
+		Log.Info( "Shutting down..." );
 		Shutdown();
 		ProgramCancellation.Cancel();
 		_server.StopAsync().Wait();
 
-		Logging.Info( "Log finished" );
-		Logging.Dispose();
+		Log.Info( "Log finished" );
+		Log.Dispose();
 	}
 
 	private void OnUnhandledException( object sender, UnhandledExceptionEventArgs e )
 	{
-		Logging.Fatal( (Exception)e.ExceptionObject );
+		Log.Fatal( (Exception)e.ExceptionObject );
 		OnProcessExit( null, EventArgs.Empty );
 	}
 }
