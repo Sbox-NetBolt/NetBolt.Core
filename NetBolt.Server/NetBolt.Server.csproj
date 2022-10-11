@@ -6,6 +6,7 @@
         <Nullable>enable</Nullable>
         <RootNamespace>NetBolt.Server</RootNamespace>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
         <Title>NetBolt.Server</Title>
         <Description>A custom networking solution for S&amp;box. This is the server-side portion.</Description>

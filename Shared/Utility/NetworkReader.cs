@@ -91,7 +91,7 @@ public sealed class NetworkReader : BinaryReader
 	}
 
 	/// <summary>
-	/// Reads an instance of <see cref="INetworkable"/> and casts it to <see cref="T"/>.
+	/// Reads an instance of <see cref="INetworkable"/> and casts it to <see ref="T"/>.
 	/// </summary>
 	/// <typeparam name="T">The <see cref="INetworkable"/> type to cast into.</typeparam>
 	/// <returns>The parsed <see cref="INetworkable"/>.</returns>
@@ -150,7 +150,7 @@ public sealed class NetworkReader : BinaryReader
 	}
 
 	/// <summary>
-	/// Reads an instance of <see cref="IEntity"/> and casts it to <see cref="T"/>.
+	/// Reads an instance of <see cref="IEntity"/> and casts it to <see ref="T"/>.
 	/// </summary>
 	/// <typeparam name="T">The <see cref="IEntity"/> type to cast into.</typeparam>
 	/// <returns>The parsed <see cref="IEntity"/>.</returns>

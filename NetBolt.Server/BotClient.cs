@@ -69,9 +69,9 @@ public sealed class BotClient : INetworkClient
 	/// <summary>
 	/// Adds a handler for the bot to dispatch the message to.
 	/// </summary>
-	/// <param name="cb">The method to call when a message of type <see cref="T"/> has come in.</param>
+	/// <param name="cb">The method to call when a message of type <see ref="T"/> has come in.</param>
 	/// <typeparam name="T">The message type to handle.</typeparam>
-	/// <exception cref="Exception">Thrown when a handler has already been set for <see cref="T"/>.</exception>
+	/// <exception cref="Exception">Thrown when a handler has already been set for <see ref="T"/>.</exception>
 	public static void HandleBotMessage<T>( Action<BotClient, NetworkMessage> cb ) where T : NetworkMessage
 	{
 		var messageType = typeof( T );

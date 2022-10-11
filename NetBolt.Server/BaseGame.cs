@@ -179,8 +179,8 @@ public class BaseGame
 	/// Called when a <see cref="INetworkClient"/>s pawn has been swapped.
 	/// </summary>
 	/// <param name="client">The <see cref="INetworkClient"/> that has its pawn changed.</param>
-	/// <param name="oldpawn">The old <see cref="IEntity"/> the <see cref="client"/> was controlling.</param>
-	/// <param name="newPawn">The new <see cref="IEntity"/> the <see cref="client"/> is now controlling.</param>
+	/// <param name="oldpawn">The old <see cref="IEntity"/> the <see ref="client"/> was controlling.</param>
+	/// <param name="newPawn">The new <see cref="IEntity"/> the <see ref="client"/> is now controlling.</param>
 	protected virtual void ClientOnPawnChanged( INetworkClient client, IEntity? oldpawn, IEntity? newPawn )
 	{
 		NetworkServer.Instance.QueueSend( To.All( NetworkServer.Instance ), new ClientPawnChangedMessage( client, oldpawn, newPawn ) );

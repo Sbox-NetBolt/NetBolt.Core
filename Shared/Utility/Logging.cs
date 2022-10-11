@@ -53,7 +53,7 @@ public static class Logging
 	/// Logs information.
 	/// </summary>
 	/// <param name="obj">The first object to log.</param>
-	/// <typeparam name="T">The type of <see cref="obj"/>.</typeparam>
+	/// <typeparam name="T">The type of <see ref="obj"/>.</typeparam>
 	public static void Info<T>( T obj )
 	{
 #if SERVER
@@ -69,8 +69,8 @@ public static class Logging
 	/// </summary>
 	/// <param name="obj0">The first object to log.</param>
 	/// <param name="obj1">The second object to log.</param>
-	/// <typeparam name="T1">The type of <see cref="obj0"/>.</typeparam>
-	/// <typeparam name="T2">The type of <see cref="obj1"/>.</typeparam>
+	/// <typeparam name="T1">The type of <see ref="obj0"/>.</typeparam>
+	/// <typeparam name="T2">The type of <see ref="obj1"/>.</typeparam>
 	public static void Info<T1, T2>( T1 obj0, T2 obj1 )
 	{
 #if SERVER
@@ -87,9 +87,9 @@ public static class Logging
 	/// <param name="obj0">The first object to log.</param>
 	/// <param name="obj1">The second object to log.</param>
 	/// <param name="obj2">The third object to log.</param>
-	/// <typeparam name="T1">The type of <see cref="obj0"/>.</typeparam>
-	/// <typeparam name="T2">The type of <see cref="obj1"/>.</typeparam>
-	/// <typeparam name="T3">The type of <see cref="obj2"/>.</typeparam>
+	/// <typeparam name="T1">The type of <see ref="obj0"/>.</typeparam>
+	/// <typeparam name="T2">The type of <see ref="obj1"/>.</typeparam>
+	/// <typeparam name="T3">The type of <see ref="obj2"/>.</typeparam>
 	public static void Info<T1, T2, T3>( T1 obj0, T2 obj1, T3 obj2 )
 	{
 #if SERVER

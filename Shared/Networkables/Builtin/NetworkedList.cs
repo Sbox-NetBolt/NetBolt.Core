@@ -27,7 +27,7 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 				_changes.Add( (ListChangeType.Add, val) );
 		}
 	}
-	private List<T> _value;
+	private List<T> _value = null!;
 
 	/// <summary>
 	/// Gets the total number of elements the internal data structure can hold without resizing.

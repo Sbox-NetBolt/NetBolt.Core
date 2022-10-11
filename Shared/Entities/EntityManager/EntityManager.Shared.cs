@@ -45,7 +45,7 @@ public sealed partial class EntityManager
 	/// Creates and adds a new <see cref="IEntity"/> to this <see cref="EntityManager"/>.
 	/// </summary>
 	/// <typeparam name="T">The type of <see cref="IEntity"/> to create.</typeparam>
-	/// <returns>The created <see cref="IEntity"/> as <see cref="T"/>.</returns>
+	/// <returns>The created <see cref="IEntity"/> as <see ref="T"/>.</returns>
 	public T Create<T>() where T : class, IEntity
 	{
 		return CreateInternal<T>( _nextEntityId++ );
@@ -56,7 +56,7 @@ public sealed partial class EntityManager
 	/// /// </summary>
 	/// <param name="entityType">The type of <see cref="IEntity"/> to create.</param>
 	/// <returns>The created <see cref="IEntity"/>.</returns>
-	/// <exception cref="Exception">Thrown when <see cref="entityType"/> is not a class or does not implement <see cref="IEntity"/>.</exception>
+	/// <exception cref="Exception">Thrown when <see ref="entityType"/> is not a class or does not implement <see cref="IEntity"/>.</exception>
 	public IEntity Create( Type entityType )
 	{
 		if ( !TypeHelper.IsClass( entityType ) || !entityType.IsAssignableTo( typeof( IEntity ) ) )
@@ -71,7 +71,7 @@ public sealed partial class EntityManager
 	/// <summary>
 	/// Deletes an entity.
 	/// </summary>
-	/// <remarks>You should not use the <see cref="entity"/> after calling this.</remarks>
+	/// <remarks>You should not use the <see ref="entity"/> after calling this.</remarks>
 	/// <param name="entity">The entity to delete.</param>
 	public void DeleteEntity( IEntity entity )
 	{
@@ -84,7 +84,7 @@ public sealed partial class EntityManager
 	/// Deletes an entity with the given entity identifier.
 	/// </summary>
 	/// <param name="entityId">The entity identifier to lookup and delete.</param>
-	/// <exception cref="InvalidOperationException">Thrown when no entity with the given <see cref="entityId"/> is found.</exception>
+	/// <exception cref="InvalidOperationException">Thrown when no entity with the given <see ref="entityId"/> is found.</exception>
 	public void DeleteEntity( int entityId )
 	{
 		var entity = GetEntityById( entityId );
@@ -128,7 +128,7 @@ public sealed partial class EntityManager
 	/// Creates an entity.
 	/// </summary>
 	/// <param name="entityId">The unique identifier to give to the entity.</param>
-	/// <param name="entityType">The type of the entity. Reverts to <see cref="T"/> if not given.</param>
+	/// <param name="entityType">The type of the entity. Reverts to <see ref="T"/> if not given.</param>
 	/// <typeparam name="T">The type of the entity.</typeparam>
 	/// <returns>The created entity.</returns>
 	private T CreateInternal<T>( int entityId, Type? entityType = null ) where T : IEntity
