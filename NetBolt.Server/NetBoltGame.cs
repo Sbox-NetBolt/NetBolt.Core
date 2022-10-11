@@ -22,7 +22,7 @@ public class NetBoltGame
 	/// </summary>
 	public static NetBoltGame Current = null!;
 	
-	public GameOptions Options { get; }
+	public IReadOnlyGameOptions Options { get; }
 
 	/// <summary>
 	/// Manages all server-side only entities.
@@ -51,7 +51,7 @@ public class NetBoltGame
 	/// </summary>
 	private static GameServer _server = null!;
 
-	public NetBoltGame( GameOptions options )
+	public NetBoltGame( IReadOnlyGameOptions options )
 	{
 		if ( Current is not null )
 			Log.Fatal( new InvalidOperationException( $"An instance of {nameof( NetBoltGame )} already exists." ) );
@@ -64,7 +64,7 @@ public class NetBoltGame
 
 		AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 		AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
-		_server = new GameServer( options.NetworkingOptions );
+		_server = new GameServer( options.ReadOnlyNetworkingOptions );
 		GameServer.Instance = _server;
 		_server.Start();
 	}
