@@ -96,8 +96,9 @@ public class NetBoltGame
 
 		SharedEntityManager.EntityCreated += OnNetworkedEntityCreated;
 		SharedEntityManager.EntityDeleted += OnNetworkedEntityDeleted;
-
+		
 		var sw = Stopwatch.StartNew();
+		var currentTick = 0;
 		while ( !ProgramCancellation.IsCancellationRequested )
 		{
 			// TODO: Cooking the CPU is not a very cool way of doing this
@@ -106,6 +107,7 @@ public class NetBoltGame
 			}
 
 			Time.Delta = (float)sw.Elapsed.TotalMilliseconds;
+			Time.Tick = ++currentTick;
 			sw.Restart();
 
 			_server.DispatchIncoming();

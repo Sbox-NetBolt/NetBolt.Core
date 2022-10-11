@@ -9,4 +9,9 @@ public static class Time
 	/// The delta between the last tick and the current.
 	/// </summary>
 	public static float Delta;
+
+	/// <summary>
+	/// The current tick of the server.
+	/// </summary>
+	public static int Tick;
 }
