@@ -34,6 +34,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Include="../Shared/**/*">
+            <Link>Shared/%(RecursiveDir)/%(FileName)%(Extension)</Link>
+        </Compile>
+        
         <None Include="../LICENSE.md" Pack="true" PackagePath="" />
         <None Include="../icon.png" Pack="true" PackagePath="" />
     </ItemGroup>
