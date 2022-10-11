@@ -31,7 +31,7 @@ internal sealed class GameServer : WebSocketServer
 	/// A list of all clients in the server.
 	/// </summary>
 	private readonly List<INetworkClient> _networkClients = new();
-	
+
 	/// <summary>
 	/// A read-only list of all bots in the server.
 	/// </summary>

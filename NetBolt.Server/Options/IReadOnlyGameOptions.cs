@@ -11,7 +11,7 @@ public interface IReadOnlyGameOptions
 	/// See <see cref="GameOptions.MaxEntities"/>.
 	/// </summary>
 	int MaxEntities { get; }
-	
+
 	/// <summary>
 	/// See <see cref="GameOptions.NetworkingOptions"/>.
 	/// </summary>

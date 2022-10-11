@@ -22,7 +22,7 @@ public partial class NetworkClient
 	internal NetworkClient( TcpClient socket, IWebSocketServer server ) : base( socket, server )
 	{
 	}
-	
+
 	/// <summary>
 	/// Serializes a message and sends the data to the client.
 	/// </summary>

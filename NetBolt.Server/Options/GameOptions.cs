@@ -11,12 +11,12 @@ public sealed class GameOptions : IReadOnlyGameOptions
 	/// Creates a default instance of <see cref="GameOptions"/>.
 	/// </summary>
 	public static GameOptions Default => new();
-	
+
 	/// <summary>
 	/// The maximum amount of entities that can exist in the game.
 	/// </summary>
 	public int MaxEntities { get; set; } = 100_000;
-	
+
 	/// <summary>
 	/// The networking options to be applied to the game server.
 	/// </summary>

@@ -21,7 +21,7 @@ public class NetBoltGame
 	/// The only instance of the game in existence.
 	/// </summary>
 	public static NetBoltGame Current = null!;
-	
+
 	/// <summary>
 	/// A read-only instance of game options this game was created with.
 	/// </summary>
@@ -35,7 +35,7 @@ public class NetBoltGame
 	/// Manages all networked entities.
 	/// </summary>
 	internal readonly EntityManager SharedEntityManager = new();
-	
+
 	/// <summary>
 	/// Whether or not the game is currently running.
 	/// </summary>
@@ -54,7 +54,7 @@ public class NetBoltGame
 	/// The games cancellation source. If you want to exit the game then cancel this and the game will exit at the end of the tick.
 	/// </summary>
 	protected static readonly CancellationTokenSource ProgramCancellation = new();
-	
+
 	/// <summary>
 	/// The network server handling communication of the game.
 	/// </summary>
@@ -89,14 +89,14 @@ public class NetBoltGame
 	public virtual void Start()
 	{
 		Running = true;
-		
+
 		GameServer.Instance.HandleMessage<RpcCallMessage>( Rpc.HandleRpcCallMessage );
 		GameServer.Instance.HandleMessage<RpcCallResponseMessage>( Rpc.HandleRpcCallResponseMessage );
 		GameServer.Instance.HandleMessage<ClientPawnUpdateMessage>( HandleClientPawnUpdateMessage );
 
 		SharedEntityManager.EntityCreated += OnNetworkedEntityCreated;
 		SharedEntityManager.EntityDeleted += OnNetworkedEntityDeleted;
-		
+
 		var sw = Stopwatch.StartNew();
 		var currentTick = 0;
 		while ( !ProgramCancellation.IsCancellationRequested )
@@ -125,7 +125,7 @@ public class NetBoltGame
 		ProgramCancellation.Cancel();
 		ServerEntityManager.DeleteAllEntities();
 		SharedEntityManager.DeleteAllEntities();
-		
+
 		_server.StopAsync().Wait();
 	}
 

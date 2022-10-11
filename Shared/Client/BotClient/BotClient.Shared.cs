@@ -23,7 +23,7 @@ public sealed partial class BotClient : INetworkClient
 	/// The unique identifier of the client.
 	/// </summary>
 	public long ClientId { get; }
-	
+
 	/// <summary>
 	/// Whether or not this client is a bot (not controlled by a live player).
 	/// </summary>

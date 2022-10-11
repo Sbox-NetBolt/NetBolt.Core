@@ -13,7 +13,7 @@ public partial class BotClient
 	/// A bots own client-side message handlers.
 	/// </summary>
 	private static readonly Dictionary<Type, Action<BotClient, NetworkMessage>> MessageHandlers = new();
-	
+
 	/// <summary>
 	/// Serializes a message and sends the data to the client.
 	/// </summary>
@@ -42,7 +42,7 @@ public partial class BotClient
 	{
 		throw new NotImplementedException();
 	}
-	
+
 	/// <summary>
 	/// Acts as the main loop for the client to handle its read/write logic.
 	/// </summary>
@@ -81,7 +81,7 @@ public partial class BotClient
 	{
 		throw new NotImplementedException();
 	}
-	
+
 	/// <summary>
 	/// Adds a handler for the bot to dispatch the message to.
 	/// </summary>
