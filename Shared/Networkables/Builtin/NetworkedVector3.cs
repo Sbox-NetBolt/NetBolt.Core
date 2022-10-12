@@ -33,15 +33,15 @@ public struct NetworkedVector3 : INetworkable, IEquatable<NetworkedVector3>
 	/// <summary>
 	/// The <see cref="System.Numerics.Vector3.X"/> component of the <see cref="System.Numerics.Vector3"/>.
 	/// </summary>
-	public float X => _value.X;
+	public float X { get => _value.X; set => _value.X = value; }
 	/// <summary>
 	/// The <see cref="System.Numerics.Vector3.Y"/> component of the <see cref="System.Numerics.Vector3"/>.
 	/// </summary>
-	public float Y => _value.Y;
+	public float Y { get => _value.Y; set => _value.Y = value; }
 	/// <summary>
 	/// The <see cref="System.Numerics.Vector3.Z"/> component of the <see cref="System.Numerics.Vector3"/>.
 	/// </summary>
-	public float Z => _value.Z;
+	public float Z { get => _value.Z; set => _value.Z = value; }
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="NetworkedVector3"/> from a <see cref="System.Numerics.Vector3"/>s components.
