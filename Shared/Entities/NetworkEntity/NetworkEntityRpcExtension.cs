@@ -1,4 +1,3 @@
-#if !MONITOR
 using System.Threading.Tasks;
 #if SERVER
 #endif
@@ -70,4 +69,3 @@ public static class NetworkEntityRpcExtension
 	}
 #endif
 }
-#endif

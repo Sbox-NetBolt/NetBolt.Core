@@ -1,4 +1,3 @@
-#if !MONITOR
 using System;
 #if SERVER
 using System.Collections.Generic;
@@ -107,4 +106,3 @@ public static partial class Rpc
 		}
 	}
 }
-#endif
