@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 #if SERVER
 using NetBolt.Server;
 #endif
@@ -14,50 +12,12 @@ namespace NetBolt.Shared.Networkables;
 /// <summary>
 /// Base class for a networkable that contains other <see cref="INetworkable"/>s.
 /// </summary>
-public abstract class BaseNetworkable : INetworkable
+public abstract partial class BaseNetworkable : INetworkable
 {
 	/// <summary>
 	/// The unique identifier of the networkable.
 	/// </summary>
 	public int NetworkId { get; }
-
-	/// <summary>
-	/// An internal map of <see cref="BaseNetworkable"/> identifiers that were not accessible at the time and need setting after de-serializing all <see cref="BaseNetworkable"/>s.
-	/// </summary>
-	internal readonly Dictionary<int, string> ClPendingNetworkables = new();
-
-#if SERVER
-	/// <summary>
-	/// A <see cref="PropertyInfo"/> cache of all networked properties.
-	/// </summary>
-	protected readonly Dictionary<string, PropertyInfo> PropertyNameCache = new();
-#endif
-#if CLIENT
-	/// <summary>
-	/// A <see cref="PropertyInfo"/> cache of all networked properties.
-	/// </summary>
-	protected readonly Dictionary<string, PropertyDescription> PropertyNameCache = new();
-#endif
-
-	/// <summary>
-	/// Initializes a new instance of <see cref="BaseNetworkable"/> with a unique network identifier.
-	/// </summary>
-	/// <param name="networkId">A unique identifier.</param>
-	protected BaseNetworkable( int networkId )
-	{
-		NetworkId = networkId;
-
-		foreach ( var property in TypeHelper.GetAllProperties( GetType() )
-					 .Where( property => property.PropertyType.IsAssignableTo( typeof( INetworkable ) ) ) )
-		{
-			if ( property.GetCustomAttribute<NoNetworkAttribute>() is not null )
-				continue;
-
-			PropertyNameCache.Add( property.Name, property );
-		}
-
-		AllNetworkables.Add( NetworkId, this );
-	}
 
 	/// <summary>
 	/// Deletes the <see cref="BaseNetworkable"/>. You should not be using this after calling this.
@@ -103,8 +63,10 @@ public abstract class BaseNetworkable : INetworkable
 				var networkId = reader.ReadInt32();
 				if ( All.TryGetValue( networkId, out var networkable ) )
 					propertyInfo.SetValue( this, networkable );
+#if CLIENT
 				else
 					ClPendingNetworkables.Add( networkId, propertyName );
+#endif
 			}
 			else
 				propertyInfo.SetValue( this, reader.ReadNetworkable() );
@@ -127,8 +89,10 @@ public abstract class BaseNetworkable : INetworkable
 				var networkId = reader.ReadInt32();
 				if ( All.TryGetValue( networkId, out var networkable ) )
 					property.SetValue( this, networkable );
+#if CLIENT
 				else
 					ClPendingNetworkables.Add( networkId, propertyName );
+#endif
 			}
 			else
 			{
@@ -200,37 +164,4 @@ public abstract class BaseNetworkable : INetworkable
 	/// A dictionary of all <see cref="BaseNetworkable"/>
 	/// </summary>
 	private static readonly Dictionary<int, BaseNetworkable> AllNetworkables = new();
-
-#if SERVER
-	/// <summary>
-	/// The next unique identifier to give to a <see cref="BaseNetworkable"/>.
-	/// </summary>
-	private static int _nextNetworkId = -1;
-
-	/// <summary>
-	/// Creates a new <see cref="BaseNetworkable"/>.
-	/// </summary>
-	/// <typeparam name="T">The type of <see cref="BaseNetworkable"/> to create.</typeparam>
-	/// <returns>The created instance of <see cref="BaseNetworkable"/>.</returns>
-	public static T Create<T>() where T : BaseNetworkable
-	{
-		var networkable = TypeHelper.Create<T>( StepNextId() );
-		if ( networkable is not null )
-			return networkable;
-
-		Log.Error( $"Failed to create networkable type {typeof( T )}" );
-		return default!;
-	}
-
-	/// <summary>
-	/// Gets a new <see cref="NetworkId"/> and steps the internal counter.
-	/// </summary>
-	/// <returns>A unique network identifier.</returns>
-	public static int StepNextId()
-	{
-		if ( _nextNetworkId == -1 )
-			_nextNetworkId = NetBoltGame.Current.Options.MaxEntities + 1;
-		return _nextNetworkId++;
-	}
-#endif
 }

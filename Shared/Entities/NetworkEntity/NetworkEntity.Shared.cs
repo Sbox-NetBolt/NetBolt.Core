@@ -12,7 +12,7 @@ public partial class NetworkEntity : BaseNetworkable, IEntity
 	/// <summary>
 	/// The unique identifier of the <see cref="NetworkEntity"/>.
 	/// </summary>
-	public int EntityId { get; }
+	public int EntityId => NetworkId;
 
 	/// <summary>
 	/// The <see cref="INetworkClient"/> that owns this <see cref="IEntity"/>.
@@ -43,15 +43,6 @@ public partial class NetworkEntity : BaseNetworkable, IEntity
 	/// </summary>
 	[ClientAuthority]
 	public NetworkedQuaternion Rotation { get; set; }
-
-	/// <summary>
-	/// Initializes a new instance of <see cref="NetworkEntity"/> with a unique entity identifier.
-	/// </summary>
-	/// <param name="entityId">A unique entity identifier.</param>
-	public NetworkEntity( int entityId ) : base( entityId )
-	{
-		EntityId = entityId;
-	}
 
 	/// <summary>
 	/// Updates the entity.
