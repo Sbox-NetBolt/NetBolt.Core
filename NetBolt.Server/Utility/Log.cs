@@ -2,7 +2,7 @@ using System;
 using Serilog;
 using Serilog.Core;
 
-namespace NetBolt.Shared.Utility;
+namespace NetBolt.Server;
 
 /// <summary>
 /// An abstraction layer for logging.

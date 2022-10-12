@@ -1,7 +1,5 @@
 #if CLIENT
 using System;
-using System.Linq;
-using NetBolt.Shared.Networkables.Builtin;
 using Sandbox;
 
 namespace NetBolt.Shared.Utility;

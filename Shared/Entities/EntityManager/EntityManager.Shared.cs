@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+#if SERVER
+using NetBolt.Server;
+#endif
 using NetBolt.Shared.Utility;
 
 namespace NetBolt.Shared.Entities;

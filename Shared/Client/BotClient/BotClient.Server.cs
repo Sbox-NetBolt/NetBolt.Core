@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NetBolt.Shared.Messages;
-using NetBolt.Shared.Utility;
 using NetBolt.WebSocket.Enums;
 
 namespace NetBolt.Server;

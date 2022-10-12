@@ -1,4 +1,7 @@
 using System.Linq;
+#if SERVER
+using NetBolt.Server;
+#endif
 using NetBolt.Shared.Entities;
 using NetBolt.Shared.Utility;
 

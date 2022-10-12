@@ -1,13 +1,10 @@
 #if CLIENT
-using System;
 using NetBolt.Client;
-using NetBolt.Shared.Utility;
 #endif
 #if SERVER
 using NetBolt.Server;
 #endif
 using NetBolt.Shared.Networkables;
-using NetBolt.Shared.Networkables.Builtin;
 
 namespace NetBolt.Shared.Entities;
 

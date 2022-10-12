@@ -1,6 +1,9 @@
 using System;
 using System.IO;
 using System.Numerics;
+#if SERVER
+using NetBolt.Server;
+#endif
 using NetBolt.Shared.Entities;
 using NetBolt.Shared.Networkables;
 

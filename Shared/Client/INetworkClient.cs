@@ -1,16 +1,13 @@
 ﻿using System.Collections.Generic;
 #if CLIENT
 using NetBolt.Client;
-using NetBolt.Shared.Utility;
 #endif
 #if SERVER
 using NetBolt.Server;
 using NetBolt.Shared.Messages;
-#endif
-using NetBolt.Shared.Entities;
-#if SERVER
 using NetBolt.WebSocket;
 #endif
+using NetBolt.Shared.Entities;
 
 namespace NetBolt.Shared;
 

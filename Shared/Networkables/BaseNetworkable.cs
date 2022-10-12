@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+#if SERVER
 using NetBolt.Server;
+#endif
 using NetBolt.Shared.Utility;
 #if CLIENT
 using Sandbox;

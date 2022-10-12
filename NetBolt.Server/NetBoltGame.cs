@@ -8,7 +8,6 @@ using NetBolt.Shared.Messages;
 using NetBolt.Shared.RemoteProcedureCalls;
 using NetBolt.Shared.Utility;
 using NetBolt.WebSocket;
-using NetBolt.WebSocket.Options;
 
 namespace NetBolt.Server;
 

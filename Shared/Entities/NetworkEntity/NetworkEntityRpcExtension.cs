@@ -1,7 +1,6 @@
 #if !MONITOR
 using System.Threading.Tasks;
 #if SERVER
-using NetBolt.Server;
 #endif
 using NetBolt.Shared.Entities;
 using NetBolt.Shared.Messages;

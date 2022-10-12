@@ -2,12 +2,12 @@
 using System;
 #if SERVER
 using System.Collections.Generic;
+using NetBolt.Server;
 #endif
 using System.Threading.Tasks;
 using NetBolt.Shared.Entities;
 using NetBolt.Shared.Messages;
 using NetBolt.Shared.Networkables;
-using NetBolt.Shared.Utility;
 
 namespace NetBolt.Shared.RemoteProcedureCalls;
 
