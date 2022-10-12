@@ -209,12 +209,11 @@ public sealed class NetworkManager
 	/// </summary>
 	/// <param name="cb">The method to call when a message of type <see ref="T"/> has come in.</param>
 	/// <typeparam name="T">The message type to handle.</typeparam>
-	/// <exception cref="Exception">Thrown when a handler has already been set for <see ref="T"/>.</exception>
 	public void HandleMessage<T>( Action<NetworkMessage> cb ) where T : NetworkMessage
 	{
 		var messageType = typeof( T );
 		if ( _messageHandlers.ContainsKey( messageType ) )
-			throw new Exception( $"Message type {messageType} is already being handled." );
+			Log.Warning( $"Server message type {messageType} is already being handled. Overriding..." );
 
 		_messageHandlers.Add( messageType, cb );
 	}

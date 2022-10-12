@@ -166,10 +166,7 @@ internal sealed class GameServer : WebSocketServer
 	{
 		var messageType = typeof( T );
 		if ( _messageHandlers.ContainsKey( messageType ) )
-		{
-			Log.Error( $"Message type {messageType} is already being handled." );
-			return;
-		}
+			Log.Warning( $"Client message type {messageType} is already being handled. Overriding..." );
 
 		_messageHandlers.Add( messageType, cb );
 	}

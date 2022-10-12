@@ -87,15 +87,11 @@ public partial class BotClient
 	/// </summary>
 	/// <param name="cb">The method to call when a message of type <see ref="T"/> has come in.</param>
 	/// <typeparam name="T">The message type to handle.</typeparam>
-	/// <exception cref="Exception">Thrown when a handler has already been set for <see ref="T"/>.</exception>
 	public static void HandleBotMessage<T>( Action<BotClient, NetworkMessage> cb ) where T : NetworkMessage
 	{
 		var messageType = typeof( T );
 		if ( MessageHandlers.ContainsKey( messageType ) )
-		{
-			Log.Error( $"Message type {messageType} is already being handled for bots." );
-			return;
-		}
+			Log.Warning( $"Bot message type {messageType} is already being handled. Overriding..." );
 
 		MessageHandlers.Add( messageType, cb );
 	}
