@@ -64,9 +64,9 @@ public class GameHud : RootPanel
 		var messagesReceivedLabel = Add.Label( MessagesReceived, "debugLabel netReceivedNum" );
 		var messagesSentLabel = Add.Label( MessagesSent, "debugLabel netSentNum" );
 		var messageTypesReceivedLabel = Add.Label( MessageTypesReceived, "debugLabel netTypeReceivedNum" );
-		messagesReceivedLabel.Bind( "text", () => MessagesReceived );
-		messagesSentLabel.Bind( "text", () => MessagesSent );
-		messageTypesReceivedLabel.Bind( "text", () => MessageTypesReceived );
+		messagesReceivedLabel.Bind( "text", this, nameof( MessagesReceived ) );
+		messagesSentLabel.Bind( "text", this, nameof( MessagesSent ) );
+		messageTypesReceivedLabel.Bind( "text", this, nameof( MessageTypesReceived ) );
 	}
 #endif
 }
