@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using NetBolt.Client.Utility;
 using NetBolt.Shared;
 using NetBolt.Shared.Entities;
 using NetBolt.Shared.Messages;
@@ -14,42 +15,120 @@ using Sandbox;
 
 namespace NetBolt.Client;
 
-public class NetworkManager
+/// <summary>
+/// Handles connection and general networking to a connected server.
+/// </summary>
+public sealed class NetworkManager
 {
+	/// <summary>
+	/// The only instance of <see cref="NetworkManager"/> existing.
+	/// </summary>
 	public static NetworkManager? Instance;
 
 #if DEBUG
+	/// <summary>
+	/// A debug variable for how many messages have been received from the server.
+	/// </summary>
 	public int MessagesReceived;
+	/// <summary>
+	/// A debug variable for how many messages have been sent to the server.
+	/// </summary>
 	public int MessagesSent;
 
+	/// <summary>
+	/// A debug variable for all of the messages that have been received and how many there have been.
+	/// </summary>
 	public readonly Dictionary<Type, int> MessageTypesReceived = new();
 #endif
 
-	public readonly List<INetworkClient> Clients = new();
-	public INetworkClient LocalClient => GetClientById( _localClientId )!;
-	public readonly EntityManager SharedEntityManager = new();
+	/// <summary>
+	/// A read-only list of all clients that the client knows about.
+	/// </summary>
+	public IReadOnlyList<INetworkClient> Clients => _clients;
+	/// <summary>
+	/// A list of all clients that the client knows about.
+	/// </summary>
+	private readonly List<INetworkClient> _clients = new();
 
+	/// <summary>
+	/// The local client.
+	/// </summary>
+	public INetworkClient LocalClient => GetClientById( _localClientId )!;
+
+	/// <summary>
+	/// The networked entity manager.
+	/// </summary>
+	public EntityManager SharedEntityManager { get; } = new();
+
+	/// <summary>
+	/// Whether or not the client is connected to a server.
+	/// </summary>
 	public bool Connected { get; private set; }
 
+	/// <summary>
+	/// The delegate for handling when the client has connected to a server.
+	/// </summary>
 	public delegate void ConnectedEventHandler();
+	/// <summary>
+	/// Invoked when the client has connected to a server.
+	/// </summary>
 	public static event ConnectedEventHandler? ConnectedToServer;
 
+	/// <summary>
+	/// The delegate for handling when the client has disconnected from a server.
+	/// </summary>
 	public delegate void DisconnectedEventHandler();
+	/// <summary>
+	/// Invoked when the client has disconnected from a server.
+	/// </summary>
 	public static event DisconnectedEventHandler? DisconnectedFromServer;
 
+	/// <summary>
+	/// The delegate for handling when a client has connected to the server.
+	/// </summary>
 	public delegate void ClientConnectedEventHandler( INetworkClient client );
+	/// <summary>
+	/// Invoked when a client has connected to the server.
+	/// </summary>
 	public static event ClientConnectedEventHandler? ClientConnected;
 
+	/// <summary>
+	/// The delegate for handling when a client has disconnected from the server.
+	/// </summary>
 	public delegate void ClientDisconnectedEventHandler( INetworkClient client );
+	/// <summary>
+	/// Invoked when a client has disconnected from the server.
+	/// </summary>
 	public static event ClientDisconnectedEventHandler? ClientDisconnected;
 
+	/// <summary>
+	/// The client socket used to connect to the server.
+	/// </summary>
 	private WebSocket _webSocket;
+	/// <summary>
+	/// The handlers for incoming messages.
+	/// </summary>
 	private readonly Dictionary<Type, Action<NetworkMessage>> _messageHandlers = new();
+	/// <summary>
+	/// A queue of all incoming messages from the server.
+	/// </summary>
 	private readonly Queue<byte[]> _incomingQueue = new();
+	/// <summary>
+	/// A queue of all outgoing messages to the server.
+	/// </summary>
 	private readonly Queue<NetworkMessage> _outgoingQueue = new();
+	/// <summary>
+	/// A timer for when to stagger updates of the local clients pawn.
+	/// </summary>
 	private readonly Stopwatch _pawnSw = Stopwatch.StartNew();
+	/// <summary>
+	/// The unique client identifier of the client.
+	/// </summary>
 	private long _localClientId;
 
+	/// <summary>
+	/// Initializes a new instance of <see cref="NetworkManager"/>.
+	/// </summary>
 	public NetworkManager()
 	{
 		if ( Instance is not null )
@@ -74,47 +153,84 @@ public class NetworkManager
 		HandleMessage<MultiEntityUpdateMessage>( HandleMultiEntityUpdateMessage );
 	}
 
-	public async Task ConnectAsync( string uri, int port, bool secure )
+	/// <summary>
+	/// Disconnects and closes the connection to the server.
+	/// </summary>
+	public async Task CloseAsync()
+	{
+		await _webSocket.CloseAsync( "disconnect" );
+		Close();
+	}
+
+	/// <summary>
+	/// Connects to a server.
+	/// </summary>
+	/// <param name="ip">The IP of the server to connect to.</param>
+	/// <param name="port">The port of the server to connect to.</param>
+	/// <param name="secure">Whether or not to use the web socket secure (wss://) protocol.</param>
+	public async Task ConnectAsync( string ip, int port, bool secure )
 	{
 		if ( Connected )
-			Close();
+			await CloseAsync();
 
 		try
 		{
 			var rand = new Random( Time.Tick );
 			_localClientId = rand.NextInt64();
+
 			var headers = new Dictionary<string, string> { { "Steam", _localClientId.ToString() } };
-			var webSocketUri = (secure ? "wss://" : "ws://") + uri + ':' + port + '/';
+			var webSocketUri = (secure ? "wss://" : "ws://") + ip + ':' + port + '/';
 			Log.Info( "Connecting..." );
 			await _webSocket.Connect( webSocketUri, headers );
-			Clients.Add( new NetworkClient( _localClientId ) );
+
+			_clients.Add( new NetworkClient( _localClientId ) );
 			Connected = true;
 			ConnectedToServer?.Invoke();
 		}
 		catch ( Exception e )
 		{
 			Log.Error( e );
-			Close();
+			await CloseAsync();
 		}
 	}
 
-	public void Close()
+	/// <summary>
+	/// Gets a client by its identifier.
+	/// </summary>
+	/// <param name="clientId">The identifier of the client to find.</param>
+	/// <returns>The client if found. Null if not found.</returns>
+	public INetworkClient? GetClientById( long clientId )
 	{
-		Connected = false;
-		_webSocket.Dispose();
-		_webSocket = new WebSocket();
-		Clients.Clear();
-		SharedEntityManager.DeleteAllEntities();
-
-#if DEBUG
-		MessagesReceived = 0;
-		MessagesSent = 0;
-		MessageTypesReceived.Clear();
-#endif
-
-		DisconnectedFromServer?.Invoke();
+		return clientId == -1 ? null : Clients.FirstOrDefault( client => client.ClientId == clientId );
 	}
 
+	/// <summary>
+	/// Adds a handler for the client to dispatch the message to.
+	/// </summary>
+	/// <param name="cb">The method to call when a message of type <see ref="T"/> has come in.</param>
+	/// <typeparam name="T">The message type to handle.</typeparam>
+	/// <exception cref="Exception">Thrown when a handler has already been set for <see ref="T"/>.</exception>
+	public void HandleMessage<T>( Action<NetworkMessage> cb ) where T : NetworkMessage
+	{
+		var messageType = typeof( T );
+		if ( _messageHandlers.ContainsKey( messageType ) )
+			throw new Exception( $"Message type {messageType} is already being handled." );
+
+		_messageHandlers.Add( messageType, cb );
+	}
+
+	/// <summary>
+	/// Queues a <see cref="NetworkMessage"/> to be sent to the server.
+	/// </summary>
+	/// <param name="message">The message to send to the server.</param>
+	public void SendToServer( NetworkMessage message )
+	{
+		_outgoingQueue.Enqueue( message );
+	}
+
+	/// <summary>
+	/// Called for every tick of the server.
+	/// </summary>
 	public void Update()
 	{
 		foreach ( var entity in SharedEntityManager.Entities.Values )
@@ -133,24 +249,9 @@ public class NetworkManager
 		_pawnSw.Restart();
 	}
 
-	private void WebSocketOnDisconnected( int status, string reason )
-	{
-		Close();
-	}
-
-	private void WebSocketOnDataReceived( Span<byte> data )
-	{
-#if DEBUG
-		MessagesReceived++;
-#endif
-
-		_incomingQueue.Enqueue( data.ToArray() );
-	}
-
-	private void WebSocketOnMessageReceived( string message )
-	{
-	}
-
+	/// <summary>
+	/// Dispatches all of the incoming messages from the server.
+	/// </summary>
 	internal void DispatchIncoming()
 	{
 		while ( _incomingQueue.TryDequeue( out var bytes ) )
@@ -162,6 +263,9 @@ public class NetworkManager
 		}
 	}
 
+	/// <summary>
+	/// Dispatches all of the outgoing messages to the server.
+	/// </summary>
 	internal void DispatchOutgoing()
 	{
 		while ( _outgoingQueue.TryDequeue( out var message ) )
@@ -178,6 +282,51 @@ public class NetworkManager
 		}
 	}
 
+	/// <summary>
+	/// Closes the connection to the server.
+	/// </summary>
+	private void Close()
+	{
+		Connected = false;
+		_webSocket = new WebSocket();
+		_clients.Clear();
+		SharedEntityManager.DeleteAllEntities();
+
+#if DEBUG
+		MessagesReceived = 0;
+		MessagesSent = 0;
+		MessageTypesReceived.Clear();
+#endif
+
+		DisconnectedFromServer?.Invoke();
+	}
+
+	/// <summary>
+	/// Dispatches a message to its handler.
+	/// </summary>
+	/// <param name="message">The message to dispatch.</param>
+	private void DispatchMessage( NetworkMessage message )
+	{
+#if DEBUG
+		var messageType = message.GetType();
+		if ( !MessageTypesReceived.ContainsKey( messageType ) )
+			MessageTypesReceived.Add( messageType, 0 );
+		MessageTypesReceived[messageType]++;
+#endif
+
+		if ( !_messageHandlers.TryGetValue( message.GetType(), out var cb ) )
+		{
+			Log.Error( $"Unhandled message type {message.GetType()}." );
+			return;
+		}
+
+		cb.Invoke( message );
+	}
+
+	/// <summary>
+	/// Handles a <see cref="MultiMessage"/>.
+	/// </summary>
+	/// <param name="message">The <see cref="MultiMessage"/> that was received.</param>
 	private void HandleMultiMessage( NetworkMessage message )
 	{
 		if ( message is not MultiMessage multiMessage )
@@ -187,6 +336,10 @@ public class NetworkManager
 			DispatchMessage( msg );
 	}
 
+	/// <summary>
+	/// Handles a <see cref="ShutdownMessage"/>.
+	/// </summary>
+	/// <param name="message">The <see cref="ShutdownMessage"/> that was received.</param>
 	private void HandleShutdownMessage( NetworkMessage message )
 	{
 		if ( message is not ShutdownMessage )
@@ -195,6 +348,10 @@ public class NetworkManager
 		Close();
 	}
 
+	/// <summary>
+	/// Handles a <see cref="ClientListMessage"/>.
+	/// </summary>
+	/// <param name="message">The <see cref="ClientListMessage"/> that was received.</param>
 	private void HandleClientListMessage( NetworkMessage message )
 	{
 		if ( message is not ClientListMessage clientListMessage )
@@ -206,10 +363,14 @@ public class NetworkManager
 				continue;
 
 			var client = new NetworkClient( clientId ) { Pawn = SharedEntityManager.GetEntityById( pawnId ) };
-			Clients.Add( client );
+			_clients.Add( client );
 		}
 	}
 
+	/// <summary>
+	/// Handles a <see cref="EntityListMessage"/>.
+	/// </summary>
+	/// <param name="message">The <see cref="EntityListMessage"/> that was received.</param>
 	private void HandleEntityListMessage( NetworkMessage message )
 	{
 		if ( message is not EntityListMessage entityListMessage )
@@ -223,6 +384,10 @@ public class NetworkManager
 		}
 	}
 
+	/// <summary>
+	/// Handles a <see cref="CreateEntityMessage"/>.
+	/// </summary>
+	/// <param name="message">The <see cref="CreateEntityMessage"/> that was received.</param>
 	private void HandleCreateEntityMessage( NetworkMessage message )
 	{
 		if ( message is not CreateEntityMessage createEntityMessage )
@@ -231,6 +396,10 @@ public class NetworkManager
 		SharedEntityManager.Create( createEntityMessage.EntityClass, createEntityMessage.EntityId );
 	}
 
+	/// <summary>
+	/// Handles a <see cref="DeleteEntityMessage"/>.
+	/// </summary>
+	/// <param name="message">The <see cref="DeleteEntityMessage"/> that was received.</param>
 	private void HandleDeleteEntityMessage( NetworkMessage message )
 	{
 		if ( message is not DeleteEntityMessage deleteEntityMessage )
@@ -239,6 +408,10 @@ public class NetworkManager
 		SharedEntityManager.DeleteEntity( deleteEntityMessage.Entity );
 	}
 
+	/// <summary>
+	/// Handles a <see cref="ClientStateChangedMessage"/>.
+	/// </summary>
+	/// <param name="message">The <see cref="ClientStateChangedMessage"/> that was received.</param>
 	private void HandleClientStateChangedMessage( NetworkMessage message )
 	{
 		if ( message is not ClientStateChangedMessage clientStateChangedMessage )
@@ -248,7 +421,7 @@ public class NetworkManager
 		{
 			case ClientState.Connected:
 				var client = new NetworkClient( clientStateChangedMessage.ClientId );
-				Clients.Add( client );
+				_clients.Add( client );
 				ClientConnected?.Invoke( client );
 				break;
 			case ClientState.Disconnected:
@@ -256,7 +429,7 @@ public class NetworkManager
 				if ( disconnectedClient is null )
 					return;
 
-				Clients.Remove( disconnectedClient );
+				_clients.Remove( disconnectedClient );
 				ClientDisconnected?.Invoke( disconnectedClient );
 				break;
 			default:
@@ -265,6 +438,10 @@ public class NetworkManager
 		}
 	}
 
+	/// <summary>
+	/// Handles a <see cref="ClientPawnChangedMessage"/>.
+	/// </summary>
+	/// <param name="message">The <see cref="ClientPawnChangedMessage"/> that was received.</param>
 	private void HandleClientPawnChangedMessage( NetworkMessage message )
 	{
 		if ( message is not ClientPawnChangedMessage clientPawnChangedMessage )
@@ -279,6 +456,10 @@ public class NetworkManager
 			clientPawnChangedMessage.Client.Pawn.Owner = clientPawnChangedMessage.Client;
 	}
 
+	/// <summary>
+	/// Handles a <see cref="MultiEntityUpdateMessage"/>.
+	/// </summary>
+	/// <param name="message">The <see cref="MultiEntityUpdateMessage"/> that was received.</param>
 	private void HandleMultiEntityUpdateMessage( NetworkMessage message )
 	{
 		if ( message is not MultiEntityUpdateMessage entityUpdateMessage )
@@ -300,40 +481,34 @@ public class NetworkManager
 		reader.Close();
 	}
 
-	public void SendToServer( NetworkMessage message )
+	/// <summary>
+	/// Invoked when the web socket has disconnected from the server.
+	/// </summary>
+	/// <param name="status">The status code that was received.</param>
+	/// <param name="reason">The string reason that was received.</param>
+	private void WebSocketOnDisconnected( int status, string reason )
 	{
-		_outgoingQueue.Enqueue( message );
+		Close();
 	}
 
-	private void DispatchMessage( NetworkMessage message )
+	/// <summary>
+	/// Invoked when data has been received from the server.
+	/// </summary>
+	/// <param name="data">The data that was received.</param>
+	private void WebSocketOnDataReceived( Span<byte> data )
 	{
 #if DEBUG
-		var messageType = message.GetType();
-		if ( !MessageTypesReceived.ContainsKey( messageType ) )
-			MessageTypesReceived.Add( messageType, 0 );
-		MessageTypesReceived[messageType]++;
+		MessagesReceived++;
 #endif
 
-		if ( !_messageHandlers.TryGetValue( message.GetType(), out var cb ) )
-		{
-			Log.Error( $"Unhandled message type {message.GetType()}." );
-			return;
-		}
-
-		cb.Invoke( message );
+		_incomingQueue.Enqueue( data.ToArray() );
 	}
 
-	public void HandleMessage<T>( Action<NetworkMessage> cb ) where T : NetworkMessage
+	/// <summary>
+	/// Invoked when text has been received from the server.
+	/// </summary>
+	/// <param name="message">The text that was received.</param>
+	private void WebSocketOnMessageReceived( string message )
 	{
-		var messageType = typeof( T );
-		if ( _messageHandlers.ContainsKey( messageType ) )
-			throw new Exception( $"Message type {messageType} is already being handled." );
-
-		_messageHandlers.Add( messageType, cb );
-	}
-
-	public INetworkClient? GetClientById( long clientId )
-	{
-		return clientId == -1 ? null : Clients.FirstOrDefault( client => client.ClientId == clientId );
 	}
 }

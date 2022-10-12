@@ -1,33 +1,31 @@
+using NetBolt.Shared.Entities;
 using Sandbox;
 
 namespace NetBolt.Client;
 
-public class TestPlayer : AnimatedEntity
+/// <summary>
+/// A Sbox test player to be linked to a <see cref="NetworkEntity"/>.
+/// </summary>
+public sealed class TestPlayer : AnimatedEntity
 {
 	/// <summary>
 	/// The grubs movement controller.
 	/// </summary>
-	public BasePlayerController Controller { get; private set; } = null!;
+	private BasePlayerController Controller { get; set; } = null!;
 
 	/// <summary>
 	/// The camera that the team client will see the game through.
 	/// </summary>
-	public CameraMode Camera
+	private CameraMode Camera
 	{
 		get => Components.Get<CameraMode>();
-		private set => Components.Add( value );
+		set => Components.Add( value );
 	}
 
-	/// <summary>
-	/// Called when the entity is first created 
-	/// </summary>
 	public override void Spawn()
 	{
 		base.Spawn();
 
-		//
-		// Use a watermelon model
-		//
 		SetModel( "models/sbox_props/watermelon/watermelon.vmdl" );
 		Camera = new FirstPersonCamera();
 		Controller = new WalkController();
@@ -47,9 +45,6 @@ public class TestPlayer : AnimatedEntity
 			Camera = Camera is FirstPersonCamera ? new ThirdPersonCamera() : new FirstPersonCamera();
 	}
 
-	/// <summary>
-	/// Called every frame on the client
-	/// </summary>
 	public override void FrameSimulate( Sandbox.Client cl )
 	{
 		base.FrameSimulate( cl );

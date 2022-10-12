@@ -75,10 +75,10 @@ public interface INetworkClient
 		{
 			if ( NetworkManager.Instance is null )
 			{
-				Log.Error( $"Attempted to access all clients when the {nameof(NetworkManager)} doesn't exist." );
+				Log.Error( $"Attempted to access all clients when the {nameof( NetworkManager )} doesn't exist." );
 				return null!;
 			}
-			
+
 			return NetworkManager.Instance.Clients;
 		}
 	}
@@ -92,10 +92,10 @@ public interface INetworkClient
 		{
 			if ( NetworkManager.Instance is null )
 			{
-				Log.Error( $"Attempted to access local client when the {nameof(NetworkManager)} doesn't exist." );
+				Log.Error( $"Attempted to access local client when the {nameof( NetworkManager )} doesn't exist." );
 				return null!;
 			}
-			
+
 			return NetworkManager.Instance.LocalClient;
 		}
 	}

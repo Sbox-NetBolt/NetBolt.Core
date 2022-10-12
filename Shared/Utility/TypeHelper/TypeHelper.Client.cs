@@ -13,9 +13,9 @@ public static partial class TypeHelper
 	/// <returns>The created instance of <see cref="T"/>.</returns>
 	public static T Create<T>()
 	{
-		return TypeLibrary.Create<T>( typeof(T) );
+		return TypeLibrary.Create<T>( typeof( T ) );
 	}
-	
+
 	/// <summary>
 	/// Creates an instance of <see cref="T"/>.
 	/// </summary>
@@ -24,9 +24,9 @@ public static partial class TypeHelper
 	/// <returns>The created instance of <see cref="T"/>.</returns>
 	public static T? Create<T>( params object[] parameters )
 	{
-		return TypeLibrary.Create<T>( typeof(T), parameters );
+		return TypeLibrary.Create<T>( typeof( T ), parameters );
 	}
-	
+
 	/// <summary>
 	/// Creates an instance of <see cref="typeToCreate"/> and casts it to <see cref="T"/>.
 	/// </summary>
@@ -60,7 +60,7 @@ public static partial class TypeHelper
 	{
 		return TypeLibrary.GetDescription( type ).GenericArguments;
 	}
-	
+
 	/// <summary>
 	/// Gets all properties on the type.
 	/// </summary>
@@ -70,7 +70,7 @@ public static partial class TypeHelper
 	{
 		return TypeLibrary.GetDescription( type ).Properties;
 	}
-	
+
 	/// <summary>
 	/// Gets a C# type by its name.
 	/// </summary>
