@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -12,7 +11,6 @@ using NetBolt.Shared.Networkables;
 using NetBolt.Shared.RemoteProcedureCalls;
 using NetBolt.Shared.Utility;
 using Sandbox;
-using Logging = NetBolt.Shared.Utility.Logging;
 
 namespace NetBolt.Client;
 
@@ -55,7 +53,7 @@ public class NetworkManager
 	public NetworkManager()
 	{
 		if ( Instance is not null )
-			Logging.Fatal( new InvalidOperationException( $"An instance of {nameof( NetworkManager )} already exists." ) );
+			Log.Error( new InvalidOperationException( $"An instance of {nameof( NetworkManager )} already exists." ) );
 
 		Instance = this;
 		_webSocket = new WebSocket();
@@ -87,7 +85,7 @@ public class NetworkManager
 			_localClientId = rand.NextInt64();
 			var headers = new Dictionary<string, string> { { "Steam", _localClientId.ToString() } };
 			var webSocketUri = (secure ? "wss://" : "ws://") + uri + ':' + port + '/';
-			Logging.Info( "Connecting..." );
+			Log.Info( "Connecting..." );
 			await _webSocket.Connect( webSocketUri, headers );
 			Clients.Add( new NetworkClient( _localClientId ) );
 			Connected = true;
@@ -95,7 +93,7 @@ public class NetworkManager
 		}
 		catch ( Exception e )
 		{
-			Logging.Error( e );
+			Log.Error( e );
 			Close();
 		}
 	}
@@ -262,7 +260,7 @@ public class NetworkManager
 				ClientDisconnected?.Invoke( disconnectedClient );
 				break;
 			default:
-				Logging.Error( "Got unexpected client state.", new ArgumentOutOfRangeException( nameof( clientStateChangedMessage.ClientState ) ) );
+				Log.Error( $"Got unexpected client state: {clientStateChangedMessage.ClientState}" );
 				break;
 		}
 	}
@@ -293,7 +291,7 @@ public class NetworkManager
 			var entity = SharedEntityManager?.GetEntityById( reader.ReadInt32() );
 			if ( entity is null )
 			{
-				Logging.Error( "Attempted to update an entity that does not exist." );
+				Log.Error( "Attempted to update an entity that does not exist." );
 				continue;
 			}
 
@@ -318,7 +316,7 @@ public class NetworkManager
 
 		if ( !_messageHandlers.TryGetValue( message.GetType(), out var cb ) )
 		{
-			Logging.Error( $"Unhandled message type {message.GetType()}." );
+			Log.Error( $"Unhandled message type {message.GetType()}." );
 			return;
 		}
 

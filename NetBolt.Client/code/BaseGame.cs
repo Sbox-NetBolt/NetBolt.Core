@@ -1,7 +1,6 @@
 ﻿using NetBolt.Client.UI;
 using NetBolt.Shared;
 using Sandbox;
-using Logging = NetBolt.Shared.Utility.Logging;
 
 namespace NetBolt.Client;
 
@@ -38,12 +37,12 @@ public class BaseGame : Game
 
 	protected virtual void OnConnectedToServer()
 	{
-		Logging.Info( "Connected" );
+		Log.Info( "Connected" );
 	}
 
 	protected virtual void OnDisconnectedFromServer()
 	{
-		Logging.Info( "Disconnected" );
+		Log.Info( "Disconnected" );
 	}
 
 	protected virtual void OnClientConnected( INetworkClient client )
@@ -57,9 +56,9 @@ public class BaseGame : Game
 	}
 
 	[ConCmd.Client( "connect_to_server" )]
-	public static void ConnectToServer( string uri )
+	public static void ConnectToServer( string uri, int port )
 	{
-		_ = NetworkManager.Instance?.ConnectAsync( uri, SharedConstants.Port, false );
+		_ = NetworkManager.Instance?.ConnectAsync( uri, port, false );
 	}
 
 	[ConCmd.Client( "disconnect_from_server" )]
