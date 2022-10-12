@@ -95,7 +95,7 @@ public static partial class Rpc
 
 		public ServerAttribute( double limitPerSecond = double.MaxValue )
 		{
-
+			LimitPerSecond = limitPerSecond;
 		}
 	}
 }

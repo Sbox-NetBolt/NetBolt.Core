@@ -65,7 +65,7 @@ public sealed class RpcCallMessage : NetworkMessage
 		for ( var i = 0; i < Parameters.Length; i++ )
 			Parameters[i] = reader.ReadNetworkable();
 	}
-
+	
 	public override void Serialize( NetworkWriter writer )
 	{
 		writer.Write( CallGuid );

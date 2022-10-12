@@ -46,8 +46,7 @@ public sealed class NetworkWriter : BinaryWriter
 		Write( vector3.Y );
 		Write( vector3.Z );
 	}
-
-	// TODO: When writing an entity, if it is referenced under an entity just send the entity ID rather than the whole entity.
+	
 	/// <summary>
 	/// Writes an instance of <see cref="INetworkable"/>.
 	/// </summary>

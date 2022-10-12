@@ -1,11 +1,13 @@
-﻿using System;
+﻿using NetBolt.Shared;
+using NetBolt.Shared.Entities;
+#if SERVER
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using NetBolt.Shared;
-using NetBolt.Shared.Entities;
 using NetBolt.Shared.Messages;
 using NetBolt.Shared.Utility;
 using NetBolt.WebSocket.Enums;
+#endif
 
 namespace NetBolt.Server;
 

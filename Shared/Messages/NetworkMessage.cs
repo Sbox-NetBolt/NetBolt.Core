@@ -1,10 +1,4 @@
-﻿using System;
-#if SERVER
-using System.Collections.Generic;
-using System.Linq;
-using NetBolt.Shared.Messages;
-#endif
-using NetBolt.Shared.Networkables;
+﻿using NetBolt.Shared.Networkables;
 using NetBolt.Shared.Utility;
 
 namespace NetBolt.Shared.Messages;

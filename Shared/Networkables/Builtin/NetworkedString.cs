@@ -38,7 +38,7 @@ public struct NetworkedString : INetworkable, IEquatable<NetworkedString>
 	{
 		_value = reader.ReadString();
 	}
-
+	
 	public void DeserializeChanges( NetworkReader reader )
 	{
 		Deserialize( reader );

@@ -5,7 +5,6 @@ using NetBolt.Server;
 using NetBolt.Shared.Utility;
 #if CLIENT
 using Sandbox;
-using Logging = NetBolt.Shared.Utility.Logging;
 #endif
 
 namespace NetBolt.Shared.Networkables;
@@ -164,6 +163,7 @@ public abstract class BaseNetworkable : INetworkable
 
 	internal static IReadOnlyDictionary<int, BaseNetworkable> All => AllNetworkables;
 	private static readonly Dictionary<int, BaseNetworkable> AllNetworkables = new();
+#if SERVER
 	private static int _nextNetworkId = -1;
 
 	/// <summary>
@@ -191,4 +191,5 @@ public abstract class BaseNetworkable : INetworkable
 			_nextNetworkId = NetBoltGame.Current.Options.MaxEntities + 1;
 		return _nextNetworkId++;
 	}
+#endif
 }

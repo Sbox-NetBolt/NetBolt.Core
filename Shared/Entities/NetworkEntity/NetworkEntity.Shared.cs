@@ -1,8 +1,6 @@
 #if CLIENT
 using System.Reflection;
 #endif
-using System;
-using System.Numerics;
 using NetBolt.Shared.Networkables;
 using NetBolt.Shared.Networkables.Builtin;
 using NetBolt.Shared.Utility;

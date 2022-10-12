@@ -23,7 +23,6 @@ public sealed class ClientPawnUpdateMessage : NetworkMessage
 	{
 		PartialPawnData = new byte[reader.ReadInt32()];
 		_ = reader.Read( PartialPawnData, 0, PartialPawnData.Length );
-		;
 	}
 
 	public override void Serialize( NetworkWriter writer )

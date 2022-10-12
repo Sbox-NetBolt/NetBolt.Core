@@ -40,14 +40,14 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 	/// </summary>
 	private readonly List<(HashSetChangeType, T?)> _changes = new();
 
-	public NetworkedHashSet( HashSet<T> hashSet )
-	{
-		_value = hashSet;
-	}
-
 	public NetworkedHashSet()
 	{
 		_value = new HashSet<T>();
+	}
+	
+	public NetworkedHashSet( HashSet<T> hashSet )
+	{
+		_value = hashSet;
 	}
 
 	/// <summary>
@@ -109,7 +109,7 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 	{
 		return GetEnumerator();
 	}
-
+	
 	public bool Changed()
 	{
 		return _changes.Count > 0;

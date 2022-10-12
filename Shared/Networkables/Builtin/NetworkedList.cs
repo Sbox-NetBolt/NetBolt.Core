@@ -42,14 +42,13 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 
 	private readonly List<(ListChangeType, T?)> _changes = new();
 
-	public NetworkedList( List<T> list )
-	{
-		Value = list;
-	}
-
 	public NetworkedList()
 	{
 		Value = new List<T>();
+	}
+	public NetworkedList( List<T> list )
+	{
+		Value = list;
 	}
 
 	/// <summary>
