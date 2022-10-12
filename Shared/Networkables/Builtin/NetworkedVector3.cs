@@ -222,20 +222,20 @@ public struct NetworkedVector3 : INetworkable, IEquatable<NetworkedVector3>
 
 #if CLIENT
 	/// <summary>
-	/// Returns the underlying <see cref="System.Numerics.Vector3"> casted to a <see cref="Vector3">.
+	/// Returns the underlying <see cref="System.Numerics.Vector3"/> casted to a <see cref="Vector3"/>.
 	/// </summary>
-	/// <param name="networkedVector3">The <see cref="NetworkedVector3"> to get the <see cref="System.Numerics.Vector3"> from.</param>
-	/// <returns>The underlying <see cref="System.Numerics.Vector3"> casted to a <see cref="Vector3">.</returns>
+	/// <param name="networkedVector3">The <see cref="NetworkedVector3"/> to get the <see cref="System.Numerics.Vector3"/> from.</param>
+	/// <returns>The underlying <see cref="System.Numerics.Vector3"/> casted to a <see cref="Vector3"/>.</returns>
 	public static implicit operator Vector3( NetworkedVector3 networkedVector3 )
 	{
 		return networkedVector3.Value;
 	}
 
 	/// <summary>
-	/// Returns a new <see cref="NetworkedVector3"> that contains the provided <see cref="Vector3"> as a <see cref="System.Numerics.Vector3">.
+	/// Returns a new <see cref="NetworkedVector3"/> that contains the provided <see cref="Vector3"/> as a <see cref="System.Numerics.Vector3"/>.
 	/// </summary>
-	/// <param name="vector3">The <see cref="Vector3"> to contain in the <see cref="NetworkedVector3">.</param>
-	/// <returns>A new instance of <see cref="NetworkedVector3"> that contains the provided <see cref="Vector3"> as a <see cref="System.Numerics.Vector3">.</returns>
+	/// <param name="vector3">The <see cref="Vector3"/> to contain in the <see cref="NetworkedVector3"/>.</param>
+	/// <returns>A new instance of <see cref="NetworkedVector3"/> that contains the provided <see cref="Vector3"/> as a <see cref="System.Numerics.Vector3"/>.</returns>
 	public static implicit operator NetworkedVector3( Vector3 vector3 )
 	{
 		return new NetworkedVector3( vector3 );

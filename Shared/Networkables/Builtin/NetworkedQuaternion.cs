@@ -161,20 +161,20 @@ public struct NetworkedQuaternion : INetworkable, IEquatable<NetworkedQuaternion
 
 #if CLIENT
 	/// <summary>
-	/// Returns the underlying <see cref="Quaternion"> casted to a <see cref="Rotation">.
+	/// Returns the underlying <see cref="Quaternion"/> casted to a <see cref="Rotation"/>.
 	/// </summary>
-	/// <param name="networkedQuaternion">The <see cref="NetworkedQuaternion"> to get the <see cref="Quaternion"> from.</param>
-	/// <returns>The underlying <see cref="Quaternion"> casted to a <see cref="Rotation">.</returns>
+	/// <param name="networkedQuaternion">The <see cref="NetworkedQuaternion"/> to get the <see cref="Quaternion"/> from.</param>
+	/// <returns>The underlying <see cref="Quaternion"/> casted to a <see cref="Rotation"/>.</returns>
 	public static implicit operator Rotation( NetworkedQuaternion networkedQuaternion )
 	{
 		return networkedQuaternion.Value;
 	}
 
 	/// <summary>
-	/// Returns a new <see cref="NetworkedQuaternion"> that contains the provided <see cref="Rotation"> as a <see cref="Quaternion">.
+	/// Returns a new <see cref="NetworkedQuaternion"/> that contains the provided <see cref="Rotation"/> as a <see cref="Quaternion"/>.
 	/// </summary>
-	/// <param name="rotation">The <see cref="Rotation"> to contain in the <see cref="NetworkedQuaternion">.</param>
-	/// <returns>A new instance of <see cref="NetworkedQuaternion"> that contains the provided <see cref="Rotation"> as a <see cref="Quaternion">.</returns>
+	/// <param name="rotation">The <see cref="Rotation"/> to contain in the <see cref="NetworkedQuaternion"/>.</param>
+	/// <returns>A new instance of <see cref="NetworkedQuaternion"/> that contains the provided <see cref="Rotation"/> as a <see cref="Quaternion"/>.</returns>
 	public static implicit operator NetworkedQuaternion( Rotation rotation )
 	{
 		return new NetworkedQuaternion( new Quaternion( rotation.x, rotation.y, rotation.z, rotation.w ) );

@@ -7,45 +7,45 @@ namespace NetBolt.Shared.Utility;
 public static partial class TypeHelper
 {
 	/// <summary>
-	/// Creates an instance of <see cref="T"/>.
+	/// Creates an instance of <see ref="T"/>.
 	/// </summary>
 	/// <typeparam name="T">The type to create an instance of.</typeparam>
-	/// <returns>The created instance of <see cref="T"/>.</returns>
+	/// <returns>The created instance of <see ref="T"/>.</returns>
 	public static T Create<T>()
 	{
 		return TypeLibrary.Create<T>( typeof( T ) );
 	}
 
 	/// <summary>
-	/// Creates an instance of <see cref="T"/>.
+	/// Creates an instance of <see ref="T"/>.
 	/// </summary>
 	/// <param name="parameters">The parameters to pass to the public constructor.</param>
 	/// <typeparam name="T">The type to create an instance of.</typeparam>
-	/// <returns>The created instance of <see cref="T"/>.</returns>
+	/// <returns>The created instance of <see ref="T"/>.</returns>
 	public static T? Create<T>( params object[] parameters )
 	{
 		return TypeLibrary.Create<T>( typeof( T ), parameters );
 	}
 
 	/// <summary>
-	/// Creates an instance of <see cref="typeToCreate"/> and casts it to <see cref="T"/>.
+	/// Creates an instance of <see ref="typeToCreate"/> and casts it to <see ref="T"/>.
 	/// </summary>
 	/// <param name="typeToCreate">The type to create.</param>
 	/// <param name="parameters">The parameters to pass to the public constructor.</param>
 	/// <typeparam name="T">The type to cast the created instance to.</typeparam>
-	/// <returns>The created instance of <see cref="typeToCreate"/> casted to <see cref="T"/>.</returns>
+	/// <returns>The created instance of <see ref="typeToCreate"/> casted to <see ref="T"/>.</returns>
 	public static T? Create<T>( Type typeToCreate, params object[] parameters )
 	{
 		return TypeLibrary.Create<T>( typeToCreate, parameters );
 	}
 
 	/// <summary>
-	/// Creates an instance of <see cref="baseTypeToCreate"/> with <see cref="genericTypes"/> generics and casted to <see cref="T"/>.
+	/// Creates an instance of <see ref="baseTypeToCreate"/> with <see ref="genericTypes"/> generics and casted to <see ref="T"/>.
 	/// </summary>
 	/// <param name="baseTypeToCreate">The base type to create.</param>
-	/// <param name="genericTypes">The generic arguments of <see cref="baseTypeToCreate"/>.</param>
+	/// <param name="genericTypes">The generic arguments of <see ref="baseTypeToCreate"/>.</param>
 	/// <typeparam name="T">The type to cast the created instance to.</typeparam>
-	/// <returns>The created instance casted to <see cref="T"/>.</returns>
+	/// <returns>The created instance casted to <see ref="T"/>.</returns>
 	public static T? Create<T>( Type baseTypeToCreate, Type[] genericTypes )
 	{
 		return TypeLibrary.GetDescription( baseTypeToCreate ).CreateGeneric<T>( genericTypes );
