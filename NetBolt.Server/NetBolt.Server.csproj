@@ -24,7 +24,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <DefineConstants>TRACE;SERVER</DefineConstants>
+      <DefineConstants>TRACE;SERVER;NOLOGS</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>

@@ -9,21 +9,25 @@ namespace NetBolt.Server;
 /// </summary>
 public static class Log
 {
+#if !NOLOGS
 	/// <summary>
 	/// The Serilog logger instance.
 	/// </summary>
 	private static Logger _logger = null!;
-
+#endif
+	
 	/// <summary>
 	/// Initializes the server-side Serilog logger.
 	/// </summary>
 	internal static void Initialize()
 	{
+#if !NOLOGS
 		_logger = new LoggerConfiguration()
 			.MinimumLevel.Verbose()
 			.WriteTo.Console()
 			.WriteTo.File( "logs/log.txt", rollingInterval: RollingInterval.Day )
 			.CreateLogger();
+#endif
 	}
 
 	/// <summary>
@@ -31,7 +35,9 @@ public static class Log
 	/// </summary>
 	internal static void Dispose()
 	{
+#if !NOLOGS
 		_logger.Dispose();
+#endif
 	}
 
 	/// <summary>
@@ -40,7 +46,9 @@ public static class Log
 	/// <param name="message">The message to log.</param>
 	public static void Info( string message )
 	{
+#if !NOLOGS
 		_logger.Information( "{A}", message );
+#endif
 	}
 
 	/// <summary>
@@ -52,7 +60,9 @@ public static class Log
 	[MessageTemplateFormatMethod( "messageTemplate" )]
 	public static void Info<T>( string messageTemplate, T obj )
 	{
+#if !NOLOGS
 		_logger.Information( messageTemplate, obj );
+#endif
 	}
 
 	/// <summary>
@@ -62,7 +72,9 @@ public static class Log
 	/// <typeparam name="T">The type of <see ref="obj"/>.</typeparam>
 	public static void Info<T>( T obj )
 	{
+#if !NOLOGS
 		_logger.Information( "{A}", obj );
+#endif
 	}
 
 	/// <summary>
@@ -76,7 +88,9 @@ public static class Log
 	[MessageTemplateFormatMethod( "messageTemplate" )]
 	public static void Info<T1, T2>( string messageTemplate, T1 obj0, T2 obj1 )
 	{
+#if !NOLOGS
 		_logger.Information( messageTemplate, obj0, obj1 );
+#endif
 	}
 
 	/// <summary>
@@ -88,7 +102,9 @@ public static class Log
 	/// <typeparam name="T2">The type of <see ref="obj1"/>.</typeparam>
 	public static void Info<T1, T2>( T1 obj0, T2 obj1 )
 	{
+#if !NOLOGS
 		_logger.Information( "{A}\t{B}", obj0, obj1 );
+#endif
 	}
 
 	/// <summary>
@@ -104,7 +120,9 @@ public static class Log
 	[MessageTemplateFormatMethod( "messageTemplate" )]
 	public static void Info<T1, T2, T3>( string messageTemplate, T1 obj0, T2 obj1, T3 obj2 )
 	{
+#if !NOLOGS
 		_logger.Information( messageTemplate, obj0, obj1, obj2 );
+#endif
 	}
 
 	/// <summary>
@@ -118,7 +136,9 @@ public static class Log
 	/// <typeparam name="T3">The type of <see ref="obj2"/>.</typeparam>
 	public static void Info<T1, T2, T3>( T1 obj0, T2 obj1, T3 obj2 )
 	{
+#if !NOLOGS
 		_logger.Information( "{A}\t{B}\t{C}", obj0, obj1, obj2 );
+#endif
 	}
 
 	/// <summary>
@@ -128,7 +148,9 @@ public static class Log
 	/// <param name="exception">The <see cref="Exception"/> attached to this warning.</param>
 	public static void Warning( string message, Exception? exception = null )
 	{
+#if !NOLOGS
 		_logger.Warning( exception, "{A}", message );
+#endif
 	}
 
 	/// <summary>
@@ -137,7 +159,9 @@ public static class Log
 	/// <param name="exception">The exception to log.</param>
 	public static void Warning( Exception exception )
 	{
+#if !NOLOGS
 		_logger.Warning( exception, "An exception occurred during runtime" );
+#endif
 	}
 
 	/// <summary>
@@ -147,7 +171,9 @@ public static class Log
 	/// <param name="exception">The <see cref="Exception"/> attached to this error.</param>
 	public static void Error( string message, Exception? exception = null )
 	{
+#if !NOLOGS
 		_logger.Information( exception, "{A}", message );
+#endif
 	}
 
 	/// <summary>
@@ -156,7 +182,9 @@ public static class Log
 	/// <param name="exception">The exception to log.</param>
 	public static void Error( Exception exception )
 	{
+#if !NOLOGS
 		_logger.Information( exception, "An exception occurred during runtime" );
+#endif
 	}
 
 	/// <summary>
@@ -167,8 +195,10 @@ public static class Log
 	/// <exception cref="Exception">The <see cref="Exception"/> passed.</exception>
 	public static void Fatal( Exception exception, bool throwException = true )
 	{
+#if !NOLOGS
 		_logger.Fatal( exception, "A fatal exception occurred during runtime" );
 		if ( throwException )
 			throw exception;
+#endif
 	}
 }
