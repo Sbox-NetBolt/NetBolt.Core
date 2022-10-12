@@ -10,11 +10,20 @@ public static partial class TypeHelper
 	/// <summary>
 	/// The assembly to search for types.
 	/// </summary>
-	private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
+	private static readonly List<Assembly> Assemblies = new() { Assembly.GetExecutingAssembly() };
 	/// <summary>
 	/// A cache of type names mapped to their C# type.
 	/// </summary>
 	private static readonly Dictionary<string, Type> TypeNameCache = new();
+
+	/// <summary>
+	/// Adds an assembly to the type helper.
+	/// </summary>
+	/// <param name="assembly">The assembly to add.</param>
+	public static void AddAssembly( Assembly assembly )
+	{
+		Assemblies.Add( assembly );
+	}
 
 	/// <summary>
 	/// Creates an instance of <see ref="T"/>.
@@ -91,13 +100,16 @@ public static partial class TypeHelper
 		if ( TypeNameCache.TryGetValue( name, out var cachedType ) )
 			return cachedType;
 
-		foreach ( var type in Assembly.DefinedTypes )
+		foreach ( var assembly in Assemblies )
 		{
-			if ( type.Name != name )
-				continue;
+			foreach ( var type in assembly.DefinedTypes )
+			{
+				if ( type.Name != name )
+					continue;
 
-			TypeNameCache.Add( name, type );
-			return type;
+				TypeNameCache.Add( name, type );
+				return type;
+			}
 		}
 
 		return null;
