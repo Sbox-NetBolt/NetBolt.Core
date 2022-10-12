@@ -4,13 +4,28 @@ using Sandbox.UI;
 
 namespace NetBolt.Client.UI;
 
+/// <summary>
+/// A simple chat box.
+/// </summary>
 public class ClientChatBox : Panel
 {
+	/// <summary>
+	/// The only instance of <see cref="ClientChatBox"/> existing.
+	/// </summary>
 	public static ClientChatBox? Current;
 
-	public Panel Canvas { get; protected set; }
-	public TextEntry Input { get; protected set; }
+	/// <summary>
+	/// The canvas that contains the chat.
+	/// </summary>
+	public Panel Canvas { get; }
+	/// <summary>
+	/// The text entry for input.
+	/// </summary>
+	public TextEntry Input { get; }
 
+	/// <summary>
+	///  Initializes a new instance of <see cref="ClientChatBox"/>.
+	/// </summary>
 	public ClientChatBox()
 	{
 		Current = this;
@@ -26,18 +41,45 @@ public class ClientChatBox : Panel
 		Input.AllowEmojiReplace = true;
 	}
 
+	/// <summary>
+	/// Adds a new chat entry to the chat box.
+	/// </summary>
+	/// <param name="name">The name of the person that created the message.</param>
+	/// <param name="message">The message.</param>
+	/// <param name="avatar">The avatar in the "avatar:steamid64" format.</param>
+	public void AddEntry( string? name, string message, string? avatar )
+	{
+		var entry = Canvas.AddChild<ChatEntry>();
+
+		entry.Message.Text = message;
+		entry.NameLabel.Text = name;
+		entry.Avatar.SetTexture( avatar );
+
+		entry.SetClass( "noname", string.IsNullOrEmpty( name ) );
+		entry.SetClass( "noavatar", string.IsNullOrEmpty( avatar ) );
+	}
+
+	/// <summary>
+	/// Opens the chat box.
+	/// </summary>
 	private void Open()
 	{
 		AddClass( "open" );
 		Input.Focus();
 	}
 
+	/// <summary>
+	/// Closes the chat box.
+	/// </summary>
 	private void Close()
 	{
 		RemoveClass( "open" );
 		Input.Blur();
 	}
 
+	/// <summary>
+	/// Submits the current message to the chat box.
+	/// </summary>
 	private void Submit()
 	{
 		Close();
@@ -51,6 +93,10 @@ public class ClientChatBox : Panel
 		Say( msg );
 	}
 
+	/// <summary>
+	/// Checks if the chat box should be opened.
+	/// </summary>
+	/// <param name="inputBuilder">The current input builder.</param>
 	[Event.BuildInput]
 	private static void BuildInput( InputBuilder inputBuilder )
 	{
@@ -58,36 +104,39 @@ public class ClientChatBox : Panel
 			OpenChat();
 	}
 
-	public void AddEntry( string? name, string message, string? avatar, string? lobbyState = null )
+	/// <summary>
+	/// Adds a new entry to the chat box.
+	/// </summary>
+	/// <param name="name">The name of the person that create the message.</param>
+	/// <param name="message">The message.</param>
+	/// <param name="avatar">The avatar in the "avatar:steamid64" format.</param>
+	public static void AddChatEntry( string name, string message, string? avatar = null )
 	{
-		var entry = Canvas.AddChild<ChatEntry>();
-
-		entry.Message.Text = message;
-		entry.NameLabel.Text = name;
-		entry.Avatar.SetTexture( avatar );
-
-		entry.SetClass( "noname", string.IsNullOrEmpty( name ) );
-		entry.SetClass( "noavatar", string.IsNullOrEmpty( avatar ) );
-
-		if ( lobbyState is "ready" or "staging" )
-			entry.SetClass( "is-lobby", true );
+		Current?.AddEntry( name, message, avatar );
 	}
 
-	public static void OpenChat()
-	{
-		Current?.Open();
-	}
-
-	public static void AddChatEntry( string name, string message, string? avatar = null, string? lobbyState = null )
-	{
-		Current?.AddEntry( name, message, avatar, lobbyState );
-	}
-
+	/// <summary>
+	/// Adds information to the chat box.
+	/// </summary>
+	/// <param name="message">The information.</param>
+	/// <param name="avatar">The avatar in the "avatar:steamid64" format.</param>
 	public static void AddInformation( string message, string? avatar = null )
 	{
 		Current?.AddEntry( null, message, avatar );
 	}
 
+	/// <summary>
+	/// Opens the chat box.
+	/// </summary>
+	public static void OpenChat()
+	{
+		Current?.Open();
+	}
+
+	/// <summary>
+	/// Says a message from the local client.
+	/// </summary>
+	/// <param name="message">The message the local client typed.</param>
 	private static void Say( string message )
 	{
 		// TODO: Reject more stuff
