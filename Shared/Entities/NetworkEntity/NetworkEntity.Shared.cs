@@ -12,8 +12,14 @@ namespace NetBolt.Shared.Entities;
 /// </summary>
 public partial class NetworkEntity : BaseNetworkable, IEntity
 {
+	/// <summary>
+	/// The unique identifier of the <see cref="NetworkEntity"/>.
+	/// </summary>
 	public int EntityId { get; }
 
+	/// <summary>
+	/// The <see cref="INetworkClient"/> that owns this <see cref="IEntity"/>.
+	/// </summary>
 	public INetworkClient? Owner
 	{
 		get => _owner;
@@ -24,6 +30,9 @@ public partial class NetworkEntity : BaseNetworkable, IEntity
 			OnOwnerChanged( oldOwner, value );
 		}
 	}
+	/// <summary>
+	/// See <see cref="Owner"/>.
+	/// </summary>
 	private INetworkClient? _owner;
 
 	/// <summary>
@@ -38,6 +47,10 @@ public partial class NetworkEntity : BaseNetworkable, IEntity
 	[ClientAuthority]
 	public NetworkedQuaternion Rotation { get; set; }
 
+	/// <summary>
+	/// Initializes a new instance of <see cref="NetworkEntity"/> with a unique entity identifier.
+	/// </summary>
+	/// <param name="entityId">A unique entity identifier.</param>
 	public NetworkEntity( int entityId ) : base( entityId )
 	{
 		EntityId = entityId;
@@ -65,6 +78,10 @@ public partial class NetworkEntity : BaseNetworkable, IEntity
 	{
 	}
 
+	/// <summary>
+	/// Deserializes all changes relating to the <see cref="NetworkEntity"/>.
+	/// </summary>
+	/// <param name="reader">The reader to read from.</param>
 	public sealed override void DeserializeChanges( NetworkReader reader )
 	{
 		var changedCount = reader.ReadInt32();

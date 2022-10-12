@@ -37,6 +37,10 @@ public abstract class BaseNetworkable : INetworkable
 	protected readonly Dictionary<string, PropertyDescription> PropertyNameCache = new();
 #endif
 
+	/// <summary>
+	/// Initializes a new instance of <see cref="BaseNetworkable"/> with a unique network identifier.
+	/// </summary>
+	/// <param name="networkId">A unique identifier.</param>
 	protected BaseNetworkable( int networkId )
 	{
 		NetworkId = networkId;
@@ -57,6 +61,10 @@ public abstract class BaseNetworkable : INetworkable
 		AllNetworkables.Remove( NetworkId );
 	}
 
+	/// <summary>
+	/// Returns whether or not the <see cref="BaseNetworkable"/> has changed.
+	/// </summary>
+	/// <returns></returns>
 	public bool Changed()
 	{
 		foreach ( var propertyInfo in PropertyNameCache.Values )
@@ -72,6 +80,10 @@ public abstract class BaseNetworkable : INetworkable
 		return false;
 	}
 
+	/// <summary>
+	/// Deserializes all information relating to the <see cref="BaseNetworkable"/>.
+	/// </summary>
+	/// <param name="reader">The reader to read from.</param>
 	public virtual void Deserialize( NetworkReader reader )
 	{
 		var count = reader.ReadInt32();
@@ -92,6 +104,10 @@ public abstract class BaseNetworkable : INetworkable
 		}
 	}
 
+	/// <summary>
+	/// Deserializes all changes relating to the <see cref="BaseNetworkable"/>.
+	/// </summary>
+	/// <param name="reader">The reader to read from.</param>
 	public virtual void DeserializeChanges( NetworkReader reader )
 	{
 		var changedCount = reader.ReadInt32();
@@ -116,6 +132,10 @@ public abstract class BaseNetworkable : INetworkable
 		}
 	}
 
+	/// <summary>
+	/// Serializes all information relating to the <see cref="BaseNetworkable"/>.
+	/// </summary>
+	/// <param name="writer">The writer to write to.</param>
 	public virtual void Serialize( NetworkWriter writer )
 	{
 		writer.Write( PropertyNameCache.Count );
@@ -131,6 +151,10 @@ public abstract class BaseNetworkable : INetworkable
 		}
 	}
 
+	/// <summary>
+	/// Serializes all changes relating to the <see cref="BaseNetworkable"/>.
+	/// </summary>
+	/// <param name="writer">The writer to write to.</param>
 	public virtual void SerializeChanges( NetworkWriter writer )
 	{
 		var numChanged = 0;
@@ -161,9 +185,19 @@ public abstract class BaseNetworkable : INetworkable
 		writer.BaseStream.Position = tempPos;
 	}
 
+	/// <summary>
+	/// A read-only dictionary of all <see cref="BaseNetworkable"/>s.
+	/// </summary>
 	internal static IReadOnlyDictionary<int, BaseNetworkable> All => AllNetworkables;
+	/// <summary>
+	/// A dictionary of all <see cref="BaseNetworkable"/>
+	/// </summary>
 	private static readonly Dictionary<int, BaseNetworkable> AllNetworkables = new();
+	
 #if SERVER
+	/// <summary>
+	/// The next unique identifier to give to a <see cref="BaseNetworkable"/>.
+	/// </summary>
 	private static int _nextNetworkId = -1;
 
 	/// <summary>

@@ -31,6 +31,9 @@ public sealed class RpcCallMessage : NetworkMessage
 	/// </summary>
 	public INetworkable[] Parameters { get; private set; }
 
+	/// <summary>
+	/// Initializes a default instance of <see cref="RpcCallMessage"/>.
+	/// </summary>
 	public RpcCallMessage()
 	{
 		CallGuid = Guid.Empty;
@@ -40,6 +43,14 @@ public sealed class RpcCallMessage : NetworkMessage
 		Parameters = Array.Empty<INetworkable>();
 	}
 
+	/// <summary>
+	/// Initializes a new instance of <see cref="RpcCallMessage"/> with all of the required information.
+	/// </summary>
+	/// <param name="respondable">Whether or not the creator of the <see cref="RpcCallMessage"/> is expecting a response.</param>
+	/// <param name="entityType">The C# type that contains the method to call.</param>
+	/// <param name="entity">An instance of <see cref="IEntity"/> that the RPC is being called on.</param>
+	/// <param name="methodName">The name of the method to call.</param>
+	/// <param name="parameters">The parameters to pass to the method.</param>
 	public RpcCallMessage( bool respondable, Type entityType, IEntity? entity, string methodName,
 		params INetworkable[] parameters )
 	{
@@ -54,6 +65,10 @@ public sealed class RpcCallMessage : NetworkMessage
 		Parameters = parameters;
 	}
 
+	/// <summary>
+	/// Deserializes all information relating to the <see cref="RpcCallMessage"/>.
+	/// </summary>
+	/// <param name="reader">The reader to read from.</param>
 	public override void Deserialize( NetworkReader reader )
 	{
 		CallGuid = reader.ReadGuid();
@@ -66,6 +81,10 @@ public sealed class RpcCallMessage : NetworkMessage
 			Parameters[i] = reader.ReadNetworkable();
 	}
 	
+	/// <summary>
+	/// Serializes all information relating to the <see cref="RpcCallMessage"/>.
+	/// </summary>
+	/// <param name="writer">The writer to write to.</param>
 	public override void Serialize( NetworkWriter writer )
 	{
 		writer.Write( CallGuid );

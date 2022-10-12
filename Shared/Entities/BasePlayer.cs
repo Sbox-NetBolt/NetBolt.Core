@@ -17,6 +17,10 @@ public class BasePlayer : NetworkEntity
 	private readonly TestPlayer _player;
 #endif
 
+	/// <summary>
+	/// Initializes a new instance of <see cref="BasePlayer"/> with a unique entity identifier.
+	/// </summary>
+	/// <param name="entityId">A unique entity identifier.</param>
 	public BasePlayer( int entityId ) : base( entityId )
 	{
 #if CLIENT

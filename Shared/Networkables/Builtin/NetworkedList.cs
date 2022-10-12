@@ -27,6 +27,9 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 				_changes.Add( (ListChangeType.Add, val) );
 		}
 	}
+	/// <summary>
+	/// See <see cref="Value"/>.
+	/// </summary>
 	private List<T> _value = null!;
 
 	/// <summary>
@@ -40,12 +43,23 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	/// </summary>
 	public int Count => Value.Count;
 
+	/// <summary>
+	/// A list containing all the changes made to the list since the last networking update.
+	/// </summary>
 	private readonly List<(ListChangeType, T?)> _changes = new();
 
+	/// <summary>
+	/// Initializes a default instance of <see cref="NetworkedList{T}"/>.
+	/// </summary>
 	public NetworkedList()
 	{
 		Value = new List<T>();
 	}
+	
+	/// <summary>
+	/// Initializes a new instance of <see cref="NetworkedList{T}"/> with a pre-allocated <see cref="HashSet{T}"/>.
+	/// </summary>
+	/// <param name="list">The pre-allocated <see cref="HashSet{T}"/> to start with.</param>
 	public NetworkedList( List<T> list )
 	{
 		Value = list;
@@ -91,6 +105,10 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 		_changes.Add( (ListChangeType.Clear, default) );
 	}
 
+	/// <summary>
+	/// Returns an enumerator that iterates through the collection.
+	/// </summary>
+	/// <returns>An enumerator that can be used to iterate through the collection.</returns>
 	public IEnumerator<T> GetEnumerator()
 	{
 		return Value.GetEnumerator();
@@ -101,11 +119,19 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 		return GetEnumerator();
 	}
 
+	/// <summary>
+	/// Returns whether or not the <see cref="NetworkedList{T}"/> has changed.
+	/// </summary>
+	/// <returns>Whether or not the <see cref="NetworkedList{T}"/> has changed.</returns>
 	public bool Changed()
 	{
 		return _changes.Count > 0;
 	}
 
+	/// <summary>
+	/// Deserializes all information relating to the <see cref="NetworkedList{T}"/>.
+	/// </summary>
+	/// <param name="reader">The reader to read from.</param>
 	public void Deserialize( NetworkReader reader )
 	{
 		Value = new List<T>();
@@ -114,6 +140,11 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 			Value.Add( reader.ReadNetworkable<T>() );
 	}
 
+	/// <summary>
+	/// Deserializes all changes relating to the <see cref="NetworkedList{T}"/>.
+	/// </summary>
+	/// <param name="reader">The reader to read from.</param>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when a enumerated <see cref="ListChangeType"/> is invalid.</exception>
 	public void DeserializeChanges( NetworkReader reader )
 	{
 		var changeCount = reader.ReadInt32();
@@ -141,6 +172,10 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 		}
 	}
 
+	/// <summary>
+	/// Serializes all information relating to the <see cref="NetworkedList{T}"/>.
+	/// </summary>
+	/// <param name="writer">The writer to write to.</param>
 	public void Serialize( NetworkWriter writer )
 	{
 		writer.Write( Value.Count );
@@ -148,6 +183,10 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 			writer.WriteNetworkable( item );
 	}
 
+	/// <summary>
+	/// Serializes all changes relating to the <see cref="NetworkedList{T}"/>.
+	/// </summary>
+	/// <param name="writer">The writer to write to.</param>
 	public void SerializeChanges( NetworkWriter writer )
 	{
 		writer.Write( _changes.Count );
@@ -163,11 +202,21 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 		_changes.Clear();
 	}
 
+	/// <summary>
+	/// Returns the underlying list contained in the <see cref="NetworkedList{T}"/>.
+	/// </summary>
+	/// <param name="networkedList">The <see cref="NetworkedList{T}"/> to get the list from.</param>
+	/// <returns>The underlying list contained in the <see cref="NetworkedList{T}"/>.</returns>
 	public static implicit operator List<T>( NetworkedList<T> networkedList )
 	{
 		return networkedList.Value;
 	}
 
+	/// <summary>
+	/// Returns a new <see cref="NetworkedList{T}"/> that contains the provided <see cref="List{T}"/>.
+	/// </summary>
+	/// <param name="list">The list to contain in the <see cref="NetworkedList{T}"/>.</param>
+	/// <returns>A new instance of <see cref="NetworkedList{T}"/> that contains the provided <see cref="List{T}"/>.</returns>
 	public static implicit operator NetworkedList<T>( List<T> list )
 	{
 		return new NetworkedList<T>( list );

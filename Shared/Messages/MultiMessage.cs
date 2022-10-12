@@ -14,12 +14,20 @@ public sealed class MultiMessage : NetworkMessage
 	public NetworkMessage[] Messages { get; private set; } = Array.Empty<NetworkMessage>();
 
 #if SERVER
+	/// <summary>
+	/// Initializes a new instance of <see cref="MultiMessage"/> with an array of <see cref="NetworkMessage"/>s to send.
+	/// </summary>
+	/// <param name="messages"></param>
 	public MultiMessage( params NetworkMessage[] messages )
 	{
 		Messages = messages;
 	}
 #endif
 
+	/// <summary>
+	/// Deserializes all information relating to the <see cref="MultiMessage"/>.
+	/// </summary>
+	/// <param name="reader">The reader to read from.</param>
 	public override void Deserialize( NetworkReader reader )
 	{
 		Messages = new NetworkMessage[reader.ReadInt32()];
@@ -27,6 +35,10 @@ public sealed class MultiMessage : NetworkMessage
 			Messages[i] = reader.ReadNetworkable<NetworkMessage>();
 	}
 
+	/// <summary>
+	/// Serializes all information relating to the <see cref="MultiMessage"/>.
+	/// </summary>
+	/// <param name="writer">The writer to write to.</param>
 	public override void Serialize( NetworkWriter writer )
 	{
 		writer.Write( Messages.Length );

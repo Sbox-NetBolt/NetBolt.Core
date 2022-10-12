@@ -21,6 +21,10 @@ public sealed class EntityListMessage : NetworkMessage
 	public List<byte[]> EntityData { get; private set; } = new();
 
 #if SERVER
+	/// <summary>
+	/// Initializes a new instance of <see cref="EntityListMessage"/> with the list of entities to notify a client about.
+	/// </summary>
+	/// <param name="entityList">The list of entities to notify a client about.</param>
 	public EntityListMessage( IEnumerable<IEntity> entityList )
 	{
 		EntityData = new List<byte[]>();
@@ -36,6 +40,9 @@ public sealed class EntityListMessage : NetworkMessage
 #endif
 
 #if CLIENT
+	/// <summary>
+	/// Returns all of the entity data arrays to the shared pool.
+	/// </summary>
 	~EntityListMessage()
 	{
 		foreach ( var data in EntityData )
@@ -43,6 +50,10 @@ public sealed class EntityListMessage : NetworkMessage
 	}
 #endif
 
+	/// <summary>
+	/// Deserializes all information relating to the <see cref="EntityListMessage"/>.
+	/// </summary>
+	/// <param name="reader">The reader to read from.</param>
 	public override void Deserialize( NetworkReader reader )
 	{
 #if CLIENT
@@ -57,6 +68,10 @@ public sealed class EntityListMessage : NetworkMessage
 #endif
 	}
 
+	/// <summary>
+	/// Serializes all information relating to the <see cref="EntityListMessage"/>.
+	/// </summary>
+	/// <param name="writer">The writer to write to.</param>
 	public override void Serialize( NetworkWriter writer )
 	{
 #if SERVER

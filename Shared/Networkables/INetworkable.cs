@@ -10,6 +10,7 @@ public interface INetworkable
 	/// <summary>
 	/// Returns whether or not the <see cref="INetworkable"/> has changed.
 	/// </summary>
+	/// <returns>Whether or not the <see cref="INetworkable"/> has changed.</returns>
 	bool Changed();
 
 	/// <summary>

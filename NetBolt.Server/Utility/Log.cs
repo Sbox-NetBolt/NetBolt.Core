@@ -121,6 +121,7 @@ public static class Log
 	/// Logs an <see cref="Exception"/> then throws it.
 	/// </summary>
 	/// <param name="exception">The <see cref="Exception"/> to log then throw.</param>
+	/// <param name="throwException">Whether or not to throw the exception given.</param>
 	/// <exception cref="Exception">The <see cref="Exception"/> passed.</exception>
 	public static void Fatal( Exception exception, bool throwException = true )
 	{

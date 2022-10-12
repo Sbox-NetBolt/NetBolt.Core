@@ -11,6 +11,10 @@ namespace NetBolt.Shared.Utility;
 /// </summary>
 public sealed class NetworkWriter : BinaryWriter
 {
+	/// <summary>
+	/// Initializes a new instance of <see cref="NetworkWriter"/> with the <see cref="Stream"/> to write to.
+	/// </summary>
+	/// <param name="output">The underlying <see cref="Stream"/> to write to.</param>
 	public NetworkWriter( Stream output ) : base( output )
 	{
 	}

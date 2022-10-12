@@ -23,6 +23,9 @@ public sealed class RpcCallResponseMessage : NetworkMessage
 	/// </summary>
 	public INetworkable? ReturnValue { get; private set; }
 
+	/// <summary>
+	/// Initializes a default instance of <see cref="RpcCallResponseMessage"/>.
+	/// </summary>
 	public RpcCallResponseMessage()
 	{
 		CallGuid = Guid.Empty;
@@ -30,6 +33,12 @@ public sealed class RpcCallResponseMessage : NetworkMessage
 		ReturnValue = null;
 	}
 
+	/// <summary>
+	/// Initializes a new instance of <see cref="RpcCallResponseMessage"/> with all of the required information.
+	/// </summary>
+	/// <param name="callGuid">The <see cref="Guid"/> this message is responding to.</param>
+	/// <param name="state">The resulting state of the RPC call.</param>
+	/// <param name="returnValue">The return value of the RPC if applicable.</param>
 	public RpcCallResponseMessage( Guid callGuid, RpcCallState state, INetworkable? returnValue = null )
 	{
 		CallGuid = callGuid;
@@ -37,6 +46,10 @@ public sealed class RpcCallResponseMessage : NetworkMessage
 		ReturnValue = returnValue;
 	}
 
+	/// <summary>
+	/// Deserializes all information relating to the <see cref="RpcCallResponseMessage"/>.
+	/// </summary>
+	/// <param name="reader">The reader to read from.</param>
 	public override void Deserialize( NetworkReader reader )
 	{
 		CallGuid = reader.ReadGuid();
@@ -44,6 +57,10 @@ public sealed class RpcCallResponseMessage : NetworkMessage
 		ReturnValue = reader.ReadBoolean() ? reader.ReadNetworkable() : null;
 	}
 
+	/// <summary>
+	/// Serializes all information relating to the <see cref="RpcCallResponseMessage"/>.
+	/// </summary>
+	/// <param name="writer">The writer to write to.</param>
 	public override void Serialize( NetworkWriter writer )
 	{
 		writer.Write( CallGuid );

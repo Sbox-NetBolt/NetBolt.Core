@@ -15,12 +15,20 @@ public sealed class MultiEntityUpdateMessage : NetworkMessage
 	public byte[] PartialEntityData { get; private set; } = Array.Empty<byte>();
 
 #if SERVER
+	/// <summary>
+	/// Initializes a new instance of <see cref="MultiEntityUpdateMessage"/> with the partial changes of all the entities that changed.
+	/// </summary>
+	/// <param name="partialEntityData">The partial changes of all the entities that changed.</param>
 	public MultiEntityUpdateMessage( byte[] partialEntityData )
 	{
 		PartialEntityData = partialEntityData;
 	}
 #endif
 
+	/// <summary>
+	/// Deserializes all information relating to the <see cref="MultiEntityUpdateMessage"/>.
+	/// </summary>
+	/// <param name="reader">The reader to read from.</param>
 	public override void Deserialize( NetworkReader reader )
 	{
 #if CLIENT
@@ -29,6 +37,10 @@ public sealed class MultiEntityUpdateMessage : NetworkMessage
 #endif
 	}
 
+	/// <summary>
+	/// Serializes all information relating to the <see cref="MultiEntityUpdateMessage"/>.
+	/// </summary>
+	/// <param name="writer">The writer to write to.</param>
 	public override void Serialize( NetworkWriter writer )
 	{
 #if SERVER

@@ -40,11 +40,18 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 	/// </summary>
 	private readonly List<(HashSetChangeType, T?)> _changes = new();
 
+	/// <summary>
+	/// Initializes a default instance of <see cref="NetworkedHashSet{T}"/>.
+	/// </summary>
 	public NetworkedHashSet()
 	{
 		_value = new HashSet<T>();
 	}
 	
+	/// <summary>
+	/// Initializes a new instance of <see cref="NetworkedHashSet{T}"/> with a pre-allocated <see cref="HashSet{T}"/>.
+	/// </summary>
+	/// <param name="hashSet">The pre-allocated <see cref="HashSet{T}"/> to start with.</param>
 	public NetworkedHashSet( HashSet<T> hashSet )
 	{
 		_value = hashSet;
@@ -100,6 +107,10 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 		_changes.Add( (HashSetChangeType.Clear, default) );
 	}
 
+	/// <summary>
+	/// Returns an enumerator that iterates through the collection.
+	/// </summary>
+	/// <returns>An enumerator that can be used to iterate through the collection.</returns>
 	public IEnumerator<T> GetEnumerator()
 	{
 		return Value.GetEnumerator();
@@ -110,11 +121,19 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 		return GetEnumerator();
 	}
 	
+	/// <summary>
+	/// Returns whether or not the <see cref="NetworkedHashSet{T}"/> has changed.
+	/// </summary>
+	/// <returns>Whether or not the <see cref="NetworkedHashSet{T}"/> has changed.</returns>
 	public bool Changed()
 	{
 		return _changes.Count > 0;
 	}
 
+	/// <summary>
+	/// Deserializes all information relating to the <see cref="NetworkedHashSet{T}"/>.
+	/// </summary>
+	/// <param name="reader">The reader to read from.</param>
 	public void Deserialize( NetworkReader reader )
 	{
 		Value = new HashSet<T>();
@@ -123,6 +142,11 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 			Value.Add( reader.ReadNetworkable<T>() );
 	}
 
+	/// <summary>
+	/// Deserializes all changes relating to the <see cref="NetworkedHashSet{T}"/>.
+	/// </summary>
+	/// <param name="reader">The reader to read from.</param>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when a enumerated <see cref="HashSetChangeType"/> is invalid.</exception>
 	public void DeserializeChanges( NetworkReader reader )
 	{
 		var changeCount = reader.ReadInt32();
@@ -150,6 +174,10 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 		}
 	}
 
+	/// <summary>
+	/// Serializes all information relating to the <see cref="NetworkedHashSet{T}"/>.
+	/// </summary>
+	/// <param name="writer">The writer to write to.</param>
 	public void Serialize( NetworkWriter writer )
 	{
 		writer.Write( Value.Count );
@@ -157,6 +185,10 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 			writer.WriteNetworkable( item );
 	}
 
+	/// <summary>
+	/// Serializes all changes relating to the <see cref="NetworkedHashSet{T}"/>.
+	/// </summary>
+	/// <param name="writer">The writer to write to.</param>
 	public void SerializeChanges( NetworkWriter writer )
 	{
 		writer.Write( _changes.Count );

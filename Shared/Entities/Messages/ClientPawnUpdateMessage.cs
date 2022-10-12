@@ -19,12 +19,20 @@ public sealed class ClientPawnUpdateMessage : NetworkMessage
 	}
 #endif
 
+	/// <summary>
+	/// Deserializes all information relating to the <see cref="ClientPawnUpdateMessage"/>.
+	/// </summary>
+	/// <param name="reader">The reader to read from.</param>
 	public override void Deserialize( NetworkReader reader )
 	{
 		PartialPawnData = new byte[reader.ReadInt32()];
 		_ = reader.Read( PartialPawnData, 0, PartialPawnData.Length );
 	}
 
+	/// <summary>
+	/// Serializes all information relating to the <see cref="ClientPawnUpdateMessage"/>.
+	/// </summary>
+	/// <param name="writer">The writer to write to.</param>
 	public override void Serialize( NetworkWriter writer )
 	{
 		writer.Write( PartialPawnData.Length );

@@ -11,6 +11,10 @@ namespace NetBolt.Shared.Utility;
 /// </summary>
 public sealed class NetworkReader : BinaryReader
 {
+	/// <summary>
+	/// Initializes a new instance of <see cref="NetworkReader"/> with the <see cref="Stream"/> to read from.
+	/// </summary>
+	/// <param name="input">The underlying <see cref="Stream"/> to read from.</param>
 	public NetworkReader( Stream input ) : base( input )
 	{
 	}

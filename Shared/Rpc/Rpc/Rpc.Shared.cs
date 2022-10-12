@@ -76,6 +76,10 @@ public static partial class Rpc
 		/// </summary>
 		public double LimitPerSecond;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ClientAttribute"/> with a limit on its executions per second.
+		/// </summary>
+		/// <param name="limitPerSecond">The maximum amount of times the RPC can be invoked per second.</param>
 		public ClientAttribute( double limitPerSecond = double.MaxValue )
 		{
 			LimitPerSecond = limitPerSecond;
@@ -93,6 +97,10 @@ public static partial class Rpc
 		/// </summary>
 		public double LimitPerSecond;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ServerAttribute"/> with a limit on its executions per second.
+		/// </summary>
+		/// <param name="limitPerSecond">The maximum amount of times the RPC can be invoked per second.</param>
 		public ServerAttribute( double limitPerSecond = double.MaxValue )
 		{
 			LimitPerSecond = limitPerSecond;
