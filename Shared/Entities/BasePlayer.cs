@@ -15,7 +15,6 @@ public class BasePlayer : NetworkEntity
 	/// The Sbox entity of the player.
 	/// </summary>
 	private readonly TestPlayer _player;
-#endif
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="BasePlayer"/> with a unique entity identifier.
@@ -23,12 +22,9 @@ public class BasePlayer : NetworkEntity
 	/// <param name="entityId">A unique entity identifier.</param>
 	public BasePlayer( int entityId ) : base( entityId )
 	{
-#if CLIENT
 		_player = new TestPlayer();
-#endif
 	}
 
-#if CLIENT
 	protected override void UpdateClient()
 	{
 		base.UpdateClient();
@@ -46,9 +42,7 @@ public class BasePlayer : NetworkEntity
 		if ( _player.EyeRotation.Distance( Rotation ) >= 0.1 )
 			Rotation = _player.EyeRotation;
 	}
-#endif
 
-#if CLIENT
 	public override void Delete()
 	{
 		base.Delete();
