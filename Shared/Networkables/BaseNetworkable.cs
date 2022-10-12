@@ -49,7 +49,12 @@ public abstract class BaseNetworkable : INetworkable
 
 		foreach ( var property in TypeHelper.GetAllProperties( GetType() )
 					 .Where( property => property.PropertyType.IsAssignableTo( typeof( INetworkable ) ) ) )
+		{
+			if ( property.GetCustomAttribute<NoNetworkAttribute>() is not null )
+				continue;
+
 			PropertyNameCache.Add( property.Name, property );
+		}
 
 		AllNetworkables.Add( NetworkId, this );
 	}
