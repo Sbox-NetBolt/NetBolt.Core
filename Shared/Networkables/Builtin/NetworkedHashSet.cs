@@ -47,7 +47,7 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 	{
 		_value = new HashSet<T>();
 	}
-	
+
 	/// <summary>
 	/// Initializes a new instance of <see cref="NetworkedHashSet{T}"/> with a pre-allocated <see cref="HashSet{T}"/>.
 	/// </summary>
@@ -120,7 +120,7 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 	{
 		return GetEnumerator();
 	}
-	
+
 	/// <summary>
 	/// Returns whether or not the <see cref="NetworkedHashSet{T}"/> has changed.
 	/// </summary>

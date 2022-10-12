@@ -55,7 +55,7 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	{
 		Value = new List<T>();
 	}
-	
+
 	/// <summary>
 	/// Initializes a new instance of <see cref="NetworkedList{T}"/> with a pre-allocated <see cref="HashSet{T}"/>.
 	/// </summary>

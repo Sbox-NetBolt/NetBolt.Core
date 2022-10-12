@@ -123,7 +123,7 @@ public sealed class NetworkReader : BinaryReader
 	{
 		networkable.DeserializeChanges( this );
 	}
-	
+
 	/// <summary>
 	/// Reads an instance of <see cref="IEntity"/>.
 	/// </summary>

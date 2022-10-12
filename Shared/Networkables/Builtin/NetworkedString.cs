@@ -56,7 +56,7 @@ public struct NetworkedString : INetworkable, IEquatable<NetworkedString>
 	{
 		_value = reader.ReadString();
 	}
-	
+
 	/// <summary>
 	/// Deserializes all changes relating to the <see cref="NetworkedString"/>.
 	/// </summary>

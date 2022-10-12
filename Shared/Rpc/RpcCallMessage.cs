@@ -80,7 +80,7 @@ public sealed class RpcCallMessage : NetworkMessage
 		for ( var i = 0; i < Parameters.Length; i++ )
 			Parameters[i] = reader.ReadNetworkable();
 	}
-	
+
 	/// <summary>
 	/// Serializes all information relating to the <see cref="RpcCallMessage"/>.
 	/// </summary>

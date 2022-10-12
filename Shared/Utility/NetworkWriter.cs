@@ -50,7 +50,7 @@ public sealed class NetworkWriter : BinaryWriter
 		Write( vector3.Y );
 		Write( vector3.Z );
 	}
-	
+
 	/// <summary>
 	/// Writes an instance of <see cref="INetworkable"/>.
 	/// </summary>
