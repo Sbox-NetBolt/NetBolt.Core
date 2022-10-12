@@ -87,6 +87,7 @@ public class NetBoltGame
 	/// </summary>
 	public virtual void Start()
 	{
+		Log.Verbose( "Starting game..." );
 		Running = true;
 
 		GameServer.Instance.HandleMessage<RpcCallMessage>( Rpc.HandleRpcCallMessage );
@@ -122,6 +123,7 @@ public class NetBoltGame
 	/// </summary>
 	protected virtual void Shutdown()
 	{
+		Log.Info( "Shutting down game..." );
 		Running = false;
 		ProgramCancellation.Cancel();
 		ServerEntityManager.DeleteAllEntities();
@@ -166,7 +168,10 @@ public class NetBoltGame
 		writer.Close();
 
 		if ( count != 0 )
+		{
+			Log.Verbose( "Entities changed, sending update..." );
 			GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new MultiEntityUpdateMessage( stream.ToArray() ) );
+		}
 	}
 
 	/// <summary>
@@ -227,6 +232,7 @@ public class NetBoltGame
 	/// <param name="entity">The <see cref="IEntity"/> that has been created.</param>
 	protected virtual void OnNetworkedEntityCreated( IEntity entity )
 	{
+		Log.Verbose( "Networked entity created" );
 		GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new CreateEntityMessage( entity ) );
 	}
 
@@ -236,6 +242,7 @@ public class NetBoltGame
 	/// <param name="entity">The <see cref="IEntity"/> that has been deleted.</param>
 	protected virtual void OnNetworkedEntityDeleted( IEntity entity )
 	{
+		Log.Verbose( "Networked entity deleted" );
 		GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new DeleteEntityMessage( entity ) );
 	}
 
@@ -247,6 +254,7 @@ public class NetBoltGame
 	/// <param name="newPawn">The new <see cref="IEntity"/> the <see ref="client"/> is now controlling.</param>
 	protected virtual void ClientOnPawnChanged( INetworkClient client, IEntity? oldpawn, IEntity? newPawn )
 	{
+		Log.Verbose( "{A}s pawn changed from {B} to {C}", client, oldpawn, newPawn );
 		GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new ClientPawnChangedMessage( client, oldpawn, newPawn ) );
 	}
 

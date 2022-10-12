@@ -76,6 +76,7 @@ internal sealed class GameServer : WebSocketServer
 	/// <param name="message">The message the client has sent.</param>
 	public void QueueIncoming( INetworkClient client, NetworkMessage message )
 	{
+		Log.Verbose( "Received {@A} from {B}", message, client );
 		_incomingQueue.Enqueue( (client, message) );
 	}
 
@@ -86,6 +87,7 @@ internal sealed class GameServer : WebSocketServer
 	/// <param name="message">The message to send to each client.</param>
 	public void QueueSend( To to, NetworkMessage message )
 	{
+		Log.Verbose( "Queueing {@A} to {B}...", message, to );
 		// Quick send message to bots.
 		foreach ( var client in to )
 		{
@@ -111,6 +113,7 @@ internal sealed class GameServer : WebSocketServer
 
 	public override void AcceptClient( IWebSocketClient client )
 	{
+		Log.Verbose( "Accepting {A}...", client );
 		if ( client is not NetworkClient networkClient )
 			throw new Exception( "Cannot accept non network clients to the server" );
 
@@ -145,6 +148,10 @@ internal sealed class GameServer : WebSocketServer
 	/// </summary>
 	internal void DispatchIncoming()
 	{
+		if ( _incomingQueue.IsEmpty )
+			return;
+
+		Log.Verbose( "Dispatching incoming messages..." );
 		while ( _incomingQueue.TryDequeue( out var pair ) )
 		{
 			if ( !_messageHandlers.TryGetValue( pair.Item2.GetType(), out var cb ) )
