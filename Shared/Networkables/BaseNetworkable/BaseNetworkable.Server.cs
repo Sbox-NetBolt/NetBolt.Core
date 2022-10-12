@@ -12,7 +12,7 @@ public partial class BaseNetworkable
 	/// A <see cref="PropertyInfo"/> cache of all networked properties.
 	/// </summary>
 	protected readonly Dictionary<string, PropertyInfo> PropertyNameCache = new();
-
+	
 	/// <summary>
 	/// Initializes a new instance of <see cref="BaseNetworkable"/>.
 	/// </summary>
@@ -21,7 +21,7 @@ public partial class BaseNetworkable
 		NetworkId = StepNextId();
 
 		foreach ( var property in TypeHelper.GetAllProperties( GetType() )
-					 .Where( property => property.PropertyType.IsAssignableTo( typeof( INetworkable ) ) ) )
+			         .Where( property => property.PropertyType.IsAssignableTo( typeof( INetworkable ) ) ) )
 		{
 			if ( property.GetCustomAttribute<NoNetworkAttribute>() is not null )
 				continue;
@@ -31,7 +31,7 @@ public partial class BaseNetworkable
 
 		AllNetworkables.Add( NetworkId, this );
 	}
-
+	
 	/// <summary>
 	/// The next unique identifier to give to a <see cref="BaseNetworkable"/>.
 	/// </summary>

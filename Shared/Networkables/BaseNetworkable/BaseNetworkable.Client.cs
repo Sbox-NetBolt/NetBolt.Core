@@ -15,7 +15,7 @@ public partial class BaseNetworkable
 	/// <summary>
 	/// A <see cref="PropertyInfo"/> cache of all networked properties.
 	/// </summary>
-	protected Dictionary<string, PropertyDescription> PropertyNameCache { get;} = new();
+	protected Dictionary<string, PropertyDescription> PropertyNameCache { get; } = new();
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="BaseNetworkable"/> with a unique network identifier.

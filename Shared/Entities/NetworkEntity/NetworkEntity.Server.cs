@@ -9,7 +9,7 @@ public partial class NetworkEntity
 	public NetworkEntity()
 	{
 	}
-
+	
 	/// <summary>
 	/// <see cref="Update"/> but for the server realm.
 	/// </summary>
