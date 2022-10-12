@@ -96,6 +96,8 @@ public class NetBoltGame
 		SharedEntityManager.EntityCreated += OnNetworkedEntityCreated;
 		SharedEntityManager.EntityDeleted += OnNetworkedEntityDeleted;
 
+		Log.Info( "Server started on {A}:{B}", Options.ReadOnlyNetworkingOptions.IpAddress, Options.ReadOnlyNetworkingOptions.Port );
+
 		var sw = Stopwatch.StartNew();
 		var currentTick = 0;
 		while ( !ProgramCancellation.IsCancellationRequested )
