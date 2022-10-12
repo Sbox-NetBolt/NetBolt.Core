@@ -1,3 +1,4 @@
+#if SERVER
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -100,3 +101,4 @@ public partial class BotClient
 		MessageHandlers.Add( messageType, cb );
 	}
 }
+#endif
