@@ -35,7 +35,7 @@ public class NetBoltGame
 	/// <summary>
 	/// The maximum tick rate of the server. In the event of severe performance hits the tick rate can drop below this desired number.
 	/// </summary>
-	protected virtual int TickRate => 60;
+	protected virtual int TickRate => 15;
 	/// <summary>
 	/// The target delta time for the server.
 	/// </summary>
@@ -103,6 +103,8 @@ public class NetBoltGame
 
 			_server.DispatchIncoming();
 			Update();
+
+			Log.Debug( "Tick took {A}ms", sw.Elapsed.TotalMilliseconds );
 		}
 	}
 
