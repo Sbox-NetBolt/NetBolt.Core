@@ -1,4 +1,5 @@
 using NetBolt.WebSocket.Options;
+using Serilog.Events;
 
 namespace NetBolt.Server;
 
@@ -11,6 +12,11 @@ public interface IReadOnlyGameOptions
 	/// See <see cref="GameOptions.MaxEntities"/>.
 	/// </summary>
 	int MaxEntities { get; }
+
+	/// <summary>
+	/// See <see cref="GameOptions.LogLevel"/>
+	/// </summary>
+	LogEventLevel LogLevel { get; }
 
 	/// <summary>
 	/// See <see cref="GameOptions.NetworkingOptions"/>.

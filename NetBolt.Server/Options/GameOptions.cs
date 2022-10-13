@@ -1,4 +1,5 @@
 using NetBolt.WebSocket.Options;
+using Serilog.Events;
 
 namespace NetBolt.Server;
 
@@ -18,6 +19,11 @@ public sealed class GameOptions : IReadOnlyGameOptions
 	public int MaxEntities { get; set; } = 100_000;
 
 	/// <summary>
+	/// The maximum level at which things will be logged.
+	/// </summary>
+	public LogEventLevel LogLevel { get; set; } = LogEventLevel.Information;
+
+	/// <summary>
 	/// The networking options to be applied to the game server.
 	/// </summary>
 	public WebSocketServerOptions NetworkingOptions { get; set; } = new();
@@ -34,6 +40,17 @@ public sealed class GameOptions : IReadOnlyGameOptions
 	public GameOptions WithMaxEntities( int maxEntities )
 	{
 		MaxEntities = maxEntities;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the <see cref="LogLevel"/> option.
+	/// </summary>
+	/// <param name="logLevel">The maximum level at which things will be logged.</param>
+	/// <returns>The config instance.</returns>
+	public GameOptions WithLogLevel( LogEventLevel logLevel )
+	{
+		LogLevel = logLevel;
 		return this;
 	}
 

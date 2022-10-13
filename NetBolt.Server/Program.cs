@@ -1,4 +1,6 @@
-﻿namespace NetBolt.Server;
+﻿using Serilog.Events;
+
+namespace NetBolt.Server;
 
 /// <summary>
 /// Bootstraps the server.
@@ -16,7 +18,7 @@ public static class Program
 	/// <param name="args">The command line arguments.</param>
 	public static void Main( string[] args )
 	{
-		_game = new NetBoltGame( GameOptions.Default );
+		_game = new NetBoltGame( GameOptions.Default.WithLogLevel( LogEventLevel.Debug ) );
 		_game.Start();
 	}
 }
