@@ -32,7 +32,7 @@ public abstract partial class BaseNetworkable : INetworkable
 	/// <summary>
 	/// Returns whether or not the <see cref="BaseNetworkable"/> has changed.
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>Whether or not the <see cref="BaseNetworkable"/> has changed.</returns>
 	public bool Changed()
 	{
 		foreach ( var propertyInfo in PropertyNameCache.Values )
