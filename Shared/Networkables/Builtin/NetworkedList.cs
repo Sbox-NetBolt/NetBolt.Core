@@ -63,6 +63,8 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	public NetworkedList( List<T> list )
 	{
 		Value = list;
+		foreach ( var element in list )
+			_changes.Add( (ListChangeType.Add, element) );
 	}
 
 	/// <summary>
@@ -203,10 +205,10 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	}
 
 	/// <summary>
-	/// Returns the underlying list contained in the <see cref="NetworkedList{T}"/>.
+	/// Returns the underlying <see cref="List{T}"/> contained in the <see cref="NetworkedList{T}"/>.
 	/// </summary>
-	/// <param name="networkedList">The <see cref="NetworkedList{T}"/> to get the list from.</param>
-	/// <returns>The underlying list contained in the <see cref="NetworkedList{T}"/>.</returns>
+	/// <param name="networkedList">The <see cref="NetworkedList{T}"/> to get the <see cref="List{T}"/> from.</param>
+	/// <returns>The underlying <see cref="List{T}"/> contained in the <see cref="NetworkedList{T}"/>.</returns>
 	public static implicit operator List<T>( NetworkedList<T> networkedList )
 	{
 		return networkedList.Value;
@@ -215,7 +217,7 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	/// <summary>
 	/// Returns a new <see cref="NetworkedList{T}"/> that contains the provided <see cref="List{T}"/>.
 	/// </summary>
-	/// <param name="list">The list to contain in the <see cref="NetworkedList{T}"/>.</param>
+	/// <param name="list">The <see cref="List{T}"/> to contain in the <see cref="NetworkedList{T}"/>.</param>
 	/// <returns>A new instance of <see cref="NetworkedList{T}"/> that contains the provided <see cref="List{T}"/>.</returns>
 	public static implicit operator NetworkedList<T>( List<T> list )
 	{
