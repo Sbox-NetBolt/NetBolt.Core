@@ -107,6 +107,7 @@ internal sealed class GameServer : WebSocketServer
 			if ( client is BotClient )
 				continue;
 
+			Log.Verbose( "Sent {A} to {B}", message, client );
 			client.QueueSend( bytes );
 		}
 	}
