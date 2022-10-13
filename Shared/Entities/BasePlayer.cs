@@ -36,10 +36,10 @@ public class BasePlayer : NetworkEntity
 			return;
 		}
 
-		if ( _player.Position.Distance( Position ) >= 0.001 )
+		if ( Position.Value != (System.Numerics.Vector3)_player.Position )
 			Position = _player.Position;
-
-		if ( _player.EyeRotation.Distance( Rotation ) >= 0.1 )
+		
+		if ( Rotation.Value != _player.EyeRotation )
 			Rotation = _player.EyeRotation;
 	}
 
