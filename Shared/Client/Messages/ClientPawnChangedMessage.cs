@@ -46,6 +46,7 @@ public sealed class ClientPawnChangedMessage : NetworkMessage
 	/// <param name="reader">The reader to read from.</param>
 	public override void Deserialize( NetworkReader reader )
 	{
+#if CLIENT
 		var clientId = reader.ReadInt64();
 		var client = INetworkClient.All.FirstOrDefault( client => client.ClientId == clientId );
 		if ( client is null )
@@ -59,6 +60,7 @@ public sealed class ClientPawnChangedMessage : NetworkMessage
 			OldPawn = IEntity.GetEntityById( reader.ReadInt32() );
 		if ( reader.ReadBoolean() )
 			NewPawn = IEntity.GetEntityById( reader.ReadInt32() );
+#endif
 	}
 
 	/// <summary>
@@ -67,6 +69,7 @@ public sealed class ClientPawnChangedMessage : NetworkMessage
 	/// <param name="writer">The writer to write to.</param>
 	public override void Serialize( NetworkWriter writer )
 	{
+#if SERVER
 		writer.Write( Client.ClientId );
 
 		var hasOldPawn = OldPawn is not null;
@@ -78,6 +81,7 @@ public sealed class ClientPawnChangedMessage : NetworkMessage
 		writer.Write( hasNewPawn );
 		if ( hasNewPawn )
 			writer.Write( NewPawn!.EntityId );
+#endif
 	}
 
 	/// <summary>

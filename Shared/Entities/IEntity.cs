@@ -41,7 +41,7 @@ public interface IEntity : INetworkable
 	/// Gets an entity by its unique network identifier.
 	/// </summary>
 	/// <param name="networkId">The unique network identifier of the entity.</param>
-	/// <returns></returns>
+	/// <returns>An <see cref="IEntity"/> if found. Null if not</returns>
 	public static IEntity? GetEntityById( int networkId )
 	{
 		return All.FirstOrDefault( entity => entity.EntityId == networkId );

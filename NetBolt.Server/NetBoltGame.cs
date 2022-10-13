@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using NetBolt.Shared;
 using NetBolt.Shared.Entities;
@@ -130,34 +131,12 @@ public class NetBoltGame
 		foreach ( var entity in IEntity.All )
 			entity.Update();
 
-		// TODO: PVS type system?
-		var stream = new MemoryStream();
-		var writer = new NetworkWriter( stream );
-		var countPos = writer.BaseStream.Position;
-		writer.BaseStream.Position += sizeof( int );
+		var changedBaseNetworkables = BaseNetworkable.All.Where( baseNetworkable => baseNetworkable.Changed() ).ToList();
+		if ( changedBaseNetworkables.Count == 0 )
+			return;
 
-		var count = 0;
-		foreach ( var baseNetworkable in BaseNetworkable.All )
-		{
-			if ( !baseNetworkable.Changed() )
-				continue;
-
-			count++;
-			writer.Write( baseNetworkable.NetworkId );
-			baseNetworkable.SerializeChanges( writer );
-		}
-
-		var tempPos = writer.BaseStream.Position;
-		writer.BaseStream.Position = countPos;
-		writer.Write( count );
-		writer.BaseStream.Position = tempPos;
-		writer.Close();
-
-		if ( count != 0 )
-		{
-			Log.Verbose( $"{nameof( BaseNetworkable )}s changed, sending update..." );
-			GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new MultiBaseNetworkableUpdateMessage( stream.ToArray() ) );
-		}
+		Log.Verbose( $"{nameof( BaseNetworkable )}s changed, sending update..." );
+		GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new MultiBaseNetworkableUpdateMessage( changedBaseNetworkables ) );
 	}
 
 	/// <summary>
@@ -171,7 +150,7 @@ public class NetBoltGame
 		var toClient = To.Single( client );
 		GameServer.Instance.QueueSend( toClient, new ClientListMessage( GameServer.Instance.Clients ) );
 		GameServer.Instance.QueueSend( toClient, new BaseNetworkableListMessage( BaseNetworkable.All ) );
-		GameServer.Instance.QueueSend( To.AllExcept( GameServer.Instance, client ), new ClientStateChangedMessage( client.ClientId, ClientState.Connected ) );
+		GameServer.Instance.QueueSend( To.AllExcept( GameServer.Instance, client ), new ClientStateChangedMessage( client, ClientState.Connected ) );
 
 		client.PawnChanged += ClientOnPawnChanged;
 		client.Pawn = new BasePlayer();
@@ -185,7 +164,7 @@ public class NetBoltGame
 	{
 		Log.Info( $"{client} has disconnected" );
 
-		GameServer.Instance.QueueSend( To.AllExcept( GameServer.Instance, client ), new ClientStateChangedMessage( client.ClientId, ClientState.Disconnected ) );
+		GameServer.Instance.QueueSend( To.AllExcept( GameServer.Instance, client ), new ClientStateChangedMessage( client, ClientState.Disconnected ) );
 		(client.Pawn as BaseNetworkable)?.Delete();
 		client.PawnChanged -= ClientOnPawnChanged;
 	}

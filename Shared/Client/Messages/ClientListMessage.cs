@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+#if CLIENT
+using NetBolt.Shared.Entities;
+#endif
 using NetBolt.Shared.Utility;
 
 namespace NetBolt.Shared.Messages;
@@ -9,20 +12,18 @@ namespace NetBolt.Shared.Messages;
 public sealed class ClientListMessage : NetworkMessage
 {
 	/// <summary>
-	/// Contains all client IDs to notify the client about.
+	/// Contains all clients to notify the client about.
 	/// </summary>
-	public List<(long, int)> ClientIds { get; private set; } = null!;
+	public IReadOnlyList<INetworkClient> Clients { get; private set; } = null!;
 
 #if SERVER
 	/// <summary>
 	/// Initializes a new instance of <see cref="ClientListMessage"/> with the clients provided.
 	/// </summary>
 	/// <param name="clients">The clients to notify a client about.</param>
-	public ClientListMessage( IReadOnlyCollection<INetworkClient> clients )
+	public ClientListMessage( IReadOnlyList<INetworkClient> clients )
 	{
-		ClientIds = new List<(long, int)> { Capacity = clients.Count };
-		foreach ( var client in clients )
-			ClientIds.Add( (client.ClientId, client.Pawn?.EntityId ?? -1) );
+		Clients = clients;
 	}
 #endif
 
@@ -32,11 +33,22 @@ public sealed class ClientListMessage : NetworkMessage
 	/// <param name="reader">The reader to read from.</param>
 	public override void Deserialize( NetworkReader reader )
 	{
-		var list = new List<(long, int)> { Capacity = reader.ReadInt32() };
+#if CLIENT
+		var list = new List<INetworkClient> {Capacity = reader.ReadInt32()};
 		for ( var i = 0; i < list.Capacity; i++ )
-			list.Add( (reader.ReadInt64(), reader.ReadInt32()) );
+		{
+			var clientId = reader.ReadInt64();
+			var isBot = reader.ReadBoolean();
 
-		ClientIds = list;
+			INetworkClient client = isBot ? new BotClient( clientId ) : new NetworkClient( clientId );
+			if ( reader.ReadBoolean() )
+				client.Pawn = IEntity.GetEntityById(reader.ReadInt32());
+			
+			list.Add( client );
+		}
+
+		Clients = list;
+#endif
 	}
 
 	/// <summary>
@@ -45,12 +57,19 @@ public sealed class ClientListMessage : NetworkMessage
 	/// <param name="writer">The writer to write to.</param>
 	public override void Serialize( NetworkWriter writer )
 	{
-		writer.Write( ClientIds.Count );
-		foreach ( var pair in ClientIds )
+#if SERVER
+		writer.Write( Clients.Count );
+		foreach ( var client in Clients )
 		{
-			writer.Write( pair.Item1 );
-			writer.Write( pair.Item2 );
+			writer.Write( client.ClientId );
+			writer.Write( client.IsBot );
+
+			var hasPawn = client.Pawn is not null;
+			writer.Write( hasPawn );
+			if ( hasPawn )
+				writer.Write( client.Pawn!.EntityId );
 		}
+#endif
 	}
 
 	/// <summary>

@@ -8,23 +8,23 @@ namespace NetBolt.Shared.Messages;
 public sealed class ClientStateChangedMessage : NetworkMessage
 {
 	/// <summary>
-	/// The ID of the client that has changed.
+	/// The <see cref="INetworkClient"/> that has changed.
 	/// </summary>
-	public long ClientId { get; private set; }
+	public INetworkClient Client { get; private set; }
 	/// <summary>
-	/// The new state of the client.
+	/// The new state of the <see cref="Client"/>.
 	/// </summary>
 	public ClientState ClientState { get; private set; }
 
 #if SERVER
 	/// <summary>
-	/// Initializes a new instance of <see cref="ClientStateChangedMessage"/> with the unique client identifier and their new state.
+	/// Initializes a new instance of <see cref="ClientStateChangedMessage"/> with the <see cref="INetworkClient"/> and their new state.
 	/// </summary>
-	/// <param name="clientId">The unique identifier of the client that has changed.</param>
+	/// <param name="client">The <see cref="INetworkClient"/> that has changed.</param>
 	/// <param name="clientState">The new state of the client.</param>
-	public ClientStateChangedMessage( long clientId, ClientState clientState )
+	public ClientStateChangedMessage( INetworkClient client, ClientState clientState )
 	{
-		ClientId = clientId;
+		Client = client;
 		ClientState = clientState;
 	}
 #endif
@@ -35,8 +35,17 @@ public sealed class ClientStateChangedMessage : NetworkMessage
 	/// <param name="reader">The reader to read from.</param>
 	public override void Deserialize( NetworkReader reader )
 	{
-		ClientId = reader.ReadInt64();
+#if CLIENT
+		var clientId = reader.ReadInt64();
+		var client = INetworkClient.GetClientById( clientId );
+		if ( client is null )
+			client = reader.ReadBoolean() ? new BotClient( clientId ) : new NetworkClient( clientId );
+		else
+			_ = reader.ReadBoolean();
+
+		Client = client!;
 		ClientState = (ClientState)reader.ReadByte();
+#endif
 	}
 
 	/// <summary>
@@ -45,8 +54,11 @@ public sealed class ClientStateChangedMessage : NetworkMessage
 	/// <param name="writer">The writer to write to.</param>
 	public override void Serialize( NetworkWriter writer )
 	{
-		writer.Write( ClientId );
+#if SERVER
+		writer.Write( Client.ClientId );
+		writer.Write( Client.IsBot );
 		writer.Write( (byte)ClientState );
+#endif
 	}
 
 	/// <summary>

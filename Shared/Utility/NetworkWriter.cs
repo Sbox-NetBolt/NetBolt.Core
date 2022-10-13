@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Numerics;
-using NetBolt.Shared.Entities;
 using NetBolt.Shared.Networkables;
 
 namespace NetBolt.Shared.Utility;

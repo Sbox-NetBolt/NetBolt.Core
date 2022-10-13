@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using NetBolt.Shared.Entities;
 using NetBolt.Shared.Networkables;
 using NetBolt.Shared.Utility;
@@ -17,12 +19,23 @@ public sealed class MultiBaseNetworkableUpdateMessage : NetworkMessage
 
 #if SERVER
 	/// <summary>
-	/// Initializes a new instance of <see cref="MultiBaseNetworkableUpdateMessage"/> with the partial changes of all the <see cref="BaseNetworkable"/>s that changed.
+	/// Initializes a new instance of <see cref="MultiBaseNetworkableUpdateMessage"/> with all the <see cref="BaseNetworkable"/>s that changed.
 	/// </summary>
-	/// <param name="partialBaseNetworkableData">The partial changes of all the <see cref="BaseNetworkable"/>s that changed.</param>
-	public MultiBaseNetworkableUpdateMessage( byte[] partialBaseNetworkableData )
+	/// <param name="changedBaseNetworkables">The <see cref="BaseNetworkable"/>s that changed.</param>
+	public MultiBaseNetworkableUpdateMessage( IReadOnlyList<BaseNetworkable> changedBaseNetworkables )
 	{
-		PartialBaseNetworkableData = partialBaseNetworkableData;
+		var stream = new MemoryStream();
+		var writer = new NetworkWriter( stream );
+		writer.Write( changedBaseNetworkables.Count );
+
+		foreach ( var baseNetworkable in changedBaseNetworkables )
+		{
+			writer.Write( baseNetworkable.NetworkId );
+			baseNetworkable.SerializeChanges( writer );
+		}
+		writer.Close();
+
+		PartialBaseNetworkableData = stream.ToArray();
 	}
 #endif
 

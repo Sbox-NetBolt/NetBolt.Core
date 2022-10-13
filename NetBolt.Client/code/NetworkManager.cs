@@ -360,12 +360,11 @@ public sealed class NetworkManager
 		if ( message is not ClientListMessage clientListMessage )
 			return;
 
-		foreach ( var (clientId, pawnId) in clientListMessage.ClientIds )
+		foreach ( var client in clientListMessage.Clients )
 		{
-			if ( clientId == _localClientId )
+			if ( client.ClientId == _localClientId )
 				continue;
 
-			var client = new NetworkClient( clientId ) { Pawn = IEntity.GetEntityById( pawnId ) };
 			_clients.Add( client );
 		}
 	}
@@ -376,15 +375,7 @@ public sealed class NetworkManager
 	/// <param name="message">The <see cref="BaseNetworkableListMessage"/> that was received.</param>
 	private void HandleBaseNetworkableListMessage( NetworkMessage message )
 	{
-		if ( message is not BaseNetworkableListMessage baseNetworkableListMessage )
-			return;
-
-		foreach ( var baseNetworkableData in baseNetworkableListMessage.BaseNetworkableData )
-		{
-			var reader = new NetworkReader( new MemoryStream( baseNetworkableData ) );
-			_ = reader.ReadBaseNetworkable();
-			reader.Close();
-		}
+		// All the needed logic is handled when the message is deserialized
 	}
 
 	/// <summary>
@@ -425,17 +416,15 @@ public sealed class NetworkManager
 		switch ( clientStateChangedMessage.ClientState )
 		{
 			case ClientState.Connected:
-				var client = new NetworkClient( clientStateChangedMessage.ClientId );
-				_clients.Add( client );
-				ClientConnected?.Invoke( client );
+				_clients.Add( clientStateChangedMessage.Client );
+				ClientConnected?.Invoke( clientStateChangedMessage.Client );
 				break;
 			case ClientState.Disconnected:
-				var disconnectedClient = Clients.FirstOrDefault( cl => cl.ClientId == clientStateChangedMessage.ClientId );
-				if ( disconnectedClient is null )
+				if ( !_clients.Contains( clientStateChangedMessage.Client ) )
 					return;
 
-				_clients.Remove( disconnectedClient );
-				ClientDisconnected?.Invoke( disconnectedClient );
+				_clients.Remove( clientStateChangedMessage.Client );
+				ClientDisconnected?.Invoke( clientStateChangedMessage.Client );
 				break;
 			default:
 				Log.Error( $"Got unexpected client state: {clientStateChangedMessage.ClientState}" );

@@ -1,10 +1,8 @@
-#if CLIENT
-using System.Buffers;
-#endif
 using System.Collections.Generic;
 using NetBolt.Shared.Networkables;
 #if SERVER
 using System.IO;
+using NetBolt.Server;
 #endif
 using NetBolt.Shared.Utility;
 
@@ -16,37 +14,18 @@ namespace NetBolt.Shared.Messages;
 public sealed class BaseNetworkableListMessage : NetworkMessage
 {
 	/// <summary>
-	/// The data of all <see cref="BaseNetworkable"/>s passed.
+	/// A list of all <see cref="BaseNetworkable"/>s to let the client know about.
 	/// </summary>
-	public List<byte[]> BaseNetworkableData { get; private set; } = new();
+	public IReadOnlyList<BaseNetworkable> BaseNetworkables { get; private set; }
 
 #if SERVER
 	/// <summary>
 	/// Initializes a new instance of <see cref="BaseNetworkableListMessage"/> with the list of <see cref="BaseNetworkable"/> to notify a client about.
 	/// </summary>
 	/// <param name="baseNetworkableList">The list of <see cref="BaseNetworkable"/> to notify a client about.</param>
-	public BaseNetworkableListMessage( IEnumerable<BaseNetworkable> baseNetworkableList )
+	public BaseNetworkableListMessage( IReadOnlyList<BaseNetworkable> baseNetworkableList )
 	{
-		BaseNetworkableData = new List<byte[]>();
-		foreach ( var baseNetworkable in baseNetworkableList )
-		{
-			var stream = new MemoryStream();
-			var writer = new NetworkWriter( stream );
-			writer.WriteBaseNetworkable( baseNetworkable );
-			writer.Close();
-			BaseNetworkableData.Add( stream.ToArray() );
-		}
-	}
-#endif
-
-#if CLIENT
-	/// <summary>
-	/// Returns all of the entity data arrays to the shared pool.
-	/// </summary>
-	~BaseNetworkableListMessage()
-	{
-		foreach ( var data in BaseNetworkableData )
-			ArrayPool<byte>.Shared.Return( data, true );
+		BaseNetworkables = baseNetworkableList;
 	}
 #endif
 
@@ -57,15 +36,11 @@ public sealed class BaseNetworkableListMessage : NetworkMessage
 	public override void Deserialize( NetworkReader reader )
 	{
 #if CLIENT
-		BaseNetworkableData = new List<byte[]> { Capacity = reader.ReadInt32() };
+		var baseNetworkables = new List<BaseNetworkable> {Capacity = reader.ReadInt32()};
+		for ( var i = 0; i < baseNetworkables.Capacity; i++ )
+			baseNetworkables[i] = reader.ReadBaseNetworkable();
 
-		for ( var i = 0; i < BaseNetworkableData.Capacity; i++ )
-		{
-			var dataLength = reader.ReadInt32();
-			var bytes = ArrayPool<byte>.Shared.Rent( dataLength );
-			_ = reader.Read( bytes, 0, dataLength );
-			BaseNetworkableData.Add( bytes );
-		}
+		BaseNetworkables = baseNetworkables;
 #endif
 	}
 
@@ -76,12 +51,9 @@ public sealed class BaseNetworkableListMessage : NetworkMessage
 	public override void Serialize( NetworkWriter writer )
 	{
 #if SERVER
-		writer.Write( BaseNetworkableData.Count );
-		foreach ( var data in BaseNetworkableData )
-		{
-			writer.Write( data.Length );
-			writer.Write( data );
-		}
+		writer.Write( BaseNetworkables.Count );
+		foreach ( var baseNetworkable in BaseNetworkables )
+			writer.WriteBaseNetworkable( baseNetworkable );
 #endif
 	}
 
