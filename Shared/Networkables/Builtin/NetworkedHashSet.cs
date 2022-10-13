@@ -27,6 +27,9 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 				_changes.Add( (HashSetChangeType.Add, val) );
 		}
 	}
+	/// <summary>
+	/// See <see cref="Value"/>.
+	/// </summary>
 	private HashSet<T> _value;
 
 	/// <summary>
@@ -55,6 +58,8 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 	public NetworkedHashSet( HashSet<T> hashSet )
 	{
 		_value = hashSet;
+		foreach ( var element in hashSet )
+			_changes.Add( (HashSetChangeType.Add, element) );
 	}
 
 	/// <summary>
@@ -202,6 +207,26 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 				writer.WriteNetworkable( change.Item2! );
 		}
 		_changes.Clear();
+	}
+	
+	/// <summary>
+	/// Returns the underlying <see cref="HashSet{T}"/> contained in the <see cref="NetworkedHashSet{T}"/>.
+	/// </summary>
+	/// <param name="networkedHashSet">The <see cref="NetworkedHashSet{T}"/> to get the <see cref="HashSet{T}"/> from.</param>
+	/// <returns>The underlying <see cref="HashSet{T}"/> contained in the <see cref="NetworkedHashSet{T}"/>.</returns>
+	public static implicit operator HashSet<T>( NetworkedHashSet<T> networkedHashSet )
+	{
+		return networkedHashSet.Value;
+	}
+
+	/// <summary>
+	/// Returns a new <see cref="NetworkedHashSet{T}"/> that contains the provided <see cref="HashSet{T}"/>.
+	/// </summary>
+	/// <param name="hashSet">The <see cref="HashSet{T}"/> to contain in the <see cref="NetworkedHashSet{T}"/>.</param>
+	/// <returns>A new instance of <see cref="NetworkedHashSet{T}"/> that contains the provided <see cref="HashSet{T}"/>.</returns>
+	public static implicit operator NetworkedHashSet<T>( HashSet<T> hashSet )
+	{
+		return new NetworkedHashSet<T>( hashSet );
 	}
 
 	/// <summary>
