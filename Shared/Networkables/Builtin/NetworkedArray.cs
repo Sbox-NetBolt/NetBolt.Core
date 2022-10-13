@@ -15,12 +15,12 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 	/// The underlying <see cref="Array"/> being contained inside.
 	/// </summary>
 	public T[] Value { get; private set; }
-	
+
 	/// <summary>
 	/// The indexer to the underlying <see cref="Array"/>.
 	/// </summary>
 	/// <param name="index">The index to look at.</param>
-	public T this[ int index ]
+	public T this[int index]
 	{
 		get => Value[index];
 		set
@@ -45,7 +45,7 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 		for ( var i = 0; i < array.Length; i++ )
 			_indicesChanged.Add( i );
 	}
-	
+
 	/// <summary>
 	/// Initializes a new instance of <see cref="NetworkedArray{T}"/> with the size of the underlying <see cref="Array"/>.
 	/// </summary>
@@ -62,7 +62,7 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 	{
 		Value = Array.Empty<T>();
 	}
-	
+
 	/// <summary>
 	/// Returns an enumerator that iterates through the collection.
 	/// </summary>
@@ -134,7 +134,7 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 		}
 		_indicesChanged.Clear();
 	}
-	
+
 	/// <summary>
 	/// Returns the underlying <see cref="Array"/> contained in the <see cref="NetworkedArray{T}"/>.
 	/// </summary>

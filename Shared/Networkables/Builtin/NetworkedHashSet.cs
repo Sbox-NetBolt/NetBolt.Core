@@ -208,7 +208,7 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 		}
 		_changes.Clear();
 	}
-	
+
 	/// <summary>
 	/// Returns the underlying <see cref="HashSet{T}"/> contained in the <see cref="NetworkedHashSet{T}"/>.
 	/// </summary>
