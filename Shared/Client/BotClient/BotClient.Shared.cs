@@ -1,7 +1,7 @@
 ﻿using NetBolt.Shared;
 using NetBolt.Shared.Entities;
 
-namespace NetBolt.Server;
+namespace NetBolt.Shared;
 
 /// <summary>
 /// A bot client.

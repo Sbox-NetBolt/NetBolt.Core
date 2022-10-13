@@ -2,10 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using NetBolt.Server;
 using NetBolt.Shared.Messages;
 using NetBolt.WebSocket.Enums;
 
-namespace NetBolt.Server;
+namespace NetBolt.Shared;
 
 public partial class BotClient
 {
