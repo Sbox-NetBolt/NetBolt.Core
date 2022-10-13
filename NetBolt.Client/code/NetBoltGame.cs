@@ -103,7 +103,7 @@ public class NetBoltGame : Game
 	/// <param name="client">The client that has disconnected.</param>
 	protected virtual void OnClientDisconnected( INetworkClient client )
 	{
-		ClientChatBox.AddInformation( $"{client.ClientId} has left", $"avatar{client.ClientId}" );
+		ClientChatBox.AddInformation( $"{client.ClientId} has left", $"avatar:{client.ClientId}" );
 	}
 
 	/// <summary>
