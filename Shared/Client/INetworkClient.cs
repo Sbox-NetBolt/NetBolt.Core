@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 #if CLIENT
 using NetBolt.Client;
 #endif
@@ -62,6 +63,16 @@ public interface INetworkClient
 	/// Contains all currently connected bots in the server.
 	/// </summary>
 	public static IReadOnlyList<BotClient> Bots => GameServer.Instance.Bots;
+
+	/// <summary>
+	/// Gets a client by its unique identifier.
+	/// </summary>
+	/// <param name="clientId">The unique identifier of the client.</param>
+	/// <returns>An <see cref="INetworkClient"/> if found. Null if not</returns>
+	public static INetworkClient? GetClientById( long clientId )
+	{
+		return All.FirstOrDefault( client => client.ClientId == clientId );
+	}
 #endif
 
 #if CLIENT
@@ -98,6 +109,16 @@ public interface INetworkClient
 
 			return NetworkManager.Instance.LocalClient;
 		}
+	}
+	
+	/// <summary>
+	/// Gets a client by its unique identifier.
+	/// </summary>
+	/// <param name="clientId">The unique identifier of the client.</param>
+	/// <returns>An <see cref="INetworkClient"/> if found. Null if not</returns>
+	public static INetworkClient? GetClientById( long clientId )
+	{
+		return All.FirstOrDefault( client => client.ClientId == clientId );
 	}
 #endif
 }
