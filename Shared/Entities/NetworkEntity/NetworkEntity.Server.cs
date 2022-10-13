@@ -8,6 +8,7 @@ public partial class NetworkEntity
 	/// </summary>
 	public NetworkEntity()
 	{
+		IEntity.AllEntities.Add( this );
 	}
 
 	/// <summary>

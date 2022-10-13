@@ -90,4 +90,13 @@ public partial class NetworkEntity : BaseNetworkable, IEntity
 			property.SetValue( this, currentValue );
 		}
 	}
+
+	/// <summary>
+	/// Returns a string that represents the <see cref="NetworkEntity"/>.
+	/// </summary>
+	/// <returns>A string that represents the <see cref="NetworkEntity"/>.</returns>
+	public override string ToString()
+	{
+		return $"Entity (ID: {EntityId})";
+	}
 }

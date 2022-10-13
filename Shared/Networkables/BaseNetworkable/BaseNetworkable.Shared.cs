@@ -1,7 +1,6 @@
 using System.Collections.Generic;
-#if SERVER
+using System.Linq;
 using NetBolt.Server;
-#endif
 using NetBolt.Shared.Utility;
 #if CLIENT
 using Sandbox;
@@ -24,8 +23,10 @@ public abstract partial class BaseNetworkable : INetworkable
 	/// </summary>
 	public virtual void Delete()
 	{
-		// TODO: Notify client of this
-		AllNetworkables.Remove( NetworkId );
+		AllNetworkables.Remove( this );
+#if SERVER
+		NetBoltGame.Current.OnBaseNetworkableDeleted( this );
+#endif
 	}
 
 	/// <summary>
@@ -61,7 +62,8 @@ public abstract partial class BaseNetworkable : INetworkable
 			if ( propertyInfo.PropertyType.IsAssignableTo( typeof( BaseNetworkable ) ) )
 			{
 				var networkId = reader.ReadInt32();
-				if ( All.TryGetValue( networkId, out var networkable ) )
+				var networkable = All.FirstOrDefault( networkable => networkable.NetworkId == networkId );
+				if ( networkable is not null )
 					propertyInfo.SetValue( this, networkable );
 #if CLIENT
 				else
@@ -87,7 +89,8 @@ public abstract partial class BaseNetworkable : INetworkable
 			if ( property.PropertyType.IsAssignableTo( typeof( BaseNetworkable ) ) )
 			{
 				var networkId = reader.ReadInt32();
-				if ( All.TryGetValue( networkId, out var networkable ) )
+				var networkable = All.FirstOrDefault( networkable => networkable.NetworkId == networkId );
+				if ( networkable is not null )
 					property.SetValue( this, networkable );
 #if CLIENT
 				else
@@ -157,11 +160,20 @@ public abstract partial class BaseNetworkable : INetworkable
 	}
 
 	/// <summary>
-	/// A read-only dictionary of all <see cref="BaseNetworkable"/>s.
+	/// Returns a string that represents the <see cref="BaseNetworkable"/>.
 	/// </summary>
-	internal static IReadOnlyDictionary<int, BaseNetworkable> All => AllNetworkables;
+	/// <returns>A string that represents the <see cref="BaseNetworkable"/>.</returns>
+	public override string ToString()
+	{
+		return $"BaseNetworkable (ID: {NetworkId})";
+	}
+
 	/// <summary>
-	/// A dictionary of all <see cref="BaseNetworkable"/>
+	/// A read-only list of all <see cref="BaseNetworkable"/>s.
 	/// </summary>
-	private static readonly Dictionary<int, BaseNetworkable> AllNetworkables = new();
+	internal static IReadOnlyList<BaseNetworkable> All => AllNetworkables;
+	/// <summary>
+	/// A list of all <see cref="BaseNetworkable"/>
+	/// </summary>
+	private static readonly List<BaseNetworkable> AllNetworkables = new();
 }

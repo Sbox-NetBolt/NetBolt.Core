@@ -105,8 +105,8 @@ public sealed class NetworkReader : BinaryReader
 	/// <exception cref="InvalidOperationException">Thrown when reading the <see cref="INetworkable"/> has failed.</exception>
 	public T ReadNetworkable<T>() where T : INetworkable
 	{
-		if ( typeof( T ).IsAssignableTo( typeof( IEntity ) ) )
-			return ReadEntity<T>();
+		if ( typeof( T ).IsAssignableTo( typeof( BaseNetworkable ) ) )
+			return ReadBaseNetworkable<T>();
 
 		var networkable = ReadNetworkable();
 		if ( networkable is not T outputNetworkable )
@@ -128,48 +128,48 @@ public sealed class NetworkReader : BinaryReader
 	}
 
 	/// <summary>
-	/// Reads an instance of <see cref="IEntity"/>.
+	/// Reads an instance of <see cref="BaseNetworkable"/>.
 	/// </summary>
-	/// <returns>The parsed <see cref="IEntity"/>.</returns>
-	/// <exception cref="InvalidOperationException">Thrown when reading the <see cref="IEntity"/> has failed.</exception>
-	public IEntity ReadEntity()
+	/// <returns>The parsed <see cref="BaseNetworkable"/>.</returns>
+	/// <exception cref="InvalidOperationException">Thrown when reading the <see cref="BaseNetworkable"/> has failed.</exception>
+	public BaseNetworkable ReadBaseNetworkable()
 	{
-		var entityId = ReadInt32();
+		var networkId = ReadInt32();
 		var typeName = ReadString();
 
 		var type = TypeHelper.GetTypeByName( typeName );
 		if ( type is null )
 		{
-			Log.Error( $"Failed to read entity (\"{typeName}\" does not exist)" );
+			Log.Error( $"Failed to read {nameof(BaseNetworkable)} (\"{typeName}\" does not exist)" );
 			return null!;
 		}
 
-		var entity = TypeHelper.Create<IEntity?>( type, entityId );
-		if ( entity is null )
+		var baseNetworkable = TypeHelper.Create<BaseNetworkable?>( type, networkId );
+		if ( baseNetworkable is null )
 		{
-			Log.Error( "Failed to read entity (instance creation failed)." );
+			Log.Error( $"Failed to read {nameof(BaseNetworkable)} (instance creation failed)." );
 			return null!;
 		}
 
-		entity.Deserialize( this );
-		return entity;
+		baseNetworkable.Deserialize( this );
+		return baseNetworkable;
 	}
 
 	/// <summary>
-	/// Reads an instance of <see cref="IEntity"/> and casts it to <see ref="T"/>.
+	/// Reads an instance of <see cref="BaseNetworkable"/> and casts it to <see ref="T"/>.
 	/// </summary>
-	/// <typeparam name="T">The <see cref="IEntity"/> type to cast into.</typeparam>
-	/// <returns>The parsed <see cref="IEntity"/>.</returns>
-	/// <exception cref="InvalidOperationException">Thrown when reading the <see cref="IEntity"/> has failed.</exception>
-	public T ReadEntity<T>()
+	/// <typeparam name="T">The <see cref="BaseNetworkable"/> type to cast into.</typeparam>
+	/// <returns>The parsed <see cref="BaseNetworkable"/>.</returns>
+	/// <exception cref="InvalidOperationException">Thrown when reading the <see cref="BaseNetworkable"/> has failed.</exception>
+	public T ReadBaseNetworkable<T>()
 	{
-		var entity = ReadEntity();
-		if ( entity is not T outputEntity )
+		var baseNetworkable = ReadBaseNetworkable();
+		if ( baseNetworkable is not T expectedType )
 		{
-			Log.Error( $"Failed to read entity ({entity.GetType()} is not assignable to {typeof( T )})" );
+			Log.Error( $"Failed to read {nameof(BaseNetworkable)} ({baseNetworkable.GetType()} is not assignable to {typeof( T )})" );
 			return default!;
 		}
 
-		return outputEntity;
+		return expectedType;
 	}
 }

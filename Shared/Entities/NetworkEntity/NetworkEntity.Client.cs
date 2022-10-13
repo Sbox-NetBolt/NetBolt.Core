@@ -9,6 +9,7 @@ public partial class NetworkEntity
 	/// <param name="networkId">A unique network identifier.</param>
 	public NetworkEntity( int networkId ) : base( networkId )
 	{
+		IEntity.AllEntities.Add( this );
 	}
 
 	/// <summary>

@@ -5,6 +5,7 @@ using System.Threading;
 using NetBolt.Shared;
 using NetBolt.Shared.Entities;
 using NetBolt.Shared.Messages;
+using NetBolt.Shared.Networkables;
 using NetBolt.Shared.RemoteProcedureCalls;
 using NetBolt.Shared.Utility;
 using NetBolt.WebSocket;
@@ -25,15 +26,6 @@ public class NetBoltGame
 	/// A read-only instance of game options this game was created with.
 	/// </summary>
 	public IReadOnlyGameOptions Options { get; }
-
-	/// <summary>
-	/// Manages all server-side only entities.
-	/// </summary>
-	internal readonly EntityManager ServerEntityManager = new();
-	/// <summary>
-	/// Manages all networked entities.
-	/// </summary>
-	internal readonly EntityManager SharedEntityManager = new();
 
 	/// <summary>
 	/// Whether or not the game is currently running.
@@ -94,9 +86,6 @@ public class NetBoltGame
 		GameServer.Instance.HandleMessage<RpcCallResponseMessage>( Rpc.HandleRpcCallResponseMessage );
 		GameServer.Instance.HandleMessage<ClientPawnUpdateMessage>( HandleClientPawnUpdateMessage );
 
-		SharedEntityManager.EntityCreated += OnNetworkedEntityCreated;
-		SharedEntityManager.EntityDeleted += OnNetworkedEntityDeleted;
-
 		Log.Info( "Server started on {A}:{B}", Options.ReadOnlyNetworkingOptions.IpAddress, Options.ReadOnlyNetworkingOptions.Port );
 
 		var sw = Stopwatch.StartNew();
@@ -126,8 +115,6 @@ public class NetBoltGame
 		Log.Info( "Shutting down game..." );
 		Running = false;
 		ProgramCancellation.Cancel();
-		ServerEntityManager.DeleteAllEntities();
-		SharedEntityManager.DeleteAllEntities();
 
 		_server.StopAsync().Wait();
 	}
@@ -138,11 +125,8 @@ public class NetBoltGame
 	/// </summary>
 	public virtual void Update()
 	{
-		foreach ( var serverEntity in ServerEntityManager.Entities.Values )
-			serverEntity.Update();
-
-		foreach ( var sharedEntity in SharedEntityManager.Entities.Values )
-			sharedEntity.Update();
+		foreach ( var entity in IEntity.All )
+			entity.Update();
 
 		// TODO: PVS type system?
 		var stream = new MemoryStream();
@@ -151,14 +135,14 @@ public class NetBoltGame
 		writer.BaseStream.Position += sizeof( int );
 
 		var count = 0;
-		foreach ( var entity in SharedEntityManager.Entities.Values )
+		foreach ( var baseNetworkable in BaseNetworkable.All )
 		{
-			if ( !entity.Changed() )
+			if ( !baseNetworkable.Changed() )
 				continue;
 
 			count++;
-			writer.Write( entity.EntityId );
-			entity.SerializeChanges( writer );
+			writer.Write( baseNetworkable.NetworkId );
+			baseNetworkable.SerializeChanges( writer );
 		}
 
 		var tempPos = writer.BaseStream.Position;
@@ -169,8 +153,8 @@ public class NetBoltGame
 
 		if ( count != 0 )
 		{
-			Log.Verbose( "Entities changed, sending update..." );
-			GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new MultiEntityUpdateMessage( stream.ToArray() ) );
+			Log.Verbose( $"{nameof(BaseNetworkable)}s changed, sending update..." );
+			GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new MultiBaseNetworkableUpdateMessage( stream.ToArray() ) );
 		}
 	}
 
@@ -184,12 +168,11 @@ public class NetBoltGame
 
 		var toClient = To.Single( client );
 		GameServer.Instance.QueueSend( toClient, new ClientListMessage( GameServer.Instance.Clients ) );
-		GameServer.Instance.QueueSend( toClient, new EntityListMessage( SharedEntityManager.Entities.Values ) );
+		GameServer.Instance.QueueSend( toClient, new BaseNetworkableListMessage( BaseNetworkable.All ) );
 		GameServer.Instance.QueueSend( To.AllExcept( GameServer.Instance, client ), new ClientStateChangedMessage( client.ClientId, ClientState.Connected ) );
 
 		client.PawnChanged += ClientOnPawnChanged;
-		client.Pawn = SharedEntityManager.Create<BasePlayer>();
-		client.Pawn.Owner = client;
+		client.Pawn = new BasePlayer();
 	}
 
 	/// <summary>
@@ -201,49 +184,28 @@ public class NetBoltGame
 		Log.Info( $"{client} has disconnected" );
 
 		GameServer.Instance.QueueSend( To.AllExcept( GameServer.Instance, client ), new ClientStateChangedMessage( client.ClientId, ClientState.Disconnected ) );
-		if ( client.Pawn is not null )
-			SharedEntityManager.DeleteEntity( client.Pawn );
+		client.Pawn?.Delete();
 		client.PawnChanged -= ClientOnPawnChanged;
 	}
 
 	/// <summary>
-	/// Gets an <see cref="IEntity"/> that is local to the server.
+	/// Called when a <see cref="BaseNetworkable"/> is created.
 	/// </summary>
-	/// <param name="entityId">The ID of the <see cref="IEntity"/> to get.</param>
-	/// <returns>The <see cref="IEntity"/> that was found. Null if no <see cref="IEntity"/> was found.</returns>
-	public IEntity? GetLocalEntityById( int entityId )
+	/// <param name="baseNetworkable">The <see cref="BaseNetworkable"/> that has been created.</param>
+	public virtual void OnBaseNetworkableCreated( BaseNetworkable baseNetworkable )
 	{
-		return ServerEntityManager.GetEntityById( entityId );
+		Log.Verbose( "{A} created", baseNetworkable );
+		GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new CreateBaseNetworkableMessage( baseNetworkable ) );
 	}
 
 	/// <summary>
-	/// Gets an <see cref="IEntity"/> that is available to both client and server.
+	/// Called when a <see cref="BaseNetworkable"/> is deleted.
 	/// </summary>
-	/// <param name="entityId">The ID of the <see cref="IEntity"/> to get.</param>
-	/// <returns>The <see cref="IEntity"/> that was found. Null if no <see cref="IEntity"/> was found.</returns>
-	public IEntity? GetNetworkedEntityById( int entityId )
+	/// <param name="baseNetworkable">The <see cref="BaseNetworkable"/> that has been deleted.</param>
+	public virtual void OnBaseNetworkableDeleted( BaseNetworkable baseNetworkable )
 	{
-		return SharedEntityManager.GetEntityById( entityId );
-	}
-
-	/// <summary>
-	/// Called when an <see cref="IEntity"/> is created in the <see cref="SharedEntityManager"/>.
-	/// </summary>
-	/// <param name="entity">The <see cref="IEntity"/> that has been created.</param>
-	protected virtual void OnNetworkedEntityCreated( IEntity entity )
-	{
-		Log.Verbose( "Networked entity created" );
-		GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new CreateEntityMessage( entity ) );
-	}
-
-	/// <summary>
-	/// Called when an <see cref="IEntity"/> is deleted in the <see cref="SharedEntityManager"/>.
-	/// </summary>
-	/// <param name="entity">The <see cref="IEntity"/> that has been deleted.</param>
-	protected virtual void OnNetworkedEntityDeleted( IEntity entity )
-	{
-		Log.Verbose( "Networked entity deleted" );
-		GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new DeleteEntityMessage( entity ) );
+		Log.Verbose( "{A} deleted", baseNetworkable );
+		GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new DeleteBaseNetworkableMessage( baseNetworkable ) );
 	}
 
 	/// <summary>

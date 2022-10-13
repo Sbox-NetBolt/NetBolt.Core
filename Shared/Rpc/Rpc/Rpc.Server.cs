@@ -20,28 +20,28 @@ public partial class Rpc
 	private static readonly ConcurrentDictionary<Guid, RpcCallResponseMessage> RpcResponses = new();
 
 	/// <summary>
-	/// Executes an RPC relating to an entities instance.
+	/// Executes an RPC relating to a <see cref="BaseNetworkable"/>s instance.
 	/// </summary>
-	/// <param name="entity">The entity instance to call the RPC on.</param>
+	/// <param name="baseNetworkable">The <see cref="BaseNetworkable"/> instance to call the RPC on.</param>
 	/// <param name="methodName">The name of the method to call.</param>
 	/// <param name="parameters">The parameters to pass to the method.</param>
-	public static void Call( IEntity entity, string methodName, params INetworkable[] parameters )
+	public static void Call( BaseNetworkable baseNetworkable, string methodName, params INetworkable[] parameters )
 	{
-		Call( To.All( GameServer.Instance ), entity, methodName, parameters );
+		Call( To.All( GameServer.Instance ), baseNetworkable, methodName, parameters );
 	}
 
 	/// <summary>
-	/// Executes an asynchronous RPC relating to an entities instance.
+	/// Executes an asynchronous RPC relating to a <see cref="BaseNetworkable"/>s instance.
 	/// </summary>
 	/// <param name="client">The client to send the RPC to.</param>
-	/// <param name="entity">The entity instance to call the RPC on.</param>
+	/// <param name="baseNetworkable">The <see cref="BaseNetworkable"/> instance to call the RPC on.</param>
 	/// <param name="methodName">The name of the method to call.</param>
 	/// <param name="parameters">The parameters to pass to the method.</param>
 	/// <returns>A task that will complete once a <see cref="RpcCallResponseMessage"/> is received that contains the sent <see cref="RpcCallMessage"/>.<see cref="RpcCallMessage.CallGuid"/>.</returns>
-	public static async Task<RpcCallResponseMessage> CallAsync( INetworkClient client, IEntity entity, string methodName,
+	public static async Task<RpcCallResponseMessage> CallAsync( INetworkClient client, BaseNetworkable baseNetworkable, string methodName,
 		params INetworkable[] parameters )
 	{
-		var message = CreateRpc( true, entity, methodName, parameters );
+		var message = CreateRpc( true, baseNetworkable, methodName, parameters );
 		GameServer.Instance.QueueSend( To.Single( client ), message );
 		return await WaitForResponseAsync( message.CallGuid );
 	}
@@ -74,15 +74,15 @@ public partial class Rpc
 	}
 
 	/// <summary>
-	/// Executes an RPC relating to an entities instance that is sent to specific clients.
+	/// Executes an RPC relating to a <see cref="BaseNetworkable"/>s instance that is sent to specific clients.
 	/// </summary>
 	/// <param name="to">The clients to send the RPC to.</param>
-	/// <param name="entity">The entity instance to call the RPC on.</param>
+	/// <param name="baseNetworkable">The <see cref="BaseNetworkable"/> instance to call the RPC on.</param>
 	/// <param name="methodName">The name of the method to call.</param>
 	/// <param name="parameters">The parameters to pass to the method.</param>
-	public static void Call( To to, IEntity entity, string methodName, params INetworkable[] parameters )
+	public static void Call( To to, BaseNetworkable baseNetworkable, string methodName, params INetworkable[] parameters )
 	{
-		GameServer.Instance.QueueSend( to, CreateRpc( false, entity, methodName, parameters ) );
+		GameServer.Instance.QueueSend( to, CreateRpc( false, baseNetworkable, methodName, parameters ) );
 	}
 
 	/// <summary>
@@ -110,23 +110,20 @@ public partial class Rpc
 
 		var type = TypeHelper.GetTypeByName( rpcCall.ClassName );
 		if ( type is null )
-			throw new InvalidOperationException(
-				$"Failed to handle RPC call (\"{rpcCall.ClassName}\" doesn't exist in the current assembly)." );
+			throw new InvalidOperationException( $"Failed to handle RPC call (\"{rpcCall.ClassName}\" doesn't exist in any accessible assemblies)." );
 
 		var method = type.GetMethod( rpcCall.MethodName );
 		if ( method is null )
-			throw new InvalidOperationException(
-				$"Failed to handle RPC call (\"{rpcCall.MethodName}\" does not exist on \"{type}\")." );
+			throw new InvalidOperationException( $"Failed to handle RPC call (\"{rpcCall.MethodName}\" does not exist on \"{type}\")." );
 
 		if ( method.GetCustomAttribute( typeof( ServerAttribute ) ) is null )
 			throw new InvalidOperationException( "Failed to handle RPC call (Attempted to invoke a non-RPC method)." );
 
-		var entity = NetBoltGame.Current.GetNetworkedEntityById( rpcCall.EntityId );
-		if ( entity is null && rpcCall.EntityId != -1 )
-			throw new InvalidOperationException(
-				"Failed to handle RPC call (Attempted to call RPC on a non-existant entity)." );
+		var baseNetworkable = IEntity.GetEntityById( rpcCall.NetworkId );
+		if ( baseNetworkable is null && rpcCall.NetworkId != -1 )
+			throw new InvalidOperationException( $"Failed to handle RPC call (Attempted to call RPC on a non-existant {nameof(BaseNetworkable)})." );
 
-		var returnValue = method.Invoke( entity, rpcCall.Parameters );
+		var returnValue = method.Invoke( baseNetworkable, rpcCall.Parameters );
 		if ( rpcCall.CallGuid == Guid.Empty )
 			return;
 

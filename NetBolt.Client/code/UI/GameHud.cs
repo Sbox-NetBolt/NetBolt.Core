@@ -19,7 +19,7 @@ public class GameHud : RootPanel
 	/// <summary>
 	/// A property for the amount of entities in the server that the client knows about.
 	/// </summary>
-	public string NetworkedEntityCount => $"{IEntity.All.Entities.Count} networked entities";
+	public string NetworkedEntityCount => $"{IEntity.All.Count} networked entities";
 
 #if DEBUG
 	/// <summary>

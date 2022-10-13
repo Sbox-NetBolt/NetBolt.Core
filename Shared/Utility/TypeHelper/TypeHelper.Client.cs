@@ -28,6 +28,19 @@ public static partial class TypeHelper
 	}
 
 	/// <summary>
+	/// Creates an instance of <see ref="typeNameToCreate"/> converted to a <see cref="Type"/> and casts it to <see ref="T"/>.
+	/// </summary>
+	/// <param name="typeNameToCreate">The name of the type to create.</param>
+	/// <param name="parameters">The parameters to pass to the public constructor.</param>
+	/// <typeparam name="T">The type to cast the created instance to.</typeparam>
+	/// <returns>The created instance of <see ref="typeNameToCreate"/> casted to <see ref="T"/>.</returns>
+	public static T? Create<T>( string typeNameToCreate, params object[] parameters )
+	{
+		var type = GetTypeByName( typeNameToCreate );
+		return type is null ? default : Create<T>( type, parameters );
+	}
+
+	/// <summary>
 	/// Creates an instance of <see ref="typeToCreate"/> and casts it to <see ref="T"/>.
 	/// </summary>
 	/// <param name="typeToCreate">The type to create.</param>

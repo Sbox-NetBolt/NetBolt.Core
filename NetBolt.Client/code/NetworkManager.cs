@@ -12,6 +12,7 @@ using NetBolt.Shared.Networkables;
 using NetBolt.Shared.RemoteProcedureCalls;
 using NetBolt.Shared.Utility;
 using Sandbox;
+using BaseNetworkable = NetBolt.Shared.Networkables.BaseNetworkable;
 
 namespace NetBolt.Client;
 
@@ -54,11 +55,6 @@ public sealed class NetworkManager
 	/// The local client.
 	/// </summary>
 	public INetworkClient LocalClient => GetClientById( _localClientId )!;
-
-	/// <summary>
-	/// The networked entity manager.
-	/// </summary>
-	public EntityManager SharedEntityManager { get; } = new();
 
 	/// <summary>
 	/// Whether or not the client is connected to a server.
@@ -145,12 +141,12 @@ public sealed class NetworkManager
 		HandleMessage<MultiMessage>( HandleMultiMessage );
 		HandleMessage<ShutdownMessage>( HandleShutdownMessage );
 		HandleMessage<ClientListMessage>( HandleClientListMessage );
-		HandleMessage<EntityListMessage>( HandleEntityListMessage );
-		HandleMessage<CreateEntityMessage>( HandleCreateEntityMessage );
-		HandleMessage<DeleteEntityMessage>( HandleDeleteEntityMessage );
+		HandleMessage<BaseNetworkableListMessage>( HandleBaseNetworkableListMessage );
+		HandleMessage<CreateBaseNetworkableMessage>( HandleCreateBaseNetworkableMessage );
+		HandleMessage<DeleteBaseNetworkableMessage>( HandleDeleteBaseNetworkableMessage );
 		HandleMessage<ClientStateChangedMessage>( HandleClientStateChangedMessage );
 		HandleMessage<ClientPawnChangedMessage>( HandleClientPawnChangedMessage );
-		HandleMessage<MultiEntityUpdateMessage>( HandleMultiEntityUpdateMessage );
+		HandleMessage<MultiBaseNetworkableUpdateMessage>( HandleMultiBaseNetworkableUpdateMessage );
 	}
 
 	/// <summary>
@@ -232,7 +228,11 @@ public sealed class NetworkManager
 	/// </summary>
 	public void Update()
 	{
-		foreach ( var entity in SharedEntityManager.Entities.Values )
+		DispatchIncoming();
+		foreach ( var baseNetworkable in BaseNetworkable.All )
+			baseNetworkable.ProcessPendingNetworkables();
+		
+		foreach ( var entity in IEntity.All )
 			entity.Update();
 
 		if ( LocalClient.Pawn is not INetworkable pawn || !pawn.Changed() || _pawnSw.Elapsed.TotalMilliseconds < 100 )
@@ -246,6 +246,7 @@ public sealed class NetworkManager
 
 		SendToServer( new ClientPawnUpdateMessage( stream.ToArray() ) );
 		_pawnSw.Restart();
+		DispatchOutgoing();
 	}
 
 	/// <summary>
@@ -289,7 +290,9 @@ public sealed class NetworkManager
 		Connected = false;
 		_webSocket = new WebSocket();
 		_clients.Clear();
-		SharedEntityManager.DeleteAllEntities();
+		foreach ( var entity in IEntity.All )
+			entity.Delete();
+		IEntity.AllEntities.Clear();
 
 #if DEBUG
 		MessagesReceived = 0;
@@ -361,50 +364,56 @@ public sealed class NetworkManager
 			if ( clientId == _localClientId )
 				continue;
 
-			var client = new NetworkClient( clientId ) { Pawn = SharedEntityManager.GetEntityById( pawnId ) };
+			var client = new NetworkClient( clientId ) { Pawn = IEntity.GetEntityById( pawnId ) };
 			_clients.Add( client );
 		}
 	}
 
 	/// <summary>
-	/// Handles a <see cref="EntityListMessage"/>.
+	/// Handles a <see cref="BaseNetworkableListMessage"/>.
 	/// </summary>
-	/// <param name="message">The <see cref="EntityListMessage"/> that was received.</param>
-	private void HandleEntityListMessage( NetworkMessage message )
+	/// <param name="message">The <see cref="BaseNetworkableListMessage"/> that was received.</param>
+	private void HandleBaseNetworkableListMessage( NetworkMessage message )
 	{
-		if ( message is not EntityListMessage entityListMessage )
+		if ( message is not BaseNetworkableListMessage baseNetworkableListMessage )
 			return;
 
-		foreach ( var entityData in entityListMessage.EntityData )
+		foreach ( var baseNetworkableData in baseNetworkableListMessage.BaseNetworkableData )
 		{
-			var reader = new NetworkReader( new MemoryStream( entityData ) );
-			SharedEntityManager.DeserializeAndAddEntity( reader );
+			var reader = new NetworkReader( new MemoryStream( baseNetworkableData ) );
+			var baseNetworkable = reader.ReadBaseNetworkable();
+			if ( baseNetworkable is IEntity entity )
+				IEntity.AllEntities.Add( entity );
 			reader.Close();
 		}
 	}
 
 	/// <summary>
-	/// Handles a <see cref="CreateEntityMessage"/>.
+	/// Handles a <see cref="CreateBaseNetworkableMessage"/>.
 	/// </summary>
-	/// <param name="message">The <see cref="CreateEntityMessage"/> that was received.</param>
-	private void HandleCreateEntityMessage( NetworkMessage message )
+	/// <param name="message">The <see cref="CreateBaseNetworkableMessage"/> that was received.</param>
+	private void HandleCreateBaseNetworkableMessage( NetworkMessage message )
 	{
-		if ( message is not CreateEntityMessage createEntityMessage )
+		if ( message is not CreateBaseNetworkableMessage createBaseNetworkableMessage )
 			return;
-
-		SharedEntityManager.Create( createEntityMessage.EntityClass, createEntityMessage.EntityId );
+		
+		var networkable = TypeHelper.Create<BaseNetworkable>( createBaseNetworkableMessage.BaseNetworkableClass, createBaseNetworkableMessage.NetworkId );
+		if ( networkable is IEntity entity )
+			IEntity.AllEntities.Add( entity );
 	}
 
 	/// <summary>
-	/// Handles a <see cref="DeleteEntityMessage"/>.
+	/// Handles a <see cref="DeleteBaseNetworkableMessage"/>.
 	/// </summary>
-	/// <param name="message">The <see cref="DeleteEntityMessage"/> that was received.</param>
-	private void HandleDeleteEntityMessage( NetworkMessage message )
+	/// <param name="message">The <see cref="DeleteBaseNetworkableMessage"/> that was received.</param>
+	private void HandleDeleteBaseNetworkableMessage( NetworkMessage message )
 	{
-		if ( message is not DeleteEntityMessage deleteEntityMessage )
+		if ( message is not DeleteBaseNetworkableMessage deleteBaseNetworkableMessage )
 			return;
 
-		SharedEntityManager.DeleteEntity( deleteEntityMessage.Entity );
+		var baseNetworkable = BaseNetworkable.All.FirstOrDefault( baseNetworkable =>
+			baseNetworkable.NetworkId == deleteBaseNetworkableMessage.NetworkId );
+		baseNetworkable?.Delete();
 	}
 
 	/// <summary>
@@ -445,37 +454,32 @@ public sealed class NetworkManager
 	{
 		if ( message is not ClientPawnChangedMessage clientPawnChangedMessage )
 			return;
-
-		if ( clientPawnChangedMessage.Client.Pawn is not null )
-			clientPawnChangedMessage.Client.Pawn.Owner = null;
-
+		
 		clientPawnChangedMessage.Client.Pawn = clientPawnChangedMessage.NewPawn;
-
-		if ( clientPawnChangedMessage.Client.Pawn is not null )
-			clientPawnChangedMessage.Client.Pawn.Owner = clientPawnChangedMessage.Client;
 	}
 
 	/// <summary>
-	/// Handles a <see cref="MultiEntityUpdateMessage"/>.
+	/// Handles a <see cref="MultiBaseNetworkableUpdateMessage"/>.
 	/// </summary>
-	/// <param name="message">The <see cref="MultiEntityUpdateMessage"/> that was received.</param>
-	private void HandleMultiEntityUpdateMessage( NetworkMessage message )
+	/// <param name="message">The <see cref="MultiBaseNetworkableUpdateMessage"/> that was received.</param>
+	private void HandleMultiBaseNetworkableUpdateMessage( NetworkMessage message )
 	{
-		if ( message is not MultiEntityUpdateMessage entityUpdateMessage )
+		if ( message is not MultiBaseNetworkableUpdateMessage multiBaseNetworkableUpdateMessage )
 			return;
 
-		var reader = new NetworkReader( new MemoryStream( entityUpdateMessage.PartialEntityData ) );
-		var entityCount = reader.ReadInt32();
-		for ( var i = 0; i < entityCount; i++ )
+		var reader = new NetworkReader( new MemoryStream( multiBaseNetworkableUpdateMessage.PartialBaseNetworkableData ) );
+		var baseNetworkableCount = reader.ReadInt32();
+		for ( var i = 0; i < baseNetworkableCount; i++ )
 		{
-			var entity = SharedEntityManager?.GetEntityById( reader.ReadInt32() );
-			if ( entity is null )
+			var networkId = reader.ReadInt32();
+			var baseNetworkable = BaseNetworkable.All.FirstOrDefault( baseNetworkable => baseNetworkable.NetworkId == networkId );
+			if ( baseNetworkable is null )
 			{
-				Log.Error( "Attempted to update an entity that does not exist." );
+				Log.Error( $"Attempted to update a {nameof(BaseNetworkable)} that does not exist." );
 				continue;
 			}
 
-			reader.ReadNetworkableChanges( entity );
+			reader.ReadNetworkableChanges( baseNetworkable );
 		}
 		reader.Close();
 	}

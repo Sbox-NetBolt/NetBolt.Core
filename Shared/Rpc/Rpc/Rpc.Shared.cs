@@ -19,14 +19,14 @@ public static partial class Rpc
 	/// Creates an RPC call message for an entity.
 	/// </summary>
 	/// <param name="respondable">Whether or not the RPC is expecting a response.</param>
-	/// <param name="entity">The entity that is the target of the RPC.</param>
+	/// <param name="baseNetworkable">The <see cref="BaseNetworkable"/> that is the target of the RPC.</param>
 	/// <param name="methodName">The name of the method to call.</param>
 	/// <param name="parameters">The parameters to pass to the method.</param>
 	/// <returns>The built RPC message.</returns>
-	private static RpcCallMessage CreateRpc( bool respondable, IEntity entity, string methodName,
+	private static RpcCallMessage CreateRpc( bool respondable, BaseNetworkable baseNetworkable, string methodName,
 		INetworkable[] parameters )
 	{
-		return new RpcCallMessage( respondable, entity.GetType(), entity, methodName, parameters );
+		return new RpcCallMessage( respondable, baseNetworkable.GetType(), baseNetworkable, methodName, parameters );
 	}
 
 	/// <summary>
@@ -49,7 +49,6 @@ public static partial class Rpc
 	/// <returns>The response for the call.</returns>
 	private static async Task<RpcCallResponseMessage> WaitForResponseAsync( Guid callGuid )
 	{
-		// TODO: Surely there's a better way to do this right?
 		// TODO: This does not account for disconnects or the environment shutting down.
 		while ( !RpcResponses.ContainsKey( callGuid ) )
 			await Task.Delay( 1 );

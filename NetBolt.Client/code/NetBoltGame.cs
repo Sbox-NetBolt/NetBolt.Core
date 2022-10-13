@@ -47,10 +47,8 @@ public class NetBoltGame : Game
 	{
 		if ( _networkManager is null || !_networkManager.Connected )
 			return;
-
-		_networkManager.DispatchIncoming();
+		
 		_networkManager.Update();
-		_networkManager.DispatchOutgoing();
 	}
 
 	/// <summary>

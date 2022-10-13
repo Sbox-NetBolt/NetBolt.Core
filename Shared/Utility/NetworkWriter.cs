@@ -71,13 +71,13 @@ public sealed class NetworkWriter : BinaryWriter
 	}
 
 	/// <summary>
-	/// Writes an instance of <see cref="IEntity"/>.
+	/// Writes an instance of <see cref="BaseNetworkable"/>.
 	/// </summary>
-	/// <param name="entity">The entity to write.</param>
-	public void WriteEntity( IEntity entity )
+	/// <param name="baseNetworkable">The <see cref="BaseNetworkable"/> to write.</param>
+	public void WriteBaseNetworkable( BaseNetworkable baseNetworkable )
 	{
-		Write( entity.EntityId );
-		WriteNetworkable( entity );
+		Write( baseNetworkable.NetworkId );
+		WriteNetworkable( baseNetworkable );
 	}
 
 	/// <summary>

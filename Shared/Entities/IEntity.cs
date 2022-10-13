@@ -1,9 +1,8 @@
 #if CLIENT
 using NetBolt.Client;
 #endif
-#if SERVER
-using NetBolt.Server;
-#endif
+using System.Collections.Generic;
+using System.Linq;
 using NetBolt.Shared.Networkables;
 
 namespace NetBolt.Shared.Entities;
@@ -33,34 +32,23 @@ public interface IEntity : INetworkable
 	/// <remarks>This will be called every server tick or client frame.</remarks>
 	/// </summary>
 	void Update();
+	
+	/// <summary>
+	/// A read-only list of all entities in the server.
+	/// </summary>
+	public static IReadOnlyList<IEntity> All => AllEntities;
+	/// <summary>
+	/// A list of all entities in the server.
+	/// </summary>
+	internal static List<IEntity> AllEntities { get; } = new();
 
-#if SERVER
 	/// <summary>
-	/// Contains all networked entities in the server.
+	/// Gets an entity by its unique network identifier.
 	/// </summary>
-	public static EntityManager All => NetBoltGame.Current.SharedEntityManager;
-	/// <summary>
-	/// Contains all entities that only exist on the server.
-	/// </summary>
-	public static EntityManager Local => NetBoltGame.Current.ServerEntityManager;
-#endif
-#if CLIENT
-	/// <summary>
-	/// Contains all networked entities in the server.
-	/// <remarks>This may not actually contain all networked entities as the server could be limiting this information.</remarks>
-	/// </summary>
-	public static EntityManager All
+	/// <param name="networkId">The unique network identifier of the entity.</param>
+	/// <returns></returns>
+	public static IEntity? GetEntityById( int networkId )
 	{
-		get
-		{
-			if ( NetworkManager.Instance is null )
-			{
-				Log.Error( $"Attempted to access all networked entities when the {nameof( NetworkManager )} doesn't exist." );
-				return null!;
-			}
-
-			return NetworkManager.Instance.SharedEntityManager;
-		}
+		return All.FirstOrDefault( entity => entity.EntityId == networkId );
 	}
-#endif
 }

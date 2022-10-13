@@ -56,9 +56,9 @@ public sealed class ClientPawnChangedMessage : NetworkMessage
 
 		Client = client;
 		if ( reader.ReadBoolean() )
-			OldPawn = IEntity.All.GetEntityById( reader.ReadInt32() );
+			OldPawn = IEntity.GetEntityById( reader.ReadInt32() );
 		if ( reader.ReadBoolean() )
-			NewPawn = IEntity.All.GetEntityById( reader.ReadInt32() );
+			NewPawn = IEntity.GetEntityById( reader.ReadInt32() );
 	}
 
 	/// <summary>

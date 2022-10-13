@@ -1,5 +1,4 @@
 using System;
-using NetBolt.Shared.Entities;
 using NetBolt.Shared.Networkables;
 using NetBolt.Shared.Utility;
 
@@ -23,9 +22,9 @@ public sealed class RpcCallMessage : NetworkMessage
 	/// </summary>
 	public string MethodName { get; private set; }
 	/// <summary>
-	/// The entity instance identifier to call the <see cref="MethodName"/> on.
+	/// The <see cref="BaseNetworkable"/>s network identifier to call the <see cref="MethodName"/> with.
 	/// </summary>
-	public int EntityId { get; private set; }
+	public int NetworkId { get; private set; }
 	/// <summary>
 	/// The parameters to send to the <see cref="MethodName"/>.
 	/// </summary>
@@ -39,7 +38,7 @@ public sealed class RpcCallMessage : NetworkMessage
 		CallGuid = Guid.Empty;
 		ClassName = string.Empty;
 		MethodName = string.Empty;
-		EntityId = -1;
+		NetworkId = -1;
 		Parameters = Array.Empty<INetworkable>();
 	}
 
@@ -48,18 +47,18 @@ public sealed class RpcCallMessage : NetworkMessage
 	/// </summary>
 	/// <param name="respondable">Whether or not the creator of the <see cref="RpcCallMessage"/> is expecting a response.</param>
 	/// <param name="entityType">The C# type that contains the method to call.</param>
-	/// <param name="entity">An instance of <see cref="IEntity"/> that the RPC is being called on.</param>
+	/// <param name="baseNetworkable">An instance of <see cref="BaseNetworkable"/> that the RPC is being called on.</param>
 	/// <param name="methodName">The name of the method to call.</param>
 	/// <param name="parameters">The parameters to pass to the method.</param>
-	public RpcCallMessage( bool respondable, Type entityType, IEntity? entity, string methodName,
+	public RpcCallMessage( bool respondable, Type entityType, BaseNetworkable? baseNetworkable, string methodName,
 		params INetworkable[] parameters )
 	{
 		CallGuid = respondable ? Guid.NewGuid() : Guid.Empty;
 		ClassName = entityType.Name;
-		if ( entity is null )
-			EntityId = -1;
+		if ( baseNetworkable is null )
+			NetworkId = -1;
 		else
-			EntityId = entity.EntityId;
+			NetworkId = baseNetworkable.NetworkId;
 
 		MethodName = methodName;
 		Parameters = parameters;
@@ -74,7 +73,7 @@ public sealed class RpcCallMessage : NetworkMessage
 		CallGuid = reader.ReadGuid();
 		ClassName = reader.ReadString();
 		MethodName = reader.ReadString();
-		EntityId = reader.ReadInt32();
+		NetworkId = reader.ReadInt32();
 
 		Parameters = new INetworkable[reader.ReadInt32()];
 		for ( var i = 0; i < Parameters.Length; i++ )
@@ -90,7 +89,7 @@ public sealed class RpcCallMessage : NetworkMessage
 		writer.Write( CallGuid );
 		writer.Write( ClassName );
 		writer.Write( MethodName );
-		writer.Write( EntityId );
+		writer.Write( NetworkId );
 
 		writer.Write( Parameters.Length );
 		foreach ( var argument in Parameters )

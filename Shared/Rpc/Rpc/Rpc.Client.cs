@@ -19,27 +19,27 @@ public partial class Rpc
 	private static readonly Dictionary<Guid, RpcCallResponseMessage> RpcResponses = new();
 
 	/// <summary>
-	/// Executes an RPC relating to an entities instance.
+	/// Executes an RPC relating to a <see cref="BaseNetworkable"/> instance.
 	/// </summary>
-	/// <param name="entity">The entity instance to call the RPC on.</param>
+	/// <param name="baseNetworkable">The <see cref="BaseNetworkable"/> instance to call the RPC on.</param>
 	/// <param name="methodName">The name of the method to call.</param>
 	/// <param name="parameters">The parameters to pass to the method.</param>
-	public static void Call( IEntity entity, string methodName, params INetworkable[] parameters )
+	public static void Call( BaseNetworkable baseNetworkable, string methodName, params INetworkable[] parameters )
 	{
-		NetworkManager.Instance?.SendToServer( CreateRpc( false, entity, methodName, parameters ) );
+		NetworkManager.Instance?.SendToServer( CreateRpc( false, baseNetworkable, methodName, parameters ) );
 	}
 
 	/// <summary>
-	/// Executes an asynchronous RPC relating to an entities instance.
+	/// Executes an asynchronous RPC relating to a <see cref="BaseNetworkable"/> instance.
 	/// </summary>
-	/// <param name="entity">The entity instance to call the RPC on.</param>
+	/// <param name="baseNetworkable">The <see cref="BaseNetworkable"/> instance to call the RPC on.</param>
 	/// <param name="methodName">The name of the method to call.</param>
 	/// <param name="parameters">The parameters to pass to the method.</param>
 	/// <returns>A task that will complete once a <see cref="RpcCallResponseMessage"/> is received that contains the sent <see cref="RpcCallMessage"/>.<see cref="RpcCallMessage.CallGuid"/>.</returns>
-	public static async Task<RpcCallResponseMessage> CallAsync( IEntity entity, string methodName,
+	public static async Task<RpcCallResponseMessage> CallAsync( BaseNetworkable baseNetworkable, string methodName,
 		params INetworkable[] parameters )
 	{
-		var message = CreateRpc( true, entity, methodName, parameters );
+		var message = CreateRpc( true, baseNetworkable, methodName, parameters );
 		NetworkManager.Instance?.SendToServer( message );
 		return await WaitForResponseAsync( message.CallGuid );
 	}
@@ -101,17 +101,17 @@ public partial class Rpc
 			return;
 		}
 
-		var entity = IEntity.All.GetEntityById( rpcCall.EntityId );
-		if ( entity is null && rpcCall.EntityId != -1 )
+		var baseNetworkable = BaseNetworkable.All.FirstOrDefault( baseNetworkable => baseNetworkable.NetworkId == rpcCall.NetworkId );
+		if ( baseNetworkable is null && rpcCall.NetworkId != -1 )
 		{
-			Log.Error( "Failed to handle RPC call (Attempted to call RPC on a non-existant entity)." );
+			Log.Error( $"Failed to handle RPC call (Attempted to call RPC on a non-existant {nameof(BaseNetworkable)})." );
 			return;
 		}
 
 		var parameters = new List<object>();
 		parameters.AddRange( rpcCall.Parameters );
-		if ( entity is not null )
-			parameters.Insert( 0, entity );
+		if ( baseNetworkable is not null )
+			parameters.Insert( 0, baseNetworkable );
 
 		if ( rpcCall.CallGuid == Guid.Empty )
 		{

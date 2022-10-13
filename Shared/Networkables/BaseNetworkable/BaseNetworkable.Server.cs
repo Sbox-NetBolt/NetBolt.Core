@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using NetBolt.Server;
 using NetBolt.Shared.Utility;
 
 namespace NetBolt.Shared.Networkables;
@@ -29,7 +30,8 @@ public partial class BaseNetworkable
 			PropertyNameCache.Add( property.Name, property );
 		}
 
-		AllNetworkables.Add( NetworkId, this );
+		AllNetworkables.Add( this );
+		NetBoltGame.Current.OnBaseNetworkableCreated( this );
 	}
 
 	/// <summary>

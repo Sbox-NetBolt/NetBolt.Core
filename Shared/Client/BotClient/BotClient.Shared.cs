@@ -45,14 +45,17 @@ public sealed partial class BotClient : INetworkClient
 		get => _pawn;
 		set
 		{
-			if ( value is not null && _pawn is not null )
-				return;
-
-			if ( value is not null && _pawn is not null && value.EntityId == _pawn.EntityId )
+			if ( _pawn == value )
 				return;
 
 			var oldPawn = _pawn;
+			if ( oldPawn is not null )
+				oldPawn.Owner = null;
+			
 			_pawn = value;
+			if ( _pawn is not null )
+				_pawn.Owner = this;
+			
 			PawnChanged?.Invoke( this, oldPawn, _pawn );
 		}
 	}
