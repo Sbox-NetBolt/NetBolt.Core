@@ -22,4 +22,13 @@ public sealed class ShutdownMessage : NetworkMessage
 	public override void Serialize( NetworkWriter writer )
 	{
 	}
+	
+	/// <summary>
+	/// Returns a string that represents the <see cref="ShutdownMessage"/>.
+	/// </summary>
+	/// <returns> string that represents the <see cref="ShutdownMessage"/>.</returns>
+	public override string ToString()
+	{
+		return nameof(ShutdownMessage);
+	}
 }

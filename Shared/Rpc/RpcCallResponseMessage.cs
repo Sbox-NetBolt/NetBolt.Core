@@ -71,4 +71,13 @@ public sealed class RpcCallResponseMessage : NetworkMessage
 		if ( hasReturnValue )
 			writer.WriteNetworkable( ReturnValue! );
 	}
+	
+	/// <summary>
+	/// Returns a string that represents the <see cref="RpcCallResponseMessage"/>.
+	/// </summary>
+	/// <returns> string that represents the <see cref="RpcCallResponseMessage"/>.</returns>
+	public override string ToString()
+	{
+		return nameof(RpcCallResponseMessage);
+	}
 }

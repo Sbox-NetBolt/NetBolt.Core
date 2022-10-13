@@ -48,4 +48,13 @@ public sealed class ClientStateChangedMessage : NetworkMessage
 		writer.Write( ClientId );
 		writer.Write( (byte)ClientState );
 	}
+	
+	/// <summary>
+	/// Returns a string that represents the <see cref="ClientStateChangedMessage"/>.
+	/// </summary>
+	/// <returns> string that represents the <see cref="ClientStateChangedMessage"/>.</returns>
+	public override string ToString()
+	{
+		return nameof(ClientStateChangedMessage);
+	}
 }

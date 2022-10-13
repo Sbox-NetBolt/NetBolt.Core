@@ -43,6 +43,15 @@ public abstract class NetworkMessage : INetworkable
 	}
 
 	/// <summary>
+	/// Returns a string that represents the <see cref="NetworkMessage"/>.
+	/// </summary>
+	/// <returns> string that represents the <see cref="NetworkMessage"/>.</returns>
+	public override string ToString()
+	{
+		return nameof(NetworkMessage);
+	}
+
+	/// <summary>
 	/// Deserializes a <see cref="NetworkMessage"/> from a <see cref="NetworkReader"/>.
 	/// </summary>
 	/// <param name="reader">The reader to read from.</param>

@@ -52,4 +52,13 @@ public sealed class ClientListMessage : NetworkMessage
 			writer.Write( pair.Item2 );
 		}
 	}
+	
+	/// <summary>
+	/// Returns a string that represents the <see cref="ClientListMessage"/>.
+	/// </summary>
+	/// <returns> string that represents the <see cref="ClientListMessage"/>.</returns>
+	public override string ToString()
+	{
+		return nameof(ClientListMessage);
+	}
 }

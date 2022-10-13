@@ -96,4 +96,13 @@ public sealed class RpcCallMessage : NetworkMessage
 		foreach ( var argument in Parameters )
 			writer.WriteNetworkable( argument );
 	}
+	
+	/// <summary>
+	/// Returns a string that represents the <see cref="RpcCallMessage"/>.
+	/// </summary>
+	/// <returns> string that represents the <see cref="RpcCallMessage"/>.</returns>
+	public override string ToString()
+	{
+		return nameof(RpcCallMessage);
+	}
 }
