@@ -1,4 +1,5 @@
-﻿using NetBolt.Client.UI;
+﻿using System.Diagnostics;
+using NetBolt.Client.UI;
 using NetBolt.Shared;
 using Sandbox;
 
@@ -24,6 +25,20 @@ public class NetBoltGame : Game
 	private readonly GameHud? _gameHud;
 
 	/// <summary>
+	/// The maximum tick rate to update networking at.
+	/// </summary>
+	protected virtual int TickRate => 15;
+	/// <summary>
+	/// The target delta time for the server.
+	/// </summary>
+	protected float TickRateDt => (float)1000 / TickRate;
+
+	/// <summary>
+	/// The stopwatch to track when to do a network update.
+	/// </summary>
+	private readonly Stopwatch _tickStopwatch = Stopwatch.StartNew();
+
+	/// <summary>
 	/// Initializes a new instance of <see cref="NetBoltGame"/>.
 	/// </summary>
 	public NetBoltGame()
@@ -37,6 +52,7 @@ public class NetBoltGame : Game
 		NetworkManager.ClientConnected += OnClientConnected;
 		NetworkManager.ClientDisconnected += OnClientDisconnected;
 		_gameHud = new GameHud();
+
 	}
 
 	/// <summary>
@@ -48,7 +64,11 @@ public class NetBoltGame : Game
 		if ( _networkManager is null || !_networkManager.Connected )
 			return;
 
+		if ( _tickStopwatch.Elapsed.TotalMilliseconds < TickRateDt )
+			return;
+
 		_networkManager.Update();
+		_tickStopwatch.Restart();
 	}
 
 	/// <summary>
@@ -57,6 +77,7 @@ public class NetBoltGame : Game
 	protected virtual void OnConnectedToServer()
 	{
 		Log.Info( "Connected" );
+		_tickStopwatch.Restart();
 	}
 
 	/// <summary>
