@@ -48,7 +48,7 @@ public abstract class NetworkMessage : INetworkable
 	/// <returns> string that represents the <see cref="NetworkMessage"/>.</returns>
 	public override string ToString()
 	{
-		return nameof(NetworkMessage);
+		return nameof( NetworkMessage );
 	}
 
 	/// <summary>

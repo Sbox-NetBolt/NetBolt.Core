@@ -84,13 +84,13 @@ public sealed class BaseNetworkableListMessage : NetworkMessage
 		}
 #endif
 	}
-	
+
 	/// <summary>
 	/// Returns a string that represents the <see cref="BaseNetworkableListMessage"/>.
 	/// </summary>
 	/// <returns> string that represents the <see cref="BaseNetworkableListMessage"/>.</returns>
 	public override string ToString()
 	{
-		return nameof(BaseNetworkableListMessage);
+		return nameof( BaseNetworkableListMessage );
 	}
 }

@@ -51,11 +51,11 @@ public sealed partial class BotClient : INetworkClient
 			var oldPawn = _pawn;
 			if ( oldPawn is not null )
 				oldPawn.Owner = null;
-			
+
 			_pawn = value;
 			if ( _pawn is not null )
 				_pawn.Owner = this;
-			
+
 			PawnChanged?.Invoke( this, oldPawn, _pawn );
 		}
 	}

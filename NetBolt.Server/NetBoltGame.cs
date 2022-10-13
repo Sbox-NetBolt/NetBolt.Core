@@ -153,7 +153,7 @@ public class NetBoltGame
 
 		if ( count != 0 )
 		{
-			Log.Verbose( $"{nameof(BaseNetworkable)}s changed, sending update..." );
+			Log.Verbose( $"{nameof( BaseNetworkable )}s changed, sending update..." );
 			GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new MultiBaseNetworkableUpdateMessage( stream.ToArray() ) );
 		}
 	}

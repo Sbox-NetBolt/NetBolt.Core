@@ -79,13 +79,13 @@ public sealed class ClientPawnChangedMessage : NetworkMessage
 		if ( hasNewPawn )
 			writer.Write( NewPawn!.EntityId );
 	}
-	
+
 	/// <summary>
 	/// Returns a string that represents the <see cref="ClientPawnChangedMessage"/>.
 	/// </summary>
 	/// <returns> string that represents the <see cref="ClientPawnChangedMessage"/>.</returns>
 	public override string ToString()
 	{
-		return nameof(ClientPawnChangedMessage);
+		return nameof( ClientPawnChangedMessage );
 	}
 }

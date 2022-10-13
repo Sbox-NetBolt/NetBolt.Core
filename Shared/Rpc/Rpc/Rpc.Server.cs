@@ -121,7 +121,7 @@ public partial class Rpc
 
 		var baseNetworkable = IEntity.GetEntityById( rpcCall.NetworkId );
 		if ( baseNetworkable is null && rpcCall.NetworkId != -1 )
-			throw new InvalidOperationException( $"Failed to handle RPC call (Attempted to call RPC on a non-existant {nameof(BaseNetworkable)})." );
+			throw new InvalidOperationException( $"Failed to handle RPC call (Attempted to call RPC on a non-existant {nameof( BaseNetworkable )})." );
 
 		var returnValue = method.Invoke( baseNetworkable, rpcCall.Parameters );
 		if ( rpcCall.CallGuid == Guid.Empty )

@@ -140,14 +140,14 @@ public sealed class NetworkReader : BinaryReader
 		var type = TypeHelper.GetTypeByName( typeName );
 		if ( type is null )
 		{
-			Log.Error( $"Failed to read {nameof(BaseNetworkable)} (\"{typeName}\" does not exist)" );
+			Log.Error( $"Failed to read {nameof( BaseNetworkable )} (\"{typeName}\" does not exist)" );
 			return null!;
 		}
 
 		var baseNetworkable = TypeHelper.Create<BaseNetworkable?>( type, networkId );
 		if ( baseNetworkable is null )
 		{
-			Log.Error( $"Failed to read {nameof(BaseNetworkable)} (instance creation failed)." );
+			Log.Error( $"Failed to read {nameof( BaseNetworkable )} (instance creation failed)." );
 			return null!;
 		}
 
@@ -166,7 +166,7 @@ public sealed class NetworkReader : BinaryReader
 		var baseNetworkable = ReadBaseNetworkable();
 		if ( baseNetworkable is not T expectedType )
 		{
-			Log.Error( $"Failed to read {nameof(BaseNetworkable)} ({baseNetworkable.GetType()} is not assignable to {typeof( T )})" );
+			Log.Error( $"Failed to read {nameof( BaseNetworkable )} ({baseNetworkable.GetType()} is not assignable to {typeof( T )})" );
 			return default!;
 		}
 

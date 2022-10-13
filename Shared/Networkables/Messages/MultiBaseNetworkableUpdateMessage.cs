@@ -49,13 +49,13 @@ public sealed class MultiBaseNetworkableUpdateMessage : NetworkMessage
 		writer.Write( PartialBaseNetworkableData );
 #endif
 	}
-	
+
 	/// <summary>
 	/// Returns a string that represents the <see cref="MultiBaseNetworkableUpdateMessage"/>.
 	/// </summary>
 	/// <returns> string that represents the <see cref="MultiBaseNetworkableUpdateMessage"/>.</returns>
 	public override string ToString()
 	{
-		return nameof(MultiBaseNetworkableUpdateMessage);
+		return nameof( MultiBaseNetworkableUpdateMessage );
 	}
 }

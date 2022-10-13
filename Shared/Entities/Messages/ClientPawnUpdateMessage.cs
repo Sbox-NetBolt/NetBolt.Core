@@ -38,13 +38,13 @@ public sealed class ClientPawnUpdateMessage : NetworkMessage
 		writer.Write( PartialPawnData.Length );
 		writer.Write( PartialPawnData );
 	}
-	
+
 	/// <summary>
 	/// Returns a string that represents the <see cref="ClientPawnUpdateMessage"/>.
 	/// </summary>
 	/// <returns> string that represents the <see cref="ClientPawnUpdateMessage"/>.</returns>
 	public override string ToString()
 	{
-		return nameof(ClientPawnUpdateMessage);
+		return nameof( ClientPawnUpdateMessage );
 	}
 }

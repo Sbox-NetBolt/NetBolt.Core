@@ -48,13 +48,13 @@ public sealed class CreateBaseNetworkableMessage : NetworkMessage
 		writer.Write( BaseNetworkableClass );
 		writer.Write( NetworkId );
 	}
-	
+
 	/// <summary>
 	/// Returns a string that represents the <see cref="CreateBaseNetworkableMessage"/>.
 	/// </summary>
 	/// <returns> string that represents the <see cref="CreateBaseNetworkableMessage"/>.</returns>
 	public override string ToString()
 	{
-		return nameof(CreateBaseNetworkableMessage);
+		return nameof( CreateBaseNetworkableMessage );
 	}
 }

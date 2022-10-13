@@ -45,13 +45,13 @@ public sealed class MultiMessage : NetworkMessage
 		foreach ( var message in Messages )
 			writer.WriteNetworkable( message );
 	}
-	
+
 	/// <summary>
 	/// Returns a string that represents the <see cref="MultiMessage"/>.
 	/// </summary>
 	/// <returns> string that represents the <see cref="MultiMessage"/>.</returns>
 	public override string ToString()
 	{
-		return nameof(MultiMessage);
+		return nameof( MultiMessage );
 	}
 }

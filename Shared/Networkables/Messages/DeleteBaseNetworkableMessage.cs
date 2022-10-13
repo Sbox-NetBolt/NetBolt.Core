@@ -41,13 +41,13 @@ public sealed class DeleteBaseNetworkableMessage : NetworkMessage
 	{
 		writer.Write( NetworkId );
 	}
-	
+
 	/// <summary>
 	/// Returns a string that represents the <see cref="DeleteBaseNetworkableMessage"/>.
 	/// </summary>
 	/// <returns> string that represents the <see cref="DeleteBaseNetworkableMessage"/>.</returns>
 	public override string ToString()
 	{
-		return nameof(DeleteBaseNetworkableMessage);
+		return nameof( DeleteBaseNetworkableMessage );
 	}
 }

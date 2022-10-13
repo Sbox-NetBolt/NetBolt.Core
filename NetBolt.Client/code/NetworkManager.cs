@@ -231,7 +231,7 @@ public sealed class NetworkManager
 		DispatchIncoming();
 		foreach ( var baseNetworkable in BaseNetworkable.All )
 			baseNetworkable.ProcessPendingNetworkables();
-		
+
 		foreach ( var entity in IEntity.All )
 			entity.Update();
 
@@ -396,7 +396,7 @@ public sealed class NetworkManager
 	{
 		if ( message is not CreateBaseNetworkableMessage createBaseNetworkableMessage )
 			return;
-		
+
 		var networkable = TypeHelper.Create<BaseNetworkable>( createBaseNetworkableMessage.BaseNetworkableClass, createBaseNetworkableMessage.NetworkId );
 		if ( networkable is IEntity entity )
 			IEntity.AllEntities.Add( entity );
@@ -454,7 +454,7 @@ public sealed class NetworkManager
 	{
 		if ( message is not ClientPawnChangedMessage clientPawnChangedMessage )
 			return;
-		
+
 		clientPawnChangedMessage.Client.Pawn = clientPawnChangedMessage.NewPawn;
 	}
 
@@ -475,7 +475,7 @@ public sealed class NetworkManager
 			var baseNetworkable = BaseNetworkable.All.FirstOrDefault( baseNetworkable => baseNetworkable.NetworkId == networkId );
 			if ( baseNetworkable is null )
 			{
-				Log.Error( $"Attempted to update a {nameof(BaseNetworkable)} that does not exist." );
+				Log.Error( $"Attempted to update a {nameof( BaseNetworkable )} that does not exist." );
 				continue;
 			}
 

@@ -32,7 +32,7 @@ public interface IEntity : INetworkable
 	/// <remarks>This will be called every server tick or client frame.</remarks>
 	/// </summary>
 	void Update();
-	
+
 	/// <summary>
 	/// A read-only list of all entities in the server.
 	/// </summary>

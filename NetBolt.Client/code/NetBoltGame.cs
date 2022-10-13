@@ -47,7 +47,7 @@ public class NetBoltGame : Game
 	{
 		if ( _networkManager is null || !_networkManager.Connected )
 			return;
-		
+
 		_networkManager.Update();
 	}
 
