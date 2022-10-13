@@ -1,3 +1,4 @@
+using NetBolt.Server;
 using NetBolt.Shared.Networkables;
 using NetBolt.Shared.Networkables.Builtin;
 using NetBolt.Shared.Utility;
@@ -64,6 +65,13 @@ public partial class NetworkEntity : BaseNetworkable, IEntity
 	/// <param name="newOwner">The new owner of the entity.</param>
 	protected virtual void OnOwnerChanged( INetworkClient? oldOwner, INetworkClient? newOwner )
 	{
+	}
+
+	internal override void Delete()
+	{
+		base.Delete();
+
+		IEntity.AllEntities.Remove( this );
 	}
 
 	/// <summary>

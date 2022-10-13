@@ -19,14 +19,25 @@ public abstract partial class BaseNetworkable : INetworkable
 	public int NetworkId { get; }
 
 	/// <summary>
-	/// Deletes the <see cref="BaseNetworkable"/>. You should not be using this after calling this.
 	/// </summary>
-	public virtual void Delete()
+	/// <summary>
+	/// Deletes the <see cref="BaseNetworkable"/>. You should not be using this after it is invoked.
+	/// </summary>
+	internal virtual void Delete()
 	{
+		OnDeleted();
+
 		AllNetworkables.Remove( this );
 #if SERVER
 		NetBoltGame.Current.OnBaseNetworkableDeleted( this );
 #endif
+	}
+
+	/// <summary>
+	/// Invoked when the <see cref="BaseNetworkable"/> is being deleted.
+	/// </summary>
+	protected virtual void OnDeleted()
+	{
 	}
 
 	/// <summary>

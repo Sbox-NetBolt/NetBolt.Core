@@ -23,11 +23,6 @@ public interface IEntity : INetworkable
 	INetworkClient? Owner { get; set; }
 
 	/// <summary>
-	/// Deletes this <see cref="IEntity"/>.
-	/// <remarks>You should not use this <see cref="IEntity"/> after calling this.</remarks>
-	/// </summary>
-	void Delete();
-	/// <summary>
 	/// Logic update for this <see cref="IEntity"/>.
 	/// <remarks>This will be called every server tick or client frame.</remarks>
 	/// </summary>

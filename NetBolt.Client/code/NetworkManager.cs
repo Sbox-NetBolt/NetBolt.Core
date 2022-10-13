@@ -290,8 +290,9 @@ public sealed class NetworkManager
 		Connected = false;
 		_webSocket = new WebSocket();
 		_clients.Clear();
-		foreach ( var entity in IEntity.All )
-			entity.Delete();
+		var entities = IEntity.All.ToArray();
+		foreach ( var entity in entities )
+			(entity as BaseNetworkable)?.Delete();
 		IEntity.AllEntities.Clear();
 
 #if DEBUG

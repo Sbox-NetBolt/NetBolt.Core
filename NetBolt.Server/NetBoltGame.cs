@@ -186,7 +186,7 @@ public class NetBoltGame
 		Log.Info( $"{client} has disconnected" );
 
 		GameServer.Instance.QueueSend( To.AllExcept( GameServer.Instance, client ), new ClientStateChangedMessage( client.ClientId, ClientState.Disconnected ) );
-		client.Pawn?.Delete();
+		(client.Pawn as BaseNetworkable)?.Delete();
 		client.PawnChanged -= ClientOnPawnChanged;
 	}
 

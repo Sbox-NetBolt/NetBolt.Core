@@ -43,9 +43,9 @@ public class BasePlayer : NetworkEntity
 			Rotation = _player.EyeRotation;
 	}
 
-	public override void Delete()
+	protected override void OnDeleted()
 	{
-		base.Delete();
+		base.OnDeleted();
 
 		_player.Delete();
 
