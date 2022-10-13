@@ -382,9 +382,7 @@ public sealed class NetworkManager
 		foreach ( var baseNetworkableData in baseNetworkableListMessage.BaseNetworkableData )
 		{
 			var reader = new NetworkReader( new MemoryStream( baseNetworkableData ) );
-			var baseNetworkable = reader.ReadBaseNetworkable();
-			if ( baseNetworkable is IEntity entity )
-				IEntity.AllEntities.Add( entity );
+			_ = reader.ReadBaseNetworkable();
 			reader.Close();
 		}
 	}
@@ -398,9 +396,7 @@ public sealed class NetworkManager
 		if ( message is not CreateBaseNetworkableMessage createBaseNetworkableMessage )
 			return;
 
-		var networkable = TypeHelper.Create<BaseNetworkable>( createBaseNetworkableMessage.BaseNetworkableClass, createBaseNetworkableMessage.NetworkId );
-		if ( networkable is IEntity entity )
-			IEntity.AllEntities.Add( entity );
+		_ = TypeHelper.Create<BaseNetworkable>( createBaseNetworkableMessage.BaseNetworkableClass, createBaseNetworkableMessage.NetworkId );
 	}
 
 	/// <summary>
