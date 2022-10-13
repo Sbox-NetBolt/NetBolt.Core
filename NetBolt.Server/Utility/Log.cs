@@ -223,7 +223,7 @@ public static class Log
 	public static void Verbose<T>( string messageTemplate, T obj )
 	{
 #if !NOLOGS
-		_logger.Information( messageTemplate, obj );
+		_logger.Verbose( messageTemplate, obj );
 #endif
 	}
 
@@ -235,7 +235,7 @@ public static class Log
 	public static void Verbose<T>( T obj )
 	{
 #if !NOLOGS
-		_logger.Information( "{A}", obj );
+		_logger.Verbose( "{A}", obj );
 #endif
 	}
 
@@ -251,7 +251,7 @@ public static class Log
 	public static void Verbose<T1, T2>( string messageTemplate, T1 obj0, T2 obj1 )
 	{
 #if !NOLOGS
-		_logger.Information( messageTemplate, obj0, obj1 );
+		_logger.Verbose( messageTemplate, obj0, obj1 );
 #endif
 	}
 
@@ -265,7 +265,7 @@ public static class Log
 	public static void Verbose<T1, T2>( T1 obj0, T2 obj1 )
 	{
 #if !NOLOGS
-		_logger.Information( "{A}\t{B}", obj0, obj1 );
+		_logger.Verbose( "{A}\t{B}", obj0, obj1 );
 #endif
 	}
 
@@ -283,7 +283,7 @@ public static class Log
 	public static void Verbose<T1, T2, T3>( string messageTemplate, T1 obj0, T2 obj1, T3 obj2 )
 	{
 #if !NOLOGS
-		_logger.Information( messageTemplate, obj0, obj1, obj2 );
+		_logger.Verbose( messageTemplate, obj0, obj1, obj2 );
 #endif
 	}
 
@@ -299,7 +299,7 @@ public static class Log
 	public static void Verbose<T1, T2, T3>( T1 obj0, T2 obj1, T3 obj2 )
 	{
 #if !NOLOGS
-		_logger.Information( "{A}\t{B}\t{C}", obj0, obj1, obj2 );
+		_logger.Verbose( "{A}\t{B}\t{C}", obj0, obj1, obj2 );
 #endif
 	}
 }

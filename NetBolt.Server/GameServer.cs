@@ -76,7 +76,7 @@ internal sealed class GameServer : WebSocketServer
 	/// <param name="message">The message the client has sent.</param>
 	public void QueueIncoming( INetworkClient client, NetworkMessage message )
 	{
-		Log.Verbose( "Received {@A} from {B}", message, client );
+		Log.Verbose( "Received {A} from {B}", message, client );
 		_incomingQueue.Enqueue( (client, message) );
 	}
 
@@ -87,7 +87,7 @@ internal sealed class GameServer : WebSocketServer
 	/// <param name="message">The message to send to each client.</param>
 	public void QueueSend( To to, NetworkMessage message )
 	{
-		Log.Verbose( "Queueing {@A} to {B}...", message, to );
+		Log.Verbose( "Queueing {A} to {B}...", message, to );
 		// Quick send message to bots.
 		foreach ( var client in to )
 		{
