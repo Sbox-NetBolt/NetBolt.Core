@@ -10,6 +10,7 @@ using NetBolt.Shared.Networkables;
 using NetBolt.Shared.RemoteProcedureCalls;
 using NetBolt.Shared.Utility;
 using NetBolt.WebSocket;
+using NetBolt.WebSocket.Enums;
 
 namespace NetBolt.Server;
 
@@ -155,8 +156,14 @@ public class NetBoltGame
 	/// Called when a <see cref="INetworkClient"/> has disconnected from the server. This could be intentional or due to a timeout.
 	/// </summary>
 	/// <param name="client">The handle of the client that has disconnected.</param>
-	public virtual void OnClientDisconnected( INetworkClient client )
+	/// <param name="reason">The reason for the client disconnecting.</param>
+	/// <param name="error">The error associated with the disconnect.</param>
+	public virtual void OnClientDisconnected( INetworkClient client, WebSocketDisconnectReason reason, WebSocketError? error )
 	{
+		if ( reason == WebSocketDisconnectReason.Error )
+			Log.Info( "{A} has disconnected for reason: {B} ({C})", client, reason, error );
+		else
+			Log.Info( "{A} has disconnected for reason: {B}", client, reason );
 
 		GameServer.Instance.QueueSend( To.AllExcept( GameServer.Instance, client ), new ClientStateChangedMessage( client, ClientState.Disconnected ) );
 		(client.Pawn as BaseNetworkable)?.Delete();

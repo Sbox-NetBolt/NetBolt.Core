@@ -141,7 +141,7 @@ internal sealed class GameServer : WebSocketServer
 	{
 		base.OnClientDisconnected( client, reason, error );
 
-		NetBoltGame.Current.OnClientDisconnected( (client as INetworkClient)! );
+		NetBoltGame.Current.OnClientDisconnected( (client as INetworkClient)!, reason, error );
 	}
 
 	/// <summary>
