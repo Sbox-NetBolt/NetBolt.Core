@@ -112,7 +112,8 @@ public class NetBoltGame
 		Running = false;
 		ProgramCancellation.Cancel();
 
-		_server.StopAsync().Wait();
+		if ( _server.Running )
+			_server.StopAsync().Wait();
 	}
 
 	/// <summary>
@@ -138,7 +139,7 @@ public class NetBoltGame
 	/// <param name="client">The handle of the client that has connected.</param>
 	public virtual void OnClientConnected( INetworkClient client )
 	{
-		Log.Info( $"{client} has connected" );
+		Log.Info( "{A} has connected", client );
 
 		var toClient = To.Single( client );
 		GameServer.Instance.QueueSend( toClient, new WelcomeMessage( Options.TickRate, Options.WelcomeMessage ) );
@@ -156,7 +157,6 @@ public class NetBoltGame
 	/// <param name="client">The handle of the client that has disconnected.</param>
 	public virtual void OnClientDisconnected( INetworkClient client )
 	{
-		Log.Info( $"{client} has disconnected" );
 
 		GameServer.Instance.QueueSend( To.AllExcept( GameServer.Instance, client ), new ClientStateChangedMessage( client, ClientState.Disconnected ) );
 		(client.Pawn as BaseNetworkable)?.Delete();
