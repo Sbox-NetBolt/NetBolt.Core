@@ -37,6 +37,11 @@ public sealed class NetworkManager
 	public int MessagesSent;
 
 	/// <summary>
+	/// A debug variable for all of the messages that have been sent and how many there have been.
+	/// </summary>
+	public readonly Dictionary<Type, int> MessageTypesSent = new();
+
+	/// <summary>
 	/// A debug variable for all of the messages that have been received and how many there have been.
 	/// </summary>
 	public readonly Dictionary<Type, int> MessageTypesReceived = new();
@@ -220,6 +225,13 @@ public sealed class NetworkManager
 	/// <param name="message">The message to send to the server.</param>
 	public void SendToServer( NetworkMessage message )
 	{
+#if DEBUG
+		var messageType = message.GetType();
+		if ( !MessageTypesSent.ContainsKey( messageType ) )
+			MessageTypesSent.Add( messageType, 0 );
+		MessageTypesSent[messageType]++;
+#endif
+
 		_outgoingQueue.Enqueue( message );
 	}
 
@@ -298,6 +310,7 @@ public sealed class NetworkManager
 #if DEBUG
 		MessagesReceived = 0;
 		MessagesSent = 0;
+		MessageTypesSent.Clear();
 		MessageTypesReceived.Clear();
 #endif
 
