@@ -67,6 +67,15 @@ public sealed class NetworkManager
 	public bool Connected { get; private set; }
 
 	/// <summary>
+	/// The address that the client is connected to.
+	/// </summary>
+	public string Address { get; private set; } = "";
+	/// <summary>
+	/// The port that the client is connected to on the <see cref="Address"/>.
+	/// </summary>
+	public int Port { get; private set; }
+
+	/// <summary>
 	/// The delegate for handling when the client has connected to a server.
 	/// </summary>
 	public delegate void ConnectedEventHandler();
@@ -187,6 +196,8 @@ public sealed class NetworkManager
 
 			_clients.Add( new NetworkClient( _localClientId ) );
 			Connected = true;
+			Address = ip;
+			Port = port;
 			ConnectedToServer?.Invoke();
 		}
 		catch ( Exception e )
@@ -301,6 +312,9 @@ public sealed class NetworkManager
 	private void Close()
 	{
 		Connected = false;
+		Address = string.Empty;
+		Port = 0;
+
 		_webSocket = new WebSocket();
 		_clients.Clear();
 		var entities = IEntity.All.ToArray();

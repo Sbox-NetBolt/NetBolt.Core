@@ -13,6 +13,19 @@ namespace NetBolt.Client;
 public class GameHud : RootPanel
 {
 	/// <summary>
+	/// A property for the connection info of the server.
+	/// </summary>
+	public string ConnectionInfo
+	{
+		get
+		{
+			if ( NetworkManager.Instance is null || !NetworkManager.Instance.Connected )
+				return "Connected: No";
+
+			return $"Connected: {NetworkManager.Instance.Address}:{NetworkManager.Instance.Port}";
+		}
+	}
+	/// <summary>
 	/// A property for the amount of clients in the server that the client knows about.
 	/// </summary>
 	public string ClientCount => $"{NetworkManager.Instance?.Clients.Count} clients connected";
