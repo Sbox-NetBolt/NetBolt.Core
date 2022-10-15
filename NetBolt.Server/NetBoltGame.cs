@@ -62,7 +62,6 @@ public class NetBoltGame
 		AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 		_server = new GameServer( options.ReadOnlyNetworkingOptions );
 		GameServer.Instance = _server;
-		_server.Start();
 	}
 
 	/// <summary>
@@ -79,6 +78,7 @@ public class NetBoltGame
 		GameServer.Instance.HandleMessage<ClientPawnUpdateMessage>( HandleClientPawnUpdateMessage );
 		GameServer.Instance.HandleMessage<ClientSayMessage>( HandleClientSayMessage );
 
+		_server.Start();
 		Log.Info( "Server started on {A}:{B}", Options.ReadOnlyNetworkingOptions.IpAddress, Options.ReadOnlyNetworkingOptions.Port );
 
 		var tickRateDt = (float)1000 / Options.TickRate;
