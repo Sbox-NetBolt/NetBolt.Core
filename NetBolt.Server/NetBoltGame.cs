@@ -34,15 +34,6 @@ public class NetBoltGame
 	protected bool Running { get; private set; }
 
 	/// <summary>
-	/// The maximum tick rate of the server. In the event of severe performance hits the tick rate can drop below this desired number.
-	/// </summary>
-	protected virtual int TickRate => 15;
-	/// <summary>
-	/// The target delta time for the server.
-	/// </summary>
-	protected float TickRateDt => (float)1000 / TickRate;
-
-	/// <summary>
 	/// The games cancellation source. If you want to exit the game then cancel this and the game will exit at the end of the tick.
 	/// </summary>
 	protected static readonly CancellationTokenSource ProgramCancellation = new();
@@ -86,15 +77,17 @@ public class NetBoltGame
 		GameServer.Instance.HandleMessage<RpcCallMessage>( Rpc.HandleRpcCallMessage );
 		GameServer.Instance.HandleMessage<RpcCallResponseMessage>( Rpc.HandleRpcCallResponseMessage );
 		GameServer.Instance.HandleMessage<ClientPawnUpdateMessage>( HandleClientPawnUpdateMessage );
+		GameServer.Instance.HandleMessage<ClientSayMessage>( HandleClientSayMessage );
 
 		Log.Info( "Server started on {A}:{B}", Options.ReadOnlyNetworkingOptions.IpAddress, Options.ReadOnlyNetworkingOptions.Port );
 
-		var sw = Stopwatch.StartNew();
+		var tickRateDt = (float)1000 / Options.TickRate;
 		var currentTick = 0;
+		var sw = Stopwatch.StartNew();
 		while ( !ProgramCancellation.IsCancellationRequested )
 		{
 			// TODO: Cooking the CPU is not a very cool way of doing this
-			while ( sw.Elapsed.TotalMilliseconds < TickRateDt )
+			while ( sw.Elapsed.TotalMilliseconds < tickRateDt )
 			{
 			}
 
@@ -148,6 +141,7 @@ public class NetBoltGame
 		Log.Info( $"{client} has connected" );
 
 		var toClient = To.Single( client );
+		GameServer.Instance.QueueSend( toClient, new WelcomeMessage( Options.TickRate, Options.WelcomeMessage ) );
 		GameServer.Instance.QueueSend( toClient, new ClientListMessage( GameServer.Instance.Clients ) );
 		GameServer.Instance.QueueSend( toClient, new BaseNetworkableListMessage( BaseNetworkable.All ) );
 		GameServer.Instance.QueueSend( To.AllExcept( GameServer.Instance, client ), new ClientStateChangedMessage( client, ClientState.Connected ) );

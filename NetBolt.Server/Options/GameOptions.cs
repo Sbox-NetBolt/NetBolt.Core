@@ -14,9 +14,15 @@ public sealed class GameOptions : IReadOnlyGameOptions
 	public static GameOptions Default => new();
 
 	/// <summary>
-	/// The maximum amount of entities that can exist in the game.
+	/// The maximum tick rate of the server.
+	/// <remarks>In the event of severe performance hits the tick rate can drop below this desired number.</remarks>
 	/// </summary>
-	public int MaxEntities { get; set; } = 100_000;
+	public int TickRate { get; set; } = 60;
+
+	/// <summary>
+	/// A default welcome message to send to a client when they join the server.
+	/// </summary>
+	public string WelcomeMessage { get; set; } = "Welcome!";
 
 	/// <summary>
 	/// The maximum level at which things will be logged.
@@ -33,13 +39,24 @@ public sealed class GameOptions : IReadOnlyGameOptions
 	public IReadOnlyWebSocketServerOptions ReadOnlyNetworkingOptions => NetworkingOptions;
 
 	/// <summary>
-	/// Sets the <see cref="MaxEntities"/> option.
+	/// Sets the <see cref="TickRate"/> option.
 	/// </summary>
-	/// <param name="maxEntities">The maximum amount of entities that can exist in the game.</param>
+	/// <param name="tickRate">The maximum tick rate of the server.</param>
 	/// <returns>The config instance.</returns>
-	public GameOptions WithMaxEntities( int maxEntities )
+	public GameOptions WithTickRate( int tickRate )
 	{
-		MaxEntities = maxEntities;
+		TickRate = tickRate;
+		return this;
+	}
+
+	/// <summary>
+	/// Sets the <see cref="WelcomeMessage"/> option.
+	/// </summary>
+	/// <param name="welcomeMessage">A default welcome message to send to a client when they join the server.</param>
+	/// <returns>The config instance.</returns>
+	public GameOptions WithWelcomeMessage( string welcomeMessage )
+	{
+		WelcomeMessage = welcomeMessage;
 		return this;
 	}
 

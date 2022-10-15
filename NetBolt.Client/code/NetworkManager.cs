@@ -67,6 +67,11 @@ public sealed class NetworkManager
 	public bool Connected { get; private set; }
 
 	/// <summary>
+	/// The tick rate that the server is running at.
+	/// </summary>
+	public int TickRate { get; private set; }
+
+	/// <summary>
 	/// The address that the client is connected to.
 	/// </summary>
 	public string Address { get; private set; } = "";
@@ -154,6 +159,7 @@ public sealed class NetworkManager
 		HandleMessage<RpcCallResponseMessage>( Rpc.HandleRpcCallResponseMessage );
 		HandleMessage<MultiMessage>( HandleMultiMessage );
 		HandleMessage<ShutdownMessage>( HandleShutdownMessage );
+		HandleMessage<WelcomeMessage>( HandleWelcomeMessage );
 		HandleMessage<ClientListMessage>( HandleClientListMessage );
 		HandleMessage<BaseNetworkableListMessage>( HandleBaseNetworkableListMessage );
 		HandleMessage<CreateBaseNetworkableMessage>( HandleCreateBaseNetworkableMessage );
@@ -312,6 +318,7 @@ public sealed class NetworkManager
 	private void Close()
 	{
 		Connected = false;
+		TickRate = 0;
 		Address = string.Empty;
 		Port = 0;
 
@@ -377,6 +384,15 @@ public sealed class NetworkManager
 			return;
 
 		Close();
+	}
+
+	private void HandleWelcomeMessage( NetworkMessage message )
+	{
+		if ( message is not WelcomeMessage welcomeMessage )
+			return;
+
+		TickRate = welcomeMessage.TickRate;
+		ClientChatBox.AddInformation( welcomeMessage.Message );
 	}
 
 	/// <summary>

@@ -25,15 +25,6 @@ public class NetBoltGame : Game
 	private readonly GameHud? _gameHud;
 
 	/// <summary>
-	/// The maximum tick rate to update networking at.
-	/// </summary>
-	protected virtual int TickRate => 15;
-	/// <summary>
-	/// The target delta time for the server.
-	/// </summary>
-	protected float TickRateDt => (float)1000 / TickRate;
-
-	/// <summary>
 	/// The stopwatch to track when to do a network update.
 	/// </summary>
 	private readonly Stopwatch _tickStopwatch = Stopwatch.StartNew();
@@ -56,15 +47,20 @@ public class NetBoltGame : Game
 	}
 
 	/// <summary>
-	/// Called for every tick.
+	/// Called for every frame.
 	/// </summary>
-	[Event.Tick.Client]
+	[Event.Frame]
 	protected virtual void Update()
 	{
 		if ( _networkManager is null || !_networkManager.Connected )
 			return;
 
-		if ( _tickStopwatch.Elapsed.TotalMilliseconds < TickRateDt )
+		if ( _networkManager.TickRate == 0 )
+		{
+			_networkManager.Update();
+			if ( _networkManager.TickRate == 0 )
+				return;
+		}
 			return;
 
 		_networkManager.Update();

@@ -9,9 +9,14 @@ namespace NetBolt.Server;
 public interface IReadOnlyGameOptions
 {
 	/// <summary>
-	/// See <see cref="GameOptions.MaxEntities"/>.
+	/// See <see cref="GameOptions.TickRate"/>.
 	/// </summary>
-	int MaxEntities { get; }
+	int TickRate { get; }
+
+	/// <summary>
+	/// See <see cref="GameOptions.WelcomeMessage"/>.
+	/// </summary>
+	string WelcomeMessage { get; }
 
 	/// <summary>
 	/// See <see cref="GameOptions.LogLevel"/>
