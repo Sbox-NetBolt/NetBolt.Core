@@ -151,6 +151,7 @@ public sealed class NetworkManager
 		HandleMessage<DeleteBaseNetworkableMessage>( HandleDeleteBaseNetworkableMessage );
 		HandleMessage<ClientStateChangedMessage>( HandleClientStateChangedMessage );
 		HandleMessage<ClientPawnChangedMessage>( HandleClientPawnChangedMessage );
+		HandleMessage<ClientSayMessage>( HandleClientSayMessage );
 		HandleMessage<MultiBaseNetworkableUpdateMessage>( HandleMultiBaseNetworkableUpdateMessage );
 	}
 
@@ -455,6 +456,20 @@ public sealed class NetworkManager
 			return;
 
 		clientPawnChangedMessage.Client.Pawn = clientPawnChangedMessage.NewPawn;
+	}
+
+	private void HandleClientSayMessage( NetworkMessage message )
+	{
+		if ( message is not ClientSayMessage clientSayMessage )
+			return;
+
+		if ( clientSayMessage.Client is null )
+		{
+			Log.Error( $"Received {nameof( ClientSayMessage )} from an unknown client" );
+			return;
+		}
+
+		ClientChatBox.AddChatEntry( clientSayMessage.Client.ClientId.ToString(), clientSayMessage.Message, $"avatar:{clientSayMessage.Client.ClientId}" );
 	}
 
 	/// <summary>

@@ -1,3 +1,5 @@
+using NetBolt.Shared;
+using NetBolt.Shared.Messages;
 using Sandbox.UI.Construct;
 using Sandbox;
 using Sandbox.UI;
@@ -143,7 +145,7 @@ public class ClientChatBox : Panel
 		if ( message.Contains( '\n' ) || message.Contains( '\r' ) )
 			return;
 
-		//Current?.Task.RunInThreadAsync( () => NetworkManager.Instance?.SendToServer( new SayMessage( message ) ) );
+		NetworkManager.Instance?.SendToServer( new ClientSayMessage( INetworkClient.Local, message ) );
 		AddChatEntry( Local.Client.Name, message, $"avatar:{Local.PlayerId}" );
 	}
 }

@@ -223,6 +223,26 @@ public class NetBoltGame
 	}
 
 	/// <summary>
+	/// Called when a <see cref="INetworkClient"/> has sent a chat message.
+	/// </summary>
+	/// <param name="client">The <see cref="INetworkClient"/> that sent this update.</param>
+	/// <param name="message">The message the <see ref="client"/> sent.</param>
+	protected virtual void HandleClientSayMessage( INetworkClient client, NetworkMessage message )
+	{
+		if ( message is not ClientSayMessage clientSayMessage )
+			return;
+
+		if ( clientSayMessage.Client is null )
+		{
+			Log.Error( $"Received {nameof( ClientSayMessage )} from unknown client" );
+			return;
+		}
+
+		Log.Info( "{A}: {B}", clientSayMessage.Client, clientSayMessage.Message );
+		GameServer.Instance.QueueSend( To.AllExcept( GameServer.Instance, client ), clientSayMessage );
+	}
+
+	/// <summary>
 	/// Handler for when the program is shutting down.
 	/// </summary>
 	private void OnProcessExit( object? sender, EventArgs e )
