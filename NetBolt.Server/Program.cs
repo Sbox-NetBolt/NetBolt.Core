@@ -18,7 +18,12 @@ public static class Program
 	/// <param name="args">The command line arguments.</param>
 	public static void Main( string[] args )
 	{
-		_game = new NetBoltGame( GameOptions.Default.WithLogLevel( LogEventLevel.Debug ) );
+		var options = new GameOptions()
+			.WithTickRate( 60 )
+			.WithWelcomeMessage( "Welcome to the server!" )
+			.WithLogLevel( LogEventLevel.Information );
+
+		_game = new NetBoltGame( options );
 		_game.Start();
 	}
 }
