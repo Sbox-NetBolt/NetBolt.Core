@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 using NetBolt.Shared.Utility;
 
 namespace NetBolt.Shared.Networkables.Builtin;
@@ -72,6 +73,22 @@ public struct NetworkedVector3 : INetworkable, IEquatable<NetworkedVector3>
 	public bool Changed()
 	{
 		return _value != _oldValue;
+	}
+
+	/// <summary>
+	/// Lerps a <see cref="NetworkedVector3"/> between two values.
+	/// </summary>
+	/// <param name="fraction">The fraction to lerp at.</param>
+	/// <param name="oldValue">The old value.</param>
+	/// <param name="newValue">The new value.</param>
+	public void Lerp( float fraction, INetworkable oldValue, INetworkable newValue )
+	{
+		var newVector3 = (NetworkedVector3)newValue;
+		if ( System.Numerics.Vector3.DistanceSquared( Value, newVector3 ) < 1 )
+			return;
+
+
+		Value = Vector3.Lerp( (NetworkedVector3)oldValue, (NetworkedVector3)newValue, fraction );
 	}
 
 	/// <summary>

@@ -27,6 +27,9 @@ public partial class BaseNetworkable
 			if ( property.GetCustomAttribute<NoNetworkAttribute>() is not null )
 				continue;
 
+			if ( TypeHelper.IsStruct( property.PropertyType ) )
+				_referenceBucket.Add( property.Name, null );
+
 			PropertyNameCache.Add( property.Name, property );
 		}
 

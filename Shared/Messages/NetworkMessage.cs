@@ -1,4 +1,5 @@
-﻿using NetBolt.Shared.Networkables;
+﻿using System;
+using NetBolt.Shared.Networkables;
 using NetBolt.Shared.Utility;
 
 namespace NetBolt.Shared.Messages;
@@ -13,6 +14,18 @@ public abstract class NetworkMessage : INetworkable
 	/// </summary>
 	/// <returns>False</returns>
 	public bool Changed() => false;
+
+	/// <summary>
+	/// Lerps a <see cref="NetworkMessage"/> between two values.
+	/// </summary>
+	/// <param name="fraction">The fraction to lerp at.</param>
+	/// <param name="oldValue">The old value.</param>
+	/// <param name="newValue">The new value.</param>
+	/// <exception cref="NotImplementedException">Lerping a <see cref="NetworkMessage"/> is not supported.</exception>
+	public void Lerp( float fraction, INetworkable oldValue, INetworkable newValue )
+	{
+		throw new NotImplementedException();
+	}
 
 	/// <summary>
 	/// Deserializes all information relating to the <see cref="NetworkMessage"/>.

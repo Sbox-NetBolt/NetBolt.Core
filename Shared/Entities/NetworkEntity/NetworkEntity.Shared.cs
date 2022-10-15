@@ -1,3 +1,4 @@
+using System.Linq;
 using NetBolt.Shared.Networkables;
 using NetBolt.Shared.Networkables.Builtin;
 using NetBolt.Shared.Utility;
@@ -35,13 +36,13 @@ public partial class NetworkEntity : BaseNetworkable, IEntity
 	/// <summary>
 	/// The world position of the <see cref="NetworkEntity"/>.
 	/// </summary>
-	[ClientAuthority]
+	[ClientAuthority, Lerp]
 	public NetworkedVector3 Position { get; set; }
 
 	/// <summary>
 	/// The world rotation of the <see cref="NetworkEntity"/>.
 	/// </summary>
-	[ClientAuthority]
+	[ClientAuthority, Lerp]
 	public NetworkedQuaternion Rotation { get; set; }
 
 	/// <summary>
@@ -82,7 +83,9 @@ public partial class NetworkEntity : BaseNetworkable, IEntity
 		var changedCount = reader.ReadInt32();
 		for ( var i = 0; i < changedCount; i++ )
 		{
-			var property = PropertyNameCache[reader.ReadString()];
+			var propertyName = reader.ReadString();
+			var property = PropertyNameCache[propertyName];
+
 #if CLIENT
 			if ( Owner == INetworkClient.Local && property.GetCustomAttribute<ClientAuthorityAttribute>() is not null )
 			{
@@ -92,9 +95,39 @@ public partial class NetworkEntity : BaseNetworkable, IEntity
 			}
 #endif
 
-			var currentValue = property.GetValue( this );
-			(currentValue as INetworkable)!.DeserializeChanges( reader );
-			property.SetValue( this, currentValue );
+			if ( property.PropertyType.IsAssignableTo( typeof( BaseNetworkable ) ) )
+			{
+				var networkId = reader.ReadInt32();
+				var networkable = All.FirstOrDefault( networkable => networkable.NetworkId == networkId );
+				if ( networkable is not null )
+					property.SetValue( this, networkable );
+#if CLIENT
+				else
+					ClPendingNetworkables.Add( networkId, propertyName );
+#endif
+			}
+			else
+			{
+#if CLIENT
+				if ( property.GetCustomAttribute<LerpAttribute>() is not null )
+				{
+					var oldValue = property.GetValue( this ) as INetworkable;
+					var newValue = property.GetValue( this ) as INetworkable;
+					newValue!.DeserializeChanges( reader );
+					
+					ClLerpBucket[propertyName] = (oldValue, newValue);
+				}
+				else
+				{
+#endif
+				var currentValue = property.GetValue( this );
+				(currentValue as INetworkable)!.DeserializeChanges( reader );
+				if ( TypeHelper.IsStruct( property.PropertyType ) )
+					property.SetValue( this, currentValue );
+#if CLIENT
+				}
+#endif
+			}
 		}
 	}
 

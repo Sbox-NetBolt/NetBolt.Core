@@ -35,8 +35,8 @@ public class BasePlayer : NetworkEntity
 			_player.Rotation = Rotation;
 			return;
 		}
-
-		if ( Position.Value != (System.Numerics.Vector3)_player.Position )
+		
+		if ( Vector3.DistanceBetweenSquared( Position, _player.Position ) > 1 )
 			Position = _player.Position;
 		
 		if ( Rotation.Value != _player.EyeRotation )

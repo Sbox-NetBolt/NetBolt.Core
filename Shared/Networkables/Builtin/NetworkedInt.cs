@@ -50,6 +50,21 @@ public struct NetworkedInt : INetworkable, IEquatable<NetworkedInt>
 	}
 
 	/// <summary>
+	/// Lerps a <see cref="NetworkedInt"/> between two values.
+	/// </summary>
+	/// <param name="fraction">The fraction to lerp at.</param>
+	/// <param name="oldValue">The old value.</param>
+	/// <param name="newValue">The new value.</param>
+	public void Lerp( float fraction, INetworkable oldValue, INetworkable newValue )
+	{
+		var newInt = (NetworkedInt)newValue;
+		if ( Value == newInt )
+			return;
+
+		Value = (int)((NetworkedInt)oldValue + (newInt - (NetworkedInt)oldValue) * fraction);
+	}
+
+	/// <summary>
 	/// Deserializes all information relating to the <see cref="NetworkedInt"/>.
 	/// </summary>
 	/// <param name="reader">The reader to read from.</param>

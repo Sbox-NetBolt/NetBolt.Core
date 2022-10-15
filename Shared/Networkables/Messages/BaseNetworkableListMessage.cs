@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using NetBolt.Shared.Networkables;
 #if SERVER
-using System.IO;
-using NetBolt.Server;
 #endif
 using NetBolt.Shared.Utility;
 
@@ -16,7 +14,7 @@ public sealed class BaseNetworkableListMessage : NetworkMessage
 	/// <summary>
 	/// A list of all <see cref="BaseNetworkable"/>s to let the client know about.
 	/// </summary>
-	public IReadOnlyList<BaseNetworkable> BaseNetworkables { get; private set; }
+	public IReadOnlyList<BaseNetworkable> BaseNetworkables { get; private set; } = null!;
 
 #if SERVER
 	/// <summary>
@@ -38,7 +36,7 @@ public sealed class BaseNetworkableListMessage : NetworkMessage
 #if CLIENT
 		var baseNetworkables = new List<BaseNetworkable> {Capacity = reader.ReadInt32()};
 		for ( var i = 0; i < baseNetworkables.Capacity; i++ )
-			baseNetworkables[i] = reader.ReadBaseNetworkable();
+			baseNetworkables.Add( reader.ReadBaseNetworkable() );
 
 		BaseNetworkables = baseNetworkables;
 #endif

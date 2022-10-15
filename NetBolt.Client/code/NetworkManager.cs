@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using NetBolt.Client.UI;
 using NetBolt.Client.Utility;
 using NetBolt.Shared;
 using NetBolt.Shared.Entities;
@@ -133,10 +133,6 @@ public sealed class NetworkManager
 	/// </summary>
 	private readonly Queue<NetworkMessage> _outgoingQueue = new();
 	/// <summary>
-	/// A timer for when to stagger updates of the local clients pawn.
-	/// </summary>
-	private readonly Stopwatch _pawnSw = Stopwatch.StartNew();
-	/// <summary>
 	/// The unique client identifier of the client.
 	/// </summary>
 	private long _localClientId;
@@ -259,14 +255,12 @@ public sealed class NetworkManager
 	public void Update()
 	{
 		DispatchIncoming();
-		foreach ( var baseNetworkable in BaseNetworkable.All )
-			baseNetworkable.ProcessPendingNetworkables();
 
-		foreach ( var entity in IEntity.All )
-			entity.Update();
-
-		if ( LocalClient.Pawn is not INetworkable pawn || !pawn.Changed() || _pawnSw.Elapsed.TotalMilliseconds < 100 )
+		if ( LocalClient.Pawn is not INetworkable pawn || !pawn.Changed() )
+		{
+			DispatchOutgoing();
 			return;
+		}
 
 		var stream = new MemoryStream();
 		var writer = new NetworkWriter( stream );
@@ -275,14 +269,13 @@ public sealed class NetworkManager
 		writer.Close();
 
 		SendToServer( new ClientPawnUpdateMessage( stream.ToArray() ) );
-		_pawnSw.Restart();
 		DispatchOutgoing();
 	}
 
 	/// <summary>
 	/// Dispatches all of the incoming messages from the server.
 	/// </summary>
-	internal void DispatchIncoming()
+	private void DispatchIncoming()
 	{
 		while ( _incomingQueue.TryDequeue( out var bytes ) )
 		{
@@ -296,7 +289,7 @@ public sealed class NetworkManager
 	/// <summary>
 	/// Dispatches all of the outgoing messages to the server.
 	/// </summary>
-	internal void DispatchOutgoing()
+	private void DispatchOutgoing()
 	{
 		while ( _outgoingQueue.TryDequeue( out var message ) )
 		{
@@ -323,6 +316,10 @@ public sealed class NetworkManager
 		Port = 0;
 
 		_webSocket = new WebSocket();
+		_webSocket.OnDisconnected += WebSocketOnDisconnected;
+		_webSocket.OnDataReceived += WebSocketOnDataReceived;
+		_webSocket.OnMessageReceived += WebSocketOnMessageReceived;
+
 		_clients.Clear();
 		var entities = IEntity.All.ToArray();
 		foreach ( var entity in entities )

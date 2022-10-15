@@ -1,5 +1,4 @@
-﻿using NetBolt.Shared;
-using NetBolt.Shared.Entities;
+﻿using NetBolt.Shared.Entities;
 
 namespace NetBolt.Shared;
 

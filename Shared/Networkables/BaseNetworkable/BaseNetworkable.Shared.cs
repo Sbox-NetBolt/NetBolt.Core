@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+#if SERVER
 using NetBolt.Server;
+#endif
 using NetBolt.Shared.Utility;
 #if CLIENT
 using Sandbox;
@@ -19,7 +22,10 @@ public abstract partial class BaseNetworkable : INetworkable
 	public int NetworkId { get; }
 
 	/// <summary>
+	/// A dictionary to contain the last networked references.
 	/// </summary>
+	private readonly Dictionary<string, object?> _referenceBucket = new();
+
 	/// <summary>
 	/// Deletes the <see cref="BaseNetworkable"/>. You should not be using this after it is invoked.
 	/// </summary>
@@ -57,6 +63,18 @@ public abstract partial class BaseNetworkable : INetworkable
 		}
 
 		return false;
+	}
+
+	/// <summary>
+	/// Lerps a <see cref="BaseNetworkable"/> between two values.
+	/// </summary>
+	/// <param name="fraction">The fraction to lerp at.</param>
+	/// <param name="oldValue">The old value.</param>
+	/// <param name="newValue">The new value.</param>
+	/// <exception cref="NotImplementedException">Lerping a <see cref="BaseNetworkable"/> is not supported.</exception>
+	public void Lerp( float fraction, INetworkable oldValue, INetworkable newValue )
+	{
+		throw new NotImplementedException();
 	}
 
 	/// <summary>
@@ -110,9 +128,25 @@ public abstract partial class BaseNetworkable : INetworkable
 			}
 			else
 			{
+#if CLIENT
+				if ( property.GetCustomAttribute<LerpAttribute>() is not null )
+				{
+					var oldValue = property.GetValue( this ) as INetworkable;
+					var newValue = property.GetValue( this ) as INetworkable;
+					newValue!.DeserializeChanges( reader );
+					
+					ClLerpBucket[propertyName] = (oldValue, newValue);
+				}
+				else
+				{
+#endif
 				var currentValue = property.GetValue( this );
 				(currentValue as INetworkable)!.DeserializeChanges( reader );
-				property.SetValue( this, currentValue );
+				if ( TypeHelper.IsStruct( property.PropertyType ) )
+					property.SetValue( this, currentValue );
+#if CLIENT
+				}
+#endif
 			}
 		}
 	}

@@ -25,24 +25,78 @@ public class GameHud : RootPanel
 			return $"Connected: {NetworkManager.Instance.Address}:{NetworkManager.Instance.Port}";
 		}
 	}
+
+	/// <summary>
+	/// A property for the amount of network updates that are happening per second.
+	/// </summary>
+	public string TickRate
+	{
+		get
+		{
+			if ( NetworkManager.Instance is null || !NetworkManager.Instance.Connected )
+				return string.Empty;
+
+			return $"{NetworkManager.Instance.TickRate} tps";
+		}
+	}
+
 	/// <summary>
 	/// A property for the amount of clients in the server that the client knows about.
 	/// </summary>
-	public string ClientCount => $"{NetworkManager.Instance?.Clients.Count} clients connected";
+	public string ClientCount
+	{
+		get
+		{
+			if ( NetworkManager.Instance is null || !NetworkManager.Instance.Connected )
+				return string.Empty;
+
+			return $"{NetworkManager.Instance?.Clients.Count} clients connected";
+		}
+	}
+
 	/// <summary>
 	/// A property for the amount of entities in the server that the client knows about.
 	/// </summary>
-	public string NetworkedEntityCount => $"{IEntity.All.Count} networked entities";
+	public string NetworkedEntityCount
+	{
+		get
+		{
+			if ( NetworkManager.Instance is null || !NetworkManager.Instance.Connected )
+				return string.Empty;
+
+			return $"{IEntity.All.Count} networked entities";
+		}
+	}
 
 #if DEBUG
 	/// <summary>
 	/// A debug property for the amount of messages that have been received from the server.
 	/// </summary>
-	public string MessagesReceived => $"{NetworkManager.Instance?.MessagesReceived} messages received";
+	public string MessagesReceived
+	{
+		get
+		{
+			if ( NetworkManager.Instance is null || !NetworkManager.Instance.Connected )
+				return string.Empty;
+
+			return $"{NetworkManager.Instance?.MessagesReceived} messages received";
+		}
+	}
+
 	/// <summary>
 	/// A debug property for the amount of messages that have been sent to the server.
 	/// </summary>
-	public string MessagesSent => $"{NetworkManager.Instance?.MessagesSent} messages sent";
+	public string MessagesSent
+	{
+		get
+		{
+			if ( NetworkManager.Instance is null || !NetworkManager.Instance.Connected )
+				return string.Empty;
+
+			return $"{NetworkManager.Instance?.MessagesSent} messages sent";
+		}
+	}
+
 	/// <summary>
 	/// A debug property to display all of the <see cref="NetworkMessage"/> types that have been sent and how many of them.
 	/// </summary>
@@ -75,7 +129,7 @@ public class GameHud : RootPanel
 	{
 		get
 		{
-			if ( NetworkManager.Instance is null )
+			if ( NetworkManager.Instance is null || !NetworkManager.Instance.Connected )
 				return string.Empty;
 
 			var sb = new StringBuilder();

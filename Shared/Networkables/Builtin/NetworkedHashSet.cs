@@ -136,6 +136,18 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 	}
 
 	/// <summary>
+	/// Lerps a <see cref="NetworkedHashSet{T}"/> between two values.
+	/// </summary>
+	/// <param name="fraction">The fraction to lerp at.</param>
+	/// <param name="oldValue">The old value.</param>
+	/// <param name="newValue">The new value.</param>
+	/// <exception cref="NotImplementedException">Lerping a <see cref="NetworkedHashSet{T}"/> is not supported.</exception>
+	public void Lerp( float fraction, INetworkable oldValue, INetworkable newValue )
+	{
+		throw new NotImplementedException();
+	}
+
+	/// <summary>
 	/// Deserializes all information relating to the <see cref="NetworkedHashSet{T}"/>.
 	/// </summary>
 	/// <param name="reader">The reader to read from.</param>

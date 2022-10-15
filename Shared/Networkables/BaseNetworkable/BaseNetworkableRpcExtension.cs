@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
 #if SERVER
 #endif
-using NetBolt.Shared.Entities;
 using NetBolt.Shared.Messages;
 using NetBolt.Shared.Networkables;
 #if SERVER

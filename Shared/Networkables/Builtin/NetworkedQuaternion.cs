@@ -67,6 +67,22 @@ public struct NetworkedQuaternion : INetworkable, IEquatable<NetworkedQuaternion
 	}
 
 	/// <summary>
+	/// Lerps a <see cref="NetworkedQuaternion"/> between two values.
+	/// </summary>
+	/// <param name="fraction">The fraction to lerp at.</param>
+	/// <param name="oldValue">The old value.</param>
+	/// <param name="newValue">The new value.</param>
+	public void Lerp( float fraction, INetworkable oldValue, INetworkable newValue )
+	{
+		var newQuaternion = (NetworkedQuaternion)newValue;
+		if ( Value == (Quaternion)newQuaternion )
+			return;
+
+
+		Value = Quaternion.Lerp( (NetworkedQuaternion)oldValue, newQuaternion, fraction );
+	}
+
+	/// <summary>
 	/// Deserializes all information relating to the <see cref="NetworkedQuaternion"/>.
 	/// </summary>
 	/// <param name="reader">The reader to read from.</param>

@@ -10,7 +10,7 @@ public sealed class ClientStateChangedMessage : NetworkMessage
 	/// <summary>
 	/// The <see cref="INetworkClient"/> that has changed.
 	/// </summary>
-	public INetworkClient Client { get; private set; }
+	public INetworkClient Client { get; private set; } = null!;
 	/// <summary>
 	/// The new state of the <see cref="Client"/>.
 	/// </summary>

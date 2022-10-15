@@ -15,6 +15,11 @@ public partial class BaseNetworkable
 	internal Dictionary<int, string> ClPendingNetworkables { get; } = new();
 
 	/// <summary>
+	/// A dictionary to contain lerped networkables.
+	/// </summary>
+	internal readonly Dictionary<string, (INetworkable?, INetworkable?)> ClLerpBucket = new();
+
+	/// <summary>
 	/// A <see cref="PropertyInfo"/> cache of all networked properties.
 	/// </summary>
 	protected Dictionary<string, PropertyDescription> PropertyNameCache { get; } = new();
@@ -33,10 +38,31 @@ public partial class BaseNetworkable
 			if ( property.GetCustomAttribute<NoNetworkAttribute>() is not null )
 				continue;
 
+			if ( property.GetCustomAttribute<LerpAttribute>() is not null )
+				ClLerpBucket.Add( property.Name, (null, null) );
+
 			PropertyNameCache.Add( property.Name, property );
 		}
 
 		AllNetworkables.Add( this );
+	}
+
+	/// <summary>
+	/// Lerps all networkables that are marked with the <see cref="LerpAttribute"/>
+	/// </summary>
+	internal virtual void LerpNetworkables( float fraction )
+	{
+		foreach ( var (propertyName, values) in ClLerpBucket )
+		{
+			if ( values.Item1 is null || values.Item2 is null )
+				continue;
+
+			var property = PropertyNameCache[propertyName];
+			var value = property.GetValue( this ) as INetworkable;
+			value?.Lerp( fraction, values.Item1, values.Item2 );
+			if ( TypeHelper.IsStruct( property.PropertyType ) )
+				property.SetValue( this, value );
+		}
 	}
 
 	/// <summary>
