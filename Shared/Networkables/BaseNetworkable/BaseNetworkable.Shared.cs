@@ -19,7 +19,7 @@ public abstract partial class BaseNetworkable : INetworkable
 	/// <summary>
 	/// The unique identifier of the networkable.
 	/// </summary>
-	public int NetworkId { get; }
+	public int NetworkId { get; internal set; }
 
 	/// <summary>
 	/// A dictionary to contain the last networked references.

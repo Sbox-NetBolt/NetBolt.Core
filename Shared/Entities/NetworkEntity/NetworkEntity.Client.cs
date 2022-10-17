@@ -7,10 +7,9 @@ namespace NetBolt.Shared.Entities;
 public partial class NetworkEntity
 {
 	/// <summary>
-	/// Initializes a new instance of <see cref="NetworkEntity"/> with a unique network identifier.
+	/// Initializes a new instance of <see cref="NetworkEntity"/>.
 	/// </summary>
-	/// <param name="networkId">A unique network identifier.</param>
-	public NetworkEntity( int networkId ) : base( networkId )
+	public NetworkEntity()
 	{
 		IEntity.AllEntities.Add( this );
 	}

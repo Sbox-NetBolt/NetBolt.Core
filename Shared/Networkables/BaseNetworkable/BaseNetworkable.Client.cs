@@ -25,13 +25,10 @@ public partial class BaseNetworkable
 	protected Dictionary<string, PropertyDescription> PropertyNameCache { get; } = new();
 
 	/// <summary>
-	/// Initializes a new instance of <see cref="BaseNetworkable"/> with a unique network identifier.
+	/// Initializes a new instance of <see cref="BaseNetworkable"/>.
 	/// </summary>
-	/// <param name="networkId">A unique identifier.</param>
-	protected BaseNetworkable( int networkId )
+	protected BaseNetworkable()
 	{
-		NetworkId = networkId;
-
 		foreach ( var property in TypeHelper.GetAllProperties( GetType() )
 					 .Where( property => property.PropertyType.IsAssignableTo( typeof( INetworkable ) ) ) )
 		{

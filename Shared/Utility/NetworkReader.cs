@@ -143,12 +143,14 @@ public sealed class NetworkReader : BinaryReader
 			return null!;
 		}
 
-		var baseNetworkable = TypeHelper.Create<BaseNetworkable?>( type, networkId );
+		var baseNetworkable = TypeHelper.Create<BaseNetworkable?>( type );
 		if ( baseNetworkable is null )
 		{
 			Log.Error( $"Failed to read {nameof( BaseNetworkable )} (instance creation failed)." );
 			return null!;
 		}
+		else
+			baseNetworkable.NetworkId = networkId;
 
 		baseNetworkable.Deserialize( this );
 		return baseNetworkable;

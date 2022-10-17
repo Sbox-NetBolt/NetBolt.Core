@@ -428,7 +428,9 @@ public sealed class NetworkManager
 		if ( message is not CreateBaseNetworkableMessage createBaseNetworkableMessage )
 			return;
 
-		_ = TypeHelper.Create<BaseNetworkable>( createBaseNetworkableMessage.BaseNetworkableClass, createBaseNetworkableMessage.NetworkId );
+		var baseNetworkable = TypeHelper.Create<BaseNetworkable>( createBaseNetworkableMessage.BaseNetworkableClass );
+		if ( baseNetworkable is not null )
+			baseNetworkable.NetworkId = createBaseNetworkableMessage.NetworkId;
 	}
 
 	/// <summary>
