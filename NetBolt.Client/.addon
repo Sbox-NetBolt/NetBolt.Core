@@ -11,9 +11,9 @@
   "CodePath": "/code/",
   "RootNamespace": null,
   "Metadata": {
-    "MaxPlayers": 64,
+    "MaxPlayers": 1,
     "MinPlayers": 1,
-    "GameNetworkType": "Multiplayer",
+    "GameNetworkType": "Custom",
     "MapSelect": "Unrestricted",
     "MapList": [
       "facepunch.flatgrass"
@@ -30,7 +30,9 @@
       "Nullables": true
     },
     "ControlModes": {
-      "Keyboard": true
+      "Keyboard": true,
+      "VR": true,
+      "Gamepad": true
     }
   }
 }
