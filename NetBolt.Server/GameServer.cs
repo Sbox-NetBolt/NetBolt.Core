@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
-using NetBolt.Shared;
+using NetBolt.Shared.Clients;
 using NetBolt.Shared.Messages;
 using NetBolt.Shared.Utility;
 using NetBolt.WebSocket;
@@ -26,20 +26,20 @@ internal sealed class GameServer : WebSocketServer
 	/// <summary>
 	/// A read-only list of all clients in the server.
 	/// </summary>
-	internal new IReadOnlyList<INetworkClient> Clients => _networkClients;
+	internal new IReadOnlyList<IClient> Clients => _networkClients;
 	/// <summary>
 	/// A list of all clients in the server.
 	/// </summary>
-	private readonly List<INetworkClient> _networkClients = new();
+	private readonly List<IClient> _networkClients = new();
 
 	/// <summary>
 	/// A read-only list of all bots in the server.
 	/// </summary>
-	internal IReadOnlyList<BotClient> Bots => _botClients;
+	internal IReadOnlyList<Bot> Bots => _botClients;
 	/// <summary>
 	/// A list of all bots in the server.
 	/// </summary>
-	private readonly List<BotClient> _botClients = new();
+	private readonly List<Bot> _botClients = new();
 
 	/// <summary>
 	/// The handlers for incoming messages.
@@ -71,7 +71,7 @@ internal sealed class GameServer : WebSocketServer
 	/// <summary>
 	/// Queues a message to be processed by the server.
 	/// </summary>
-	/// <remarks>This should only be used in cases where a <see cref="BotClient"/> is doing something.</remarks>
+	/// <remarks>This should only be used in cases where a <see cref="Bot"/> is doing something.</remarks>
 	/// <param name="client">The client that sent the message.</param>
 	/// <param name="message">The message the client has sent.</param>
 	public void QueueIncoming( INetworkClient client, NetworkMessage message )
@@ -91,7 +91,7 @@ internal sealed class GameServer : WebSocketServer
 		// Quick send message to bots.
 		foreach ( var client in to )
 		{
-			if ( client is BotClient bot )
+			if ( client is Bot bot )
 				bot.QueueSend( message );
 		}
 
@@ -104,7 +104,7 @@ internal sealed class GameServer : WebSocketServer
 		var bytes = stream.ToArray();
 		foreach ( var client in to )
 		{
-			if ( client is BotClient )
+			if ( client is Bot )
 				continue;
 
 			Log.Verbose( "Sent {A} to {B}", message, client );
@@ -112,24 +112,27 @@ internal sealed class GameServer : WebSocketServer
 		}
 	}
 
+	/// <inheritdoc/>
 	public override void AcceptClient( IWebSocketClient client )
 	{
 		Log.Verbose( "Accepting {A}...", client );
-		if ( client is not NetworkClient networkClient )
+		if ( client is not Client networkClient )
 			throw new Exception( "Cannot accept non network clients to the server" );
 
-		base.AcceptClient( client );
-
 		_networkClients.Add( networkClient );
-		if ( client is BotClient bot )
+		if ( client is Bot bot )
 			_botClients.Add( bot );
+
+		base.AcceptClient( client );
 	}
 
+	/// <inheritdoc/>
 	protected override IWebSocketClient CreateClient( TcpClient client )
 	{
-		return new NetworkClient( client, this );
+		return new Client( client, this );
 	}
 
+	/// <inheritdoc/>
 	public override void OnClientUpgraded( IWebSocketClient client )
 	{
 		base.OnClientUpgraded( client );
@@ -137,6 +140,7 @@ internal sealed class GameServer : WebSocketServer
 		NetBoltGame.Current.OnClientConnected( (client as INetworkClient)! );
 	}
 
+	/// <inheritdoc/>
 	public override void OnClientDisconnected( IWebSocketClient client, WebSocketDisconnectReason reason, WebSocketError? error )
 	{
 		base.OnClientDisconnected( client, reason, error );

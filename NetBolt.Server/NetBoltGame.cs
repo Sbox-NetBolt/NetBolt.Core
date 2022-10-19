@@ -2,8 +2,12 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
+using NetBolt.Server.Glue;
+using NetBolt.Server.Utility;
 using NetBolt.Shared;
+using NetBolt.Shared.Clients;
 using NetBolt.Shared.Entities;
 using NetBolt.Shared.Messages;
 using NetBolt.Shared.Networkables;
@@ -55,6 +59,7 @@ public class NetBoltGame
 
 		Current = this;
 		Options = options;
+		IGlue.Instance = new ServerGlue();
 
 		Log.Initialize();
 		Log.Info( "Log started" );
@@ -74,8 +79,8 @@ public class NetBoltGame
 		Log.Verbose( "Starting game..." );
 		Running = true;
 
-		GameServer.Instance.HandleMessage<RpcCallMessage>( Rpc.HandleRpcCallMessage );
-		GameServer.Instance.HandleMessage<RpcCallResponseMessage>( Rpc.HandleRpcCallResponseMessage );
+		GameServer.Instance.HandleMessage<RpcCallMessage>( HandleRpcCallMessage );
+		GameServer.Instance.HandleMessage<RpcCallResponseMessage>( HandleRpcCallResponseMessage );
 		GameServer.Instance.HandleMessage<ClientPawnUpdateMessage>( HandleClientPawnUpdateMessage );
 		GameServer.Instance.HandleMessage<ClientSayMessage>( HandleClientSayMessage );
 
@@ -142,11 +147,11 @@ public class NetBoltGame
 	{
 		Log.Info( "{A} has connected", client );
 
-		var toClient = To.Single( client );
+		var toClient = ToExtensions.Single( client );
 		GameServer.Instance.QueueSend( toClient, new WelcomeMessage( Options.TickRate, Options.WelcomeMessage ) );
 		GameServer.Instance.QueueSend( toClient, new ClientListMessage( GameServer.Instance.Clients ) );
 		GameServer.Instance.QueueSend( toClient, new BaseNetworkableListMessage( BaseNetworkable.All ) );
-		GameServer.Instance.QueueSend( To.AllExcept( GameServer.Instance, client ), new ClientStateChangedMessage( client, ClientState.Connected ) );
+		GameServer.Instance.QueueSend( ToExtensions.AllExcept( client ), new ClientStateChangedMessage( client, ClientState.Connected ) );
 
 		client.PawnChanged += ClientOnPawnChanged;
 		client.Pawn = new BasePlayer();
@@ -165,7 +170,7 @@ public class NetBoltGame
 		else
 			Log.Info( "{A} has disconnected for reason: {B}", client, reason );
 
-		GameServer.Instance.QueueSend( To.AllExcept( GameServer.Instance, client ), new ClientStateChangedMessage( client, ClientState.Disconnected ) );
+		GameServer.Instance.QueueSend( ToExtensions.AllExcept( client ), new ClientStateChangedMessage( client, ClientState.Disconnected ) );
 		(client.Pawn as BaseNetworkable)?.Delete();
 		client.PawnChanged -= ClientOnPawnChanged;
 	}
@@ -240,7 +245,65 @@ public class NetBoltGame
 		}
 
 		Log.Info( "{A}: {B}", clientSayMessage.Client, clientSayMessage.Message );
-		GameServer.Instance.QueueSend( To.AllExcept( GameServer.Instance, client ), clientSayMessage );
+		GameServer.Instance.QueueSend( ToExtensions.AllExcept( client ), clientSayMessage );
+	}
+
+	/// <summary>
+	/// Handles an incoming RPC from a client.
+	/// </summary>
+	/// <param name="client">The client that sent the RPC.</param>
+	/// <param name="message">The RPC call message.</param>
+	/// <exception cref="InvalidOperationException">Thrown when handling the RPC call failed.</exception>
+	protected virtual void HandleRpcCallMessage( INetworkClient client, NetworkMessage message )
+	{
+		if ( message is not RpcCallMessage rpcCall )
+			return;
+
+		var type = Type.GetType( rpcCall.ClassName );
+		if ( type is null )
+			throw new InvalidOperationException( $"Failed to handle RPC call (\"{rpcCall.ClassName}\" doesn't exist in any accessible assemblies)." );
+
+		var method = type.GetMethod( rpcCall.MethodName, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic );
+		if ( method is null )
+			throw new InvalidOperationException( $"Failed to handle RPC call (\"{rpcCall.MethodName}\" does not exist on \"{type}\")." );
+
+		if ( method.GetCustomAttribute<Rpc.ServerAttribute>() is not null )
+			throw new InvalidOperationException( "Failed to handle RPC call (Attempted to invoke a non-RPC method)." );
+
+		var baseNetworkable = IEntity.GetEntityById( rpcCall.NetworkId );
+		if ( baseNetworkable is null && rpcCall.NetworkId != -1 )
+			throw new InvalidOperationException( $"Failed to handle RPC call (Attempted to call RPC on a non-existant {nameof( BaseNetworkable )})." );
+
+		var returnValue = method.Invoke( baseNetworkable, rpcCall.Parameters );
+		if ( rpcCall.CallGuid == Guid.Empty )
+			return;
+
+		if ( returnValue is not INetworkable && returnValue is not null )
+		{
+			var failedMessage = new RpcCallResponseMessage( rpcCall.CallGuid, RpcCallState.Failed );
+			GameServer.Instance.QueueSend( ToExtensions.Single( client ), failedMessage );
+			throw new InvalidOperationException(
+				$"Failed to handle RPC call (\"{rpcCall.MethodName}\" returned a non-networkable value)." );
+		}
+
+		var response = new RpcCallResponseMessage( rpcCall.CallGuid, RpcCallState.Completed,
+			returnValue as INetworkable ?? null );
+		GameServer.Instance.QueueSend( ToExtensions.Single( client ), response );
+	}
+
+	/// <summary>
+	/// Handles an incoming RPC call response.
+	/// </summary>
+	/// <param name="client">The client that sent the response.</param>
+	/// <param name="message">The RPC call response.</param>
+	/// <exception cref="InvalidOperationException">Thrown when handling the RPC call response failed.</exception>
+	protected virtual void HandleRpcCallResponseMessage( INetworkClient client, NetworkMessage message )
+	{
+		if ( message is not RpcCallResponseMessage rpcResponse )
+			return;
+
+		if ( !Rpc.Responses.TryAdd( rpcResponse.CallGuid, rpcResponse ) )
+			throw new InvalidOperationException( $"Failed to handle RPC call response (Failed to add \"{rpcResponse.CallGuid}\" to response dictionary)." );
 	}
 
 	/// <summary>
