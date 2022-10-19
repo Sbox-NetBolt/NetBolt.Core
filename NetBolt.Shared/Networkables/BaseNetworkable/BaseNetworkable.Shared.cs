@@ -81,6 +81,9 @@ public abstract partial class BaseNetworkable : INetworkable
 	{
 		foreach ( var propertyInfo in PropertyNameCache.Values )
 		{
+			if ( propertyInfo.PropertyType.IsAssignableTo( typeof( BaseNetworkable ) ) )
+				continue;
+
 			// TODO: handle null values.
 			if ( propertyInfo.GetValue( this ) is not INetworkable networkable )
 				return false;
