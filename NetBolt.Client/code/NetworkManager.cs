@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using NetBolt.Client.UI;
 using NetBolt.Client.Utility;
-using NetBolt.Shared;
+using NetBolt.Shared.Clients;
 using NetBolt.Shared.Entities;
 using NetBolt.Shared.Messages;
 using NetBolt.Shared.Networkables;
@@ -24,7 +24,7 @@ public sealed class NetworkManager
 	/// <summary>
 	/// The only instance of <see cref="NetworkManager"/> existing.
 	/// </summary>
-	public static NetworkManager? Instance;
+	public static NetworkManager Instance = null!;
 
 #if DEBUG
 	/// <summary>
@@ -151,8 +151,8 @@ public sealed class NetworkManager
 		_webSocket.OnDataReceived += WebSocketOnDataReceived;
 		_webSocket.OnMessageReceived += WebSocketOnMessageReceived;
 
-		HandleMessage<RpcCallMessage>( Rpc.HandleRpcCallMessage );
-		HandleMessage<RpcCallResponseMessage>( Rpc.HandleRpcCallResponseMessage );
+		HandleMessage<RpcCallMessage>( HandleRpcCallMessage );
+		HandleMessage<RpcCallResponseMessage>( HandleRpcCallResponseMessage );
 		HandleMessage<MultiMessage>( HandleMultiMessage );
 		HandleMessage<ShutdownMessage>( HandleShutdownMessage );
 		HandleMessage<WelcomeMessage>( HandleWelcomeMessage );
@@ -196,7 +196,7 @@ public sealed class NetworkManager
 			Log.Info( "Connecting..." );
 			await _webSocket.Connect( webSocketUri, headers );
 
-			_clients.Add( new NetworkClient( _localClientId ) );
+			_clients.Add( new NetworkClient( _localClientId, false ) );
 			Connected = true;
 			Address = ip;
 			Port = port;
@@ -359,6 +359,83 @@ public sealed class NetworkManager
 	}
 
 	/// <summary>
+	/// Handles an incoming RPC from the server.
+	/// </summary>
+	/// <param name="message">The RPC call message.</param>
+	/// <exception cref="InvalidOperationException">Thrown when handling the RPC call failed.</exception>
+	[ClientOnly]
+	internal void HandleRpcCallMessage( NetworkMessage message )
+	{
+		if ( message is not RpcCallMessage rpcCall )
+			return;
+
+		var type = TypeLibrary.GetDescription( rpcCall.ClassName );
+		if ( type is null )
+		{
+			Log.Error( $"Failed to handle RPC call (\"{rpcCall.ClassName}\" doesn't exist)." );
+			return;
+		}
+
+		// TODO: Support instance methods https://github.com/Facepunch/sbox-issues/issues/2079
+		var method = TypeLibrary.FindStaticMethods( rpcCall.MethodName ).First();
+		if ( method is null )
+		{
+			Log.Error( $"Failed to handle RPC call (\"{rpcCall.MethodName}\" does not exist on \"{type}\")." );
+			return;
+		}
+
+		if ( method.GetCustomAttribute<Rpc.ClientAttribute>() is null )
+		{
+			Log.Error( "Failed to handle RPC call (Attempted to invoke a non-RPC method)." );
+			return;
+		}
+
+		var baseNetworkable = BaseNetworkable.All.FirstOrDefault( baseNetworkable => baseNetworkable.NetworkId == rpcCall.NetworkId );
+		if ( baseNetworkable is null && rpcCall.NetworkId != -1 )
+		{
+			Log.Error( $"Failed to handle RPC call (Attempted to call RPC on a non-existant {nameof( BaseNetworkable )})." );
+			return;
+		}
+
+		var parameters = new List<object>();
+		parameters.AddRange( rpcCall.Parameters );
+		if ( baseNetworkable is not null )
+			parameters.Insert( 0, baseNetworkable );
+
+		if ( rpcCall.CallGuid == Guid.Empty )
+		{
+			method.Invoke( null, parameters.ToArray() );
+			return;
+		}
+
+		var returnValue = method.InvokeWithReturn<object?>( null, parameters.ToArray() );
+		if ( returnValue is not INetworkable && returnValue is not null )
+		{
+			var failedMessage = new RpcCallResponseMessage( rpcCall.CallGuid, RpcCallState.Failed );
+			SendToServer( failedMessage );
+			Log.Error( $"Failed to handle RPC call (\"{rpcCall.MethodName}\" returned a non-networkable value)." );
+			return;
+		}
+
+		var response = new RpcCallResponseMessage( rpcCall.CallGuid, RpcCallState.Completed, returnValue as INetworkable ?? null );
+		SendToServer( response );
+	}
+
+	/// <summary>
+	/// Handles an incoming RPC call response.
+	/// </summary>
+	/// <param name="message">The RPC call response.</param>
+	/// <exception cref="InvalidOperationException">Thrown when handling the RPC call response failed.</exception>
+	[ClientOnly]
+	internal void HandleRpcCallResponseMessage( NetworkMessage message )
+	{
+		if ( message is not RpcCallResponseMessage rpcResponse )
+			return;
+
+		Rpc.Responses.Add( rpcResponse.CallGuid, rpcResponse );
+	}
+
+	/// <summary>
 	/// Handles a <see cref="MultiMessage"/>.
 	/// </summary>
 	/// <param name="message">The <see cref="MultiMessage"/> that was received.</param>
@@ -428,7 +505,7 @@ public sealed class NetworkManager
 		if ( message is not CreateBaseNetworkableMessage createBaseNetworkableMessage )
 			return;
 
-		var baseNetworkable = TypeHelper.Create<BaseNetworkable>( createBaseNetworkableMessage.BaseNetworkableClass );
+		var baseNetworkable = TypeLibrary.Create<BaseNetworkable>( createBaseNetworkableMessage.BaseNetworkableClass );
 		if ( baseNetworkable is not null )
 			baseNetworkable.NetworkId = createBaseNetworkableMessage.NetworkId;
 	}

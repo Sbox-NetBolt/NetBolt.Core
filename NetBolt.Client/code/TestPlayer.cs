@@ -22,6 +22,7 @@ public sealed class TestPlayer : AnimatedEntity
 		set => Components.Add( value );
 	}
 
+	/// <inheritdoc/>
 	public override void Spawn()
 	{
 		base.Spawn();
@@ -35,6 +36,7 @@ public sealed class TestPlayer : AnimatedEntity
 		EnableShadowInFirstPerson = true;
 	}
 
+	/// <inheritdoc/>
 	public override void Simulate( Sandbox.Client cl )
 	{
 		base.Simulate( cl );
@@ -45,6 +47,7 @@ public sealed class TestPlayer : AnimatedEntity
 			Camera = Camera is FirstPersonCamera ? new ThirdPersonCamera() : new FirstPersonCamera();
 	}
 
+	/// <inheritdoc/>
 	public override void FrameSimulate( Sandbox.Client cl )
 	{
 		base.FrameSimulate( cl );

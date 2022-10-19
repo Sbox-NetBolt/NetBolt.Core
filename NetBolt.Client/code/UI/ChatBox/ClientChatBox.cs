@@ -1,8 +1,8 @@
-using NetBolt.Shared;
 using NetBolt.Shared.Messages;
 using Sandbox.UI.Construct;
 using Sandbox;
 using Sandbox.UI;
+using NetBolt.Shared.Clients;
 
 namespace NetBolt.Client.UI;
 

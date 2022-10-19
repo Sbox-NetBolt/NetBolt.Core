@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using NetBolt.Client.UI;
 using NetBolt.Shared;
+using NetBolt.Shared.Clients;
 using NetBolt.Shared.Entities;
 using Sandbox;
 using BaseNetworkable = NetBolt.Shared.Networkables.BaseNetworkable;
@@ -39,13 +40,13 @@ public class NetBoltGame : Game
 		if ( !IsClient )
 			return;
 
+		IGlue.Instance = new SandboxGlue();
 		_networkManager = new NetworkManager();
 		NetworkManager.ConnectedToServer += OnConnectedToServer;
 		NetworkManager.DisconnectedFromServer += OnDisconnectedFromServer;
 		NetworkManager.ClientConnected += OnClientConnected;
 		NetworkManager.ClientDisconnected += OnClientDisconnected;
 		_gameHud = new GameHud();
-
 	}
 
 	/// <summary>
