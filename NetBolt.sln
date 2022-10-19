@@ -1,6 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetBolt.Server", "NetBolt.Server\NetBolt.Server.csproj", "{A3842C68-1551-4355-9377-883D2AA7BD95}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32929.385
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetBolt.Server", "NetBolt.Server\NetBolt.Server.csproj", "{A3842C68-1551-4355-9377-883D2AA7BD95}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetBolt.Shared", "NetBolt.Shared\NetBolt.Shared.csproj", "{1A8FEF11-E87B-468F-9FF7-B604032DBC6C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,5 +17,15 @@ Global
 		{A3842C68-1551-4355-9377-883D2AA7BD95}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3842C68-1551-4355-9377-883D2AA7BD95}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3842C68-1551-4355-9377-883D2AA7BD95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A8FEF11-E87B-468F-9FF7-B604032DBC6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A8FEF11-E87B-468F-9FF7-B604032DBC6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A8FEF11-E87B-468F-9FF7-B604032DBC6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A8FEF11-E87B-468F-9FF7-B604032DBC6C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D239DE6D-EE00-4664-82DB-4AE5CB2F714A}
 	EndGlobalSection
 EndGlobal
