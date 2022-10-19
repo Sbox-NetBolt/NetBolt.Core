@@ -54,10 +54,10 @@ public struct NetworkedString : INetworkable, IEquatable<NetworkedString>
 	/// <param name="fraction">The fraction to lerp at.</param>
 	/// <param name="oldValue">The old value.</param>
 	/// <param name="newValue">The new value.</param>
-	/// <exception cref="NotImplementedException">Lerping a <see cref="NetworkedString"/> is not supported.</exception>
+	/// <exception cref="NotSupportedException">Lerping a <see cref="NetworkedString"/> is not supported.</exception>
 	public void Lerp( float fraction, INetworkable oldValue, INetworkable newValue )
 	{
-		throw new NotImplementedException();
+		throw new NotSupportedException();
 	}
 
 	/// <summary>
@@ -107,20 +107,13 @@ public struct NetworkedString : INetworkable, IEquatable<NetworkedString>
 		return _value == other._value;
 	}
 
-	/// <summary>
-	/// Indicates whether this instance and a specified object are equal.
-	/// </summary>
-	/// <param name="obj">The object to compare with the current instance.</param>
-	/// <returns>true if obj and this instance are the same type and represent the same value; otherwise, false.</returns>
+	/// <inheritdoc/>
 	public override bool Equals( object? obj )
 	{
 		return obj is NetworkedString other && Equals( other );
 	}
 
-	/// <summary>
-	/// Returns the hash code for this instance.
-	/// </summary>
-	/// <returns>A 32-bit signed integer that is the hash code for this instance.</returns>
+	/// <inheritdoc/>
 	public override int GetHashCode()
 	{
 		return _value.GetHashCode();

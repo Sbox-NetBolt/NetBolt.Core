@@ -63,15 +63,13 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 		Value = Array.Empty<T>();
 	}
 
-	/// <summary>
-	/// Returns an enumerator that iterates through the collection.
-	/// </summary>
-	/// <returns>An enumerator that can be used to iterate through the collection.</returns>
+	/// <inheritdoc/>
 	public IEnumerator<T> GetEnumerator()
 	{
 		return ((IEnumerable<T>)Value).GetEnumerator();
 	}
 
+	/// <inheritdoc/>
 	IEnumerator IEnumerable.GetEnumerator()
 	{
 		return GetEnumerator();
@@ -92,10 +90,10 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 	/// <param name="fraction">The fraction to lerp at.</param>
 	/// <param name="oldValue">The old value.</param>
 	/// <param name="newValue">The new value.</param>
-	/// <exception cref="NotImplementedException">Lerping a <see cref="NetworkedArray{T}"/> is not supported.</exception>
+	/// <exception cref="NotSupportedException">Lerping a <see cref="NetworkedArray{T}"/> is not supported.</exception>
 	public void Lerp( float fraction, INetworkable oldValue, INetworkable newValue )
 	{
-		throw new NotImplementedException();
+		throw new NotSupportedException();
 	}
 
 	/// <summary>

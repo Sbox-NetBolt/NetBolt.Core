@@ -30,11 +30,10 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 	/// <summary>
 	/// See <see cref="Value"/>.
 	/// </summary>
-	private HashSet<T> _value;
+	private HashSet<T> _value = null!;
 
 	/// <summary>
-	/// Gets the number of elements that are contained in a set.
-	/// <returns>The number of elements that are contained in the set.</returns>
+	/// The number of elements that are contained in the set.
 	/// </summary>
 	public int Count => Value.Count;
 
@@ -112,15 +111,13 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 		_changes.Add( (HashSetChangeType.Clear, default) );
 	}
 
-	/// <summary>
-	/// Returns an enumerator that iterates through the collection.
-	/// </summary>
-	/// <returns>An enumerator that can be used to iterate through the collection.</returns>
+	/// <inheritdoc/>
 	public IEnumerator<T> GetEnumerator()
 	{
 		return Value.GetEnumerator();
 	}
 
+	/// <inheritdoc/>
 	IEnumerator IEnumerable.GetEnumerator()
 	{
 		return GetEnumerator();
@@ -141,10 +138,10 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 	/// <param name="fraction">The fraction to lerp at.</param>
 	/// <param name="oldValue">The old value.</param>
 	/// <param name="newValue">The new value.</param>
-	/// <exception cref="NotImplementedException">Lerping a <see cref="NetworkedHashSet{T}"/> is not supported.</exception>
+	/// <exception cref="NotSupportedException">Lerping a <see cref="NetworkedHashSet{T}"/> is not supported.</exception>
 	public void Lerp( float fraction, INetworkable oldValue, INetworkable newValue )
 	{
-		throw new NotImplementedException();
+		throw new NotSupportedException();
 	}
 
 	/// <summary>

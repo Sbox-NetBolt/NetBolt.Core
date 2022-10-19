@@ -21,10 +21,10 @@ public abstract class NetworkMessage : INetworkable
 	/// <param name="fraction">The fraction to lerp at.</param>
 	/// <param name="oldValue">The old value.</param>
 	/// <param name="newValue">The new value.</param>
-	/// <exception cref="NotImplementedException">Lerping a <see cref="NetworkMessage"/> is not supported.</exception>
+	/// <exception cref="NotSupportedException">Lerping a <see cref="NetworkMessage"/> is not supported.</exception>
 	public void Lerp( float fraction, INetworkable oldValue, INetworkable newValue )
 	{
-		throw new NotImplementedException();
+		throw new NotSupportedException();
 	}
 
 	/// <summary>

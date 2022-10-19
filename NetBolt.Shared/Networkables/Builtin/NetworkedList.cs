@@ -33,13 +33,11 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	private List<T> _value = null!;
 
 	/// <summary>
-	/// Gets the total number of elements the internal data structure can hold without resizing.
-	/// <returns>The number of elements that the <see cref="List{T}"/> can contain before resizing is required.</returns>
+	/// The number of elements that the <see cref="List{T}"/> can contain before resizing is required.
 	/// </summary>
 	public int Capacity => Value.Capacity;
 	/// <summary>
-	/// Gets the number of elements contained in the <see cref="List{T}"/>.
-	/// <returns>The number of elements contained in the <see cref="List{T}"/>.</returns>
+	/// The number of elements contained in the <see cref="List{T}"/>.
 	/// </summary>
 	public int Count => Value.Count;
 
@@ -53,7 +51,7 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	/// </summary>
 	public NetworkedList()
 	{
-		Value = new List<T>();
+		_value = new List<T>();
 	}
 
 	/// <summary>
@@ -62,7 +60,7 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	/// <param name="list">The pre-allocated <see cref="HashSet{T}"/> to start with.</param>
 	public NetworkedList( List<T> list )
 	{
-		Value = list;
+		_value = list;
 		foreach ( var element in list )
 			_changes.Add( (ListChangeType.Add, element) );
 	}
@@ -107,15 +105,13 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 		_changes.Add( (ListChangeType.Clear, default) );
 	}
 
-	/// <summary>
-	/// Returns an enumerator that iterates through the collection.
-	/// </summary>
-	/// <returns>An enumerator that can be used to iterate through the collection.</returns>
+	/// <inheritdoc/>
 	public IEnumerator<T> GetEnumerator()
 	{
 		return Value.GetEnumerator();
 	}
 
+	/// <inheritdoc/>
 	IEnumerator IEnumerable.GetEnumerator()
 	{
 		return GetEnumerator();
@@ -136,10 +132,10 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	/// <param name="fraction">The fraction to lerp at.</param>
 	/// <param name="oldValue">The old value.</param>
 	/// <param name="newValue">The new value.</param>
-	/// <exception cref="NotImplementedException">Lerping a <see cref="NetworkedList{T}"/> is not supported.</exception>
+	/// <exception cref="NotSupportedException">Lerping a <see cref="NetworkedList{T}"/> is not supported.</exception>
 	public void Lerp( float fraction, INetworkable oldValue, INetworkable newValue )
 	{
-		throw new NotImplementedException();
+		throw new NotSupportedException();
 	}
 
 	/// <summary>

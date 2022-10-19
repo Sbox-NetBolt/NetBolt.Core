@@ -138,20 +138,13 @@ public struct NetworkedVector3 : INetworkable, IEquatable<NetworkedVector3>
 		return _value.Equals( other._value );
 	}
 
-	/// <summary>
-	/// Indicates whether this instance and a specified object are equal.
-	/// </summary>
-	/// <param name="obj">The object to compare with the current instance.</param>
-	/// <returns>true if obj and this instance are the same type and represent the same value; otherwise, false.</returns>
+	/// <inheritdoc/>
 	public override bool Equals( object? obj )
 	{
 		return obj is NetworkedVector3 other && Equals( other );
 	}
 
-	/// <summary>
-	/// Returns the hash code for this instance.
-	/// </summary>
-	/// <returns>A 32-bit signed integer that is the hash code for this instance.</returns>
+	/// <inheritdoc/>
 	public override int GetHashCode()
 	{
 		return _value.GetHashCode();
