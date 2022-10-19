@@ -67,7 +67,7 @@ internal class Bot : IClient
 	/// <inheritdoc/>
 	public Task DisconnectAsync( WebSocketDisconnectReason reason = WebSocketDisconnectReason.Requested, string strReason = "", WebSocketError? error = null )
 	{
-		throw new System.NotImplementedException();
+		throw new NotSupportedException();
 	}
 
 	/// <inheritdoc/>
@@ -85,7 +85,7 @@ internal class Bot : IClient
 	/// <inheritdoc/>
 	public void QueueSend( NetworkMessage message )
 	{
-		throw new System.NotImplementedException();
+		HandleMessage( message );
 	}
 
 	/// <inheritdoc/>
@@ -98,5 +98,13 @@ internal class Bot : IClient
 	public void QueueSend( string message )
 	{
 		throw new NotSupportedException();
+	}
+
+	/// <summary>
+	/// Invoked when a message has been sent to the bot.
+	/// </summary>
+	/// <param name="message">The message that was received.</param>
+	protected virtual void HandleMessage( NetworkMessage message )
+	{
 	}
 }
