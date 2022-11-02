@@ -321,7 +321,7 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable,
 
 		var j = -1;
 		var nextIndex = reader.ReadInt32();
-		foreach( var (key, value) in Value )
+		foreach ( var (key, value) in Value )
 		{
 			j++;
 			if ( j != nextIndex )
