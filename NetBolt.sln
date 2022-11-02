@@ -7,10 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetBolt.Server", "NetBolt.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetBolt.Shared", "NetBolt.Shared\NetBolt.Shared.csproj", "{1A8FEF11-E87B-468F-9FF7-B604032DBC6C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "base", "E:\SteamLibrary\steamapps\common\sbox\addons\base\code\base.csproj", "{47F8E997-1223-446D-9C85-6369F526FAD1}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "netbolt_client", "NetBolt.Client\code\netbolt_client.csproj", "{45571F6A-804F-4F81-B95A-9D7F84F4E8FE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,14 +21,6 @@ Global
 		{1A8FEF11-E87B-468F-9FF7-B604032DBC6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A8FEF11-E87B-468F-9FF7-B604032DBC6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A8FEF11-E87B-468F-9FF7-B604032DBC6C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{47F8E997-1223-446D-9C85-6369F526FAD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{47F8E997-1223-446D-9C85-6369F526FAD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{47F8E997-1223-446D-9C85-6369F526FAD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{47F8E997-1223-446D-9C85-6369F526FAD1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{45571F6A-804F-4F81-B95A-9D7F84F4E8FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{45571F6A-804F-4F81-B95A-9D7F84F4E8FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{45571F6A-804F-4F81-B95A-9D7F84F4E8FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{45571F6A-804F-4F81-B95A-9D7F84F4E8FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
