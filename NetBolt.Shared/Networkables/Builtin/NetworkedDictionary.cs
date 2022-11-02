@@ -71,12 +71,12 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable,
 	/// <summary>
 	/// Whether or not this <see cref="NetworkedHashSet{T}"/> is containing a key type that is a <see cref="ComplexNetworkable"/>.
 	/// </summary>
-	private readonly bool _containingKeyBaseNetworkable = typeof( TKey ).IsAssignableTo( typeof( ComplexNetworkable ) );
+	private readonly bool _containingKeyComplexNetworkable = typeof( TKey ).IsAssignableTo( typeof( ComplexNetworkable ) );
 
 	/// <summary>
 	/// Whether or not this <see cref="NetworkedHashSet{T}"/> is containing a value type that is a <see cref="ComplexNetworkable"/>.
 	/// </summary>
-	private readonly bool _containingValueBaseNetworkable = typeof( TValue ).IsAssignableTo( typeof( ComplexNetworkable ) );
+	private readonly bool _containingValueComplexNetworkable = typeof( TValue ).IsAssignableTo( typeof( ComplexNetworkable ) );
 
 	/// <summary>
 	/// Initializes a default instance of <see cref="NetworkedDictionary{TKey, TValue}"/>.
@@ -210,10 +210,10 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable,
 
 		foreach ( var (key, value) in Value )
 		{
-			if ( INetworkable.HasChanged( typeof( TKey ), key, key, !_containingKeyBaseNetworkable ) )
+			if ( INetworkable.HasChanged( typeof( TKey ), key, key, !_containingKeyComplexNetworkable ) )
 				return true;
 
-			if ( INetworkable.HasChanged( typeof( TValue ), value, value, !_containingValueBaseNetworkable ) )
+			if ( INetworkable.HasChanged( typeof( TValue ), value, value, !_containingValueComplexNetworkable ) )
 				return true;
 		}
 
@@ -252,12 +252,12 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable,
 			TKey? key = default;
 			TValue? value = default;
 
-			if ( _containingKeyBaseNetworkable )
+			if ( _containingKeyComplexNetworkable )
 				key = (TKey)(INetworkable)ComplexNetworkable.GetById( reader.ReadInt32() )!;
 			else
 				key = reader.ReadNetworkable<TKey>();
 
-			if ( _containingValueBaseNetworkable )
+			if ( _containingValueComplexNetworkable )
 				value = (TValue)(INetworkable)ComplexNetworkable.GetById( reader.ReadInt32() )!;
 			else
 				value = reader.ReadNetworkable<TValue>();
@@ -281,7 +281,7 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable,
 			{
 				case DictionaryChangeType.Add:
 					TKey key;
-					if ( _containingKeyBaseNetworkable )
+					if ( _containingKeyComplexNetworkable )
 						key = (TKey)(INetworkable)ComplexNetworkable.GetById( reader.ReadInt32() )!;
 					else
 						key = reader.ReadNetworkable<TKey>();
@@ -294,7 +294,7 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable,
 					}
 
 					TValue? value;
-					if ( _containingValueBaseNetworkable )
+					if ( _containingValueComplexNetworkable )
 						value = (TValue)(INetworkable)ComplexNetworkable.GetById( reader.ReadInt32() )!;
 					else
 						value = reader.ReadNetworkable<TValue>();
@@ -302,7 +302,7 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable,
 					Add( key, value );
 					break;
 				case DictionaryChangeType.Remove:
-					if ( _containingKeyBaseNetworkable )
+					if ( _containingKeyComplexNetworkable )
 						Remove( (TKey)(INetworkable)ComplexNetworkable.GetById( reader.ReadInt32() )! );
 					else
 						Remove( reader.ReadNetworkable<TKey>() );
@@ -344,12 +344,12 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable,
 		writer.Write( Value.Count );
 		foreach ( var (key, value) in Value )
 		{
-			if ( _containingKeyBaseNetworkable )
+			if ( _containingKeyComplexNetworkable )
 				writer.Write( key.NetworkId );
 			else
 				writer.Write( key );
 
-			if ( _containingValueBaseNetworkable )
+			if ( _containingValueComplexNetworkable )
 				writer.Write( value.NetworkId );
 			else
 				writer.Write( value );
@@ -370,7 +370,7 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable,
 			switch ( changeType )
 			{
 				case DictionaryChangeType.Add:
-					if ( _containingKeyBaseNetworkable )
+					if ( _containingKeyComplexNetworkable )
 						writer.Write( key!.NetworkId );
 					else
 						writer.Write( key! );
@@ -380,13 +380,13 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable,
 					if ( !hasValue )
 						break;
 
-					if ( _containingValueBaseNetworkable )
+					if ( _containingValueComplexNetworkable )
 						writer.Write( value!.NetworkId );
 					else
 						writer.Write( value! );
 					break;
 				case DictionaryChangeType.Remove:
-					if ( _containingKeyBaseNetworkable )
+					if ( _containingKeyComplexNetworkable )
 						writer.Write( key!.NetworkId );
 					else
 						writer.Write( key! );
@@ -399,7 +399,7 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable,
 		}
 		_changes.Clear();
 
-		if ( _containingKeyBaseNetworkable && _containingValueBaseNetworkable )
+		if ( _containingKeyComplexNetworkable && _containingValueComplexNetworkable )
 		{
 			writer.Write( 0 );
 			return;
@@ -412,8 +412,8 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable,
 		foreach ( var (key, value) in Value )
 		{
 			i++;
-			var keyChanged = !INetworkable.HasChanged( typeof( TKey ), key, key, !_containingKeyBaseNetworkable );
-			var valueChanged = !INetworkable.HasChanged( typeof( TValue ), value, value, !_containingValueBaseNetworkable );
+			var keyChanged = !INetworkable.HasChanged( typeof( TKey ), key, key, !_containingKeyComplexNetworkable );
+			var valueChanged = !INetworkable.HasChanged( typeof( TValue ), value, value, !_containingValueComplexNetworkable );
 
 			if ( !keyChanged && !valueChanged )
 				continue;

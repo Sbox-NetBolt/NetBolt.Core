@@ -24,7 +24,7 @@ public sealed class RpcCallMessage : NetworkMessage
 	/// <summary>
 	/// The <see cref="ComplexNetworkable"/>s network identifier to call the <see cref="MethodName"/> with.
 	/// </summary>
-	public int BaseNetworkableId { get; private set; }
+	public int ComplexNetworkableId { get; private set; }
 	/// <summary>
 	/// The parameters to send to the <see cref="MethodName"/>.
 	/// </summary>
@@ -38,7 +38,7 @@ public sealed class RpcCallMessage : NetworkMessage
 		CallGuid = Guid.Empty;
 		ClassName = string.Empty;
 		MethodName = string.Empty;
-		BaseNetworkableId = -1;
+		ComplexNetworkableId = -1;
 		Parameters = Array.Empty<INetworkable>();
 	}
 
@@ -56,9 +56,9 @@ public sealed class RpcCallMessage : NetworkMessage
 		CallGuid = respondable ? Guid.NewGuid() : Guid.Empty;
 		ClassName = entityType.Name;
 		if ( complexNetworkable is null )
-			BaseNetworkableId = -1;
+			ComplexNetworkableId = -1;
 		else
-			BaseNetworkableId = complexNetworkable.NetworkId;
+			ComplexNetworkableId = complexNetworkable.NetworkId;
 
 		MethodName = methodName;
 		Parameters = parameters;
@@ -73,7 +73,7 @@ public sealed class RpcCallMessage : NetworkMessage
 		CallGuid = reader.ReadGuid();
 		ClassName = reader.ReadString();
 		MethodName = reader.ReadString();
-		BaseNetworkableId = reader.ReadInt32();
+		ComplexNetworkableId = reader.ReadInt32();
 
 		Parameters = new INetworkable[reader.ReadInt32()];
 		for ( var i = 0; i < Parameters.Length; i++ )
@@ -89,7 +89,7 @@ public sealed class RpcCallMessage : NetworkMessage
 		writer.Write( CallGuid );
 		writer.Write( ClassName );
 		writer.Write( MethodName );
-		writer.Write( BaseNetworkableId );
+		writer.Write( ComplexNetworkableId );
 
 		writer.Write( Parameters.Length );
 		foreach ( var argument in Parameters )

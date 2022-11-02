@@ -18,7 +18,7 @@ public interface INetBoltClient
 	/// <param name="networkId">The unique network identifier to look for.</param>
 	/// <param name="cb">The callback to invoke when the <see cref="ComplexNetworkable"/> exists.</param>
 	[ClientOnly]
-	void RequestBaseNetworkable( int networkId, Action<ComplexNetworkable> cb );
+	void RequestComplexNetworkable( int networkId, Action<ComplexNetworkable> cb );
 	/// <summary>
 	/// Makes a request to callback when a <see cref="IEntity"/> with the provided <see ref="networkId"/> exists.
 	/// </summary>

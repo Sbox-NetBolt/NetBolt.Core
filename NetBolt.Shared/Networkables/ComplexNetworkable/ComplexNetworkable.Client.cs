@@ -48,7 +48,7 @@ public partial class ComplexNetworkable
 		if ( complexNetworkable is not null )
 			return complexNetworkable;
 
-		INetBoltClient.Instance.RequestBaseNetworkable( networkId, cb );
+		INetBoltClient.Instance.RequestComplexNetworkable( networkId, cb );
 		return null;
 	}
 }

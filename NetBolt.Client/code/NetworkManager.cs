@@ -157,13 +157,13 @@ public sealed class NetworkManager
 		HandleMessage<ShutdownMessage>( HandleShutdownMessage );
 		HandleMessage<WelcomeMessage>( HandleWelcomeMessage );
 		HandleMessage<ClientListMessage>( HandleClientListMessage );
-		HandleMessage<BaseNetworkableListMessage>( HandleBaseNetworkableListMessage );
-		HandleMessage<CreateBaseNetworkableMessage>( HandleCreateBaseNetworkableMessage );
-		HandleMessage<DeleteBaseNetworkableMessage>( HandleDeleteBaseNetworkableMessage );
+		HandleMessage<ComplexNetworkableListMessage>( HandleComplexNetworkableListMessage );
+		HandleMessage<CreateComplexNetworkableMessage>( HandleCreateComplexNetworkableMessage );
+		HandleMessage<DeleteComplexNetworkableMessage>( HandleDeleteComplexNetworkableMessage );
 		HandleMessage<ClientStateChangedMessage>( HandleClientStateChangedMessage );
 		HandleMessage<ClientPawnChangedMessage>( HandleClientPawnChangedMessage );
 		HandleMessage<ClientSayMessage>( HandleClientSayMessage );
-		HandleMessage<MultiBaseNetworkableUpdateMessage>( HandleMultiBaseNetworkableUpdateMessage );
+		HandleMessage<MultiComplexNetworkableUpdateMessage>( HandleMultiComplexNetworkableUpdateMessage );
 	}
 
 	/// <summary>
@@ -390,7 +390,7 @@ public sealed class NetworkManager
 			return;
 		}
 
-		var complexNetworkable = ComplexNetworkable.GetById( rpcCall.BaseNetworkableId );
+		var complexNetworkable = ComplexNetworkable.GetById( rpcCall.ComplexNetworkableId );
 		if ( complexNetworkable is null && rpcCall.NetworkId != -1 )
 		{
 			Log.Error( $"Failed to handle RPC call (Attempted to call RPC on a non-existant {nameof( ComplexNetworkable )})." );
@@ -488,42 +488,42 @@ public sealed class NetworkManager
 	}
 
 	/// <summary>
-	/// Handles a <see cref="BaseNetworkableListMessage"/>.
+	/// Handles a <see cref="ComplexNetworkableListMessage"/>.
 	/// </summary>
-	/// <param name="message">The <see cref="BaseNetworkableListMessage"/> that was received.</param>
-	private void HandleBaseNetworkableListMessage( NetworkMessage message )
+	/// <param name="message">The <see cref="ComplexNetworkableListMessage"/> that was received.</param>
+	private void HandleComplexNetworkableListMessage( NetworkMessage message )
 	{
-		if ( message is not BaseNetworkableListMessage baseNetworkableListMessage )
+		if ( message is not ComplexNetworkableListMessage complexNetworkableListMessage )
 			return;
 
 		var clientGlue = (SandboxGlue.ClientSpecificGlue)INetBoltClient.Instance;
-		foreach ( var complexNetworkable in baseNetworkableListMessage.BaseNetworkables )
-			clientGlue.BaseNetworkableAvailable( complexNetworkable );
+		foreach ( var complexNetworkable in complexNetworkableListMessage.ComplexNetworkables )
+			clientGlue.ComplexNetworkableAvailable( complexNetworkable );
 	}
 
 	/// <summary>
 	/// Handles a <see cref="CreateComplexNetworkableMessage"/>.
 	/// </summary>
 	/// <param name="message">The <see cref="CreateComplexNetworkableMessage"/> that was received.</param>
-	private void HandleCreateBaseNetworkableMessage( NetworkMessage message )
+	private void HandleCreateComplexNetworkableMessage( NetworkMessage message )
 	{
 		if ( message is not CreateComplexNetworkableMessage createComplexNetworkableMessage )
 			return;
 
-		((SandboxGlue.ClientSpecificGlue)INetBoltClient.Instance).BaseNetworkableAvailable( createComplexNetworkableMessage.ComplexNetworkable );
+		((SandboxGlue.ClientSpecificGlue)INetBoltClient.Instance).ComplexNetworkableAvailable( createComplexNetworkableMessage.ComplexNetworkable );
 	}
 
 	/// <summary>
-	/// Handles a <see cref="DeleteBaseNetworkableMessage"/>.
+	/// Handles a <see cref="DeleteComplexNetworkableMessage"/>.
 	/// </summary>
-	/// <param name="message">The <see cref="DeleteBaseNetworkableMessage"/> that was received.</param>
-	private void HandleDeleteBaseNetworkableMessage( NetworkMessage message )
+	/// <param name="message">The <see cref="DeleteComplexNetworkableMessage"/> that was received.</param>
+	private void HandleDeleteComplexNetworkableMessage( NetworkMessage message )
 	{
-		if ( message is not DeleteBaseNetworkableMessage deleteBaseNetworkableMessage )
+		if ( message is not DeleteComplexNetworkableMessage deleteComplexNetworkableMessage )
 			return;
 
 		var complexNetworkable = ComplexNetworkable.All.FirstOrDefault( complexNetworkable =>
-			complexNetworkable.NetworkId == deleteBaseNetworkableMessage.NetworkId );
+			complexNetworkable.NetworkId == deleteComplexNetworkableMessage.NetworkId );
 		complexNetworkable?.Delete();
 	}
 
@@ -582,17 +582,17 @@ public sealed class NetworkManager
 	}
 
 	/// <summary>
-	/// Handles a <see cref="MultiBaseNetworkableUpdateMessage"/>.
+	/// Handles a <see cref="MultiComplexNetworkableUpdateMessage"/>.
 	/// </summary>
-	/// <param name="message">The <see cref="MultiBaseNetworkableUpdateMessage"/> that was received.</param>
-	private void HandleMultiBaseNetworkableUpdateMessage( NetworkMessage message )
+	/// <param name="message">The <see cref="MultiComplexNetworkableUpdateMessage"/> that was received.</param>
+	private void HandleMultiComplexNetworkableUpdateMessage( NetworkMessage message )
 	{
-		if ( message is not MultiBaseNetworkableUpdateMessage multiBaseNetworkableUpdateMessage )
+		if ( message is not MultiComplexNetworkableUpdateMessage multiComplexNetworkableUpdateMessage )
 			return;
 
-		var reader = new NetworkReader( new MemoryStream( multiBaseNetworkableUpdateMessage.PartialBaseNetworkableData ) );
-		var baseNetworkableCount = reader.ReadInt32();
-		for ( var i = 0; i < baseNetworkableCount; i++ )
+		var reader = new NetworkReader( new MemoryStream( multiComplexNetworkableUpdateMessage.PartialComplexNetworkableData ) );
+		var complexNetworkableCount = reader.ReadInt32();
+		for ( var i = 0; i < complexNetworkableCount; i++ )
 		{
 			var networkId = reader.ReadInt32();
 			var complexNetworkable = ComplexNetworkable.All.FirstOrDefault( complexNetworkable => complexNetworkable.NetworkId == networkId );

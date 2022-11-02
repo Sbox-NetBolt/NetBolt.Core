@@ -77,7 +77,7 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	/// <summary>
 	/// Whether or not this <see cref="NetworkedList{T}"/> is containing a type that is a <see cref="ComplexNetworkable"/>.
 	/// </summary>
-	private readonly bool _containingBaseNetworkable = typeof( T ).IsAssignableTo( typeof( ComplexNetworkable ) );
+	private readonly bool _containingComplexNetworkable = typeof( T ).IsAssignableTo( typeof( ComplexNetworkable ) );
 
 	/// <summary>
 	/// Initializes a default instance of <see cref="NetworkedList{T}"/>.
@@ -161,7 +161,7 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 
 		foreach ( var item in Value )
 		{
-			if ( INetworkable.HasChanged( typeof( T ), item, item, !_containingBaseNetworkable ) )
+			if ( INetworkable.HasChanged( typeof( T ), item, item, !_containingComplexNetworkable ) )
 				return true;
 		}
 
@@ -195,7 +195,7 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	{
 		Value = new List<T>();
 		var listLength = reader.ReadInt32();
-		if ( _containingBaseNetworkable )
+		if ( _containingComplexNetworkable )
 		{
 			for ( var i = 0; i < listLength; i++ )
 			{
@@ -235,7 +235,7 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 					T? value = default;
 					if ( reader.ReadBoolean() )
 					{
-						if ( _containingBaseNetworkable )
+						if ( _containingComplexNetworkable )
 						{
 							var networkId = reader.ReadInt32();
 							var complexNetworkable = ComplexNetworkable.GetById( networkId );
@@ -267,7 +267,7 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 		changeCount = reader.ReadInt32();
 		for ( var i = 0; i < changeCount; i++ )
 		{
-			Value[reader.ReadInt32()] = _containingBaseNetworkable
+			Value[reader.ReadInt32()] = _containingComplexNetworkable
 				? (T)(INetworkable)ComplexNetworkable.GetById( reader.ReadInt32() )!
 				: reader.ReadNetworkable<T>();
 		}
@@ -284,7 +284,7 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	public void Serialize( NetworkWriter writer )
 	{
 		writer.Write( Value.Count );
-		if ( _containingBaseNetworkable )
+		if ( _containingComplexNetworkable )
 		{
 			foreach ( var item in Value )
 				writer.Write( item.NetworkId );
@@ -315,7 +315,7 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 
 					if ( hasValue )
 					{
-						if ( _containingBaseNetworkable )
+						if ( _containingComplexNetworkable )
 							writer.Write( value!.NetworkId );
 						else
 							writer.Write( value! );
@@ -333,14 +333,14 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 		foreach ( var itemIndex in _indicesChanged )
 		{
 			writer.Write( itemIndex );
-			if ( _containingBaseNetworkable )
+			if ( _containingComplexNetworkable )
 				writer.Write( Value[itemIndex].NetworkId );
 			else
 				writer.Write( Value[itemIndex] );
 		}
 		_indicesChanged.Clear();
 
-		if ( _containingBaseNetworkable )
+		if ( _containingComplexNetworkable )
 		{
 			writer.Write( 0 );
 			return;

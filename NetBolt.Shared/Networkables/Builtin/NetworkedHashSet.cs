@@ -58,7 +58,7 @@ public sealed class NetworkedHashSet<T> : INetworkable,
 	/// <summary>
 	/// Whether or not this <see cref="NetworkedHashSet{T}"/> is containing a type that is a <see cref="ComplexNetworkable"/>.
 	/// </summary>
-	private readonly bool _containingBaseNetworkable = typeof( T ).IsAssignableTo( typeof( ComplexNetworkable ) );
+	private readonly bool _containingComplexNetworkable = typeof( T ).IsAssignableTo( typeof( ComplexNetworkable ) );
 
 	/// <summary>
 	/// Whether or not this <see cref="NetworkedHashSet{T}"/> is containing a type that is a struct.
@@ -172,7 +172,7 @@ public sealed class NetworkedHashSet<T> : INetworkable,
 
 		foreach ( var item in Value )
 		{
-			if ( INetworkable.HasChanged( typeof( T ), item, item, !_containingBaseNetworkable ) )
+			if ( INetworkable.HasChanged( typeof( T ), item, item, !_containingComplexNetworkable ) )
 				return true;
 		}
 
@@ -206,7 +206,7 @@ public sealed class NetworkedHashSet<T> : INetworkable,
 	{
 		Value = new HashSet<T>();
 		var hashSetLength = reader.ReadInt32();
-		if ( _containingBaseNetworkable )
+		if ( _containingComplexNetworkable )
 		{
 			for ( var i = 0; i < hashSetLength; i++ )
 			{
@@ -246,7 +246,7 @@ public sealed class NetworkedHashSet<T> : INetworkable,
 					T? value = default;
 					if ( reader.ReadBoolean() )
 					{
-						if ( _containingBaseNetworkable )
+						if ( _containingComplexNetworkable )
 							value = (T)(INetworkable)ComplexNetworkable.GetById( reader.ReadInt32() )!;
 						else
 							value = reader.ReadNetworkable<T>();
@@ -298,7 +298,7 @@ public sealed class NetworkedHashSet<T> : INetworkable,
 	public void Serialize( NetworkWriter writer )
 	{
 		writer.Write( Value.Count );
-		if ( _containingBaseNetworkable )
+		if ( _containingComplexNetworkable )
 		{
 			foreach ( var item in Value )
 				writer.Write( item.NetworkId );
@@ -328,7 +328,7 @@ public sealed class NetworkedHashSet<T> : INetworkable,
 					writer.Write( hasValue );
 					if ( hasValue )
 					{
-						if ( _containingBaseNetworkable )
+						if ( _containingComplexNetworkable )
 							writer.Write( (value as ComplexNetworkable)!.NetworkId );
 						else
 							writer.Write( value! );
@@ -342,7 +342,7 @@ public sealed class NetworkedHashSet<T> : INetworkable,
 		}
 		_changes.Clear();
 
-		if ( _containingStruct || _containingBaseNetworkable )
+		if ( _containingStruct || _containingComplexNetworkable )
 		{
 			writer.Write( 0 );
 			return;

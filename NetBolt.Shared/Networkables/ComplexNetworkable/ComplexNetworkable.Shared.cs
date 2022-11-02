@@ -51,7 +51,7 @@ public abstract partial class ComplexNetworkable : INetworkable
 
 		AllNetworkables.Add( this );
 		if ( Realm.IsServer )
-			INetBoltServer.Instance.OnBaseNetworkableCreated( this );
+			INetBoltServer.Instance.OnComplexNetworkableCreated( this );
 	}
 
 	/// <summary>
@@ -63,7 +63,7 @@ public abstract partial class ComplexNetworkable : INetworkable
 
 		AllNetworkables.Remove( this );
 		if ( Realm.IsServer )
-			INetBoltServer.Instance.OnBaseNetworkableDeleted( this );
+			INetBoltServer.Instance.OnComplexNetworkableDeleted( this );
 	}
 
 	/// <summary>

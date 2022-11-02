@@ -51,7 +51,7 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 	/// <summary>
 	/// Whether or not this <see cref="NetworkedList{T}"/> is containing a type that is a <see cref="ComplexNetworkable"/>.
 	/// </summary>
-	private readonly bool _containingBaseNetworkable = typeof( T ).IsAssignableTo( typeof( ComplexNetworkable ) );
+	private readonly bool _containingComplexNetworkable = typeof( T ).IsAssignableTo( typeof( ComplexNetworkable ) );
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="NetworkedArray{T}"/> with a pre-allocated <see cref="Array"/>.
@@ -104,7 +104,7 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 
 		foreach ( var item in Value )
 		{
-			if ( INetworkable.HasChanged( typeof( T ), item, item, !_containingBaseNetworkable ) )
+			if ( INetworkable.HasChanged( typeof( T ), item, item, !_containingComplexNetworkable ) )
 				return true;
 		}
 
@@ -138,7 +138,7 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 	{
 		var arrayLength = reader.ReadInt32();
 		Value = new T[arrayLength];
-		if ( _containingBaseNetworkable )
+		if ( _containingComplexNetworkable )
 		{
 			for ( var i = 0; i < arrayLength; i++ )
 			{
@@ -166,7 +166,7 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 		for ( var i = 0; i < changeCount; i++ )
 		{
 			var index = reader.ReadInt32();
-			Value[index] = _containingBaseNetworkable
+			Value[index] = _containingComplexNetworkable
 				? (T)(INetworkable)ComplexNetworkable.GetOrRequestById( reader.ReadInt32(), complexNetworkable => Value[index] = (T)(INetworkable)complexNetworkable )!
 				: reader.ReadNetworkable<T>();
 		}
@@ -183,7 +183,7 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 	public void Serialize( NetworkWriter writer )
 	{
 		writer.Write( Value.Length );
-		if ( _containingBaseNetworkable )
+		if ( _containingComplexNetworkable )
 		{
 			foreach ( var item in Value )
 				writer.Write( item.NetworkId );
@@ -209,7 +209,7 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 		}
 		_indicesChanged.Clear();
 
-		if ( _containingBaseNetworkable )
+		if ( _containingComplexNetworkable )
 		{
 			writer.Write( 0 );
 			return;

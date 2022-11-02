@@ -9,70 +9,70 @@ namespace NetBolt.Shared.Messages;
 /// <summary>
 /// A server to client <see cref="NetworkMessage"/> containing information about an <see cref="ComplexNetworkable"/> that has updated.
 /// </summary>
-public sealed class MultiBaseNetworkableUpdateMessage : NetworkMessage
+public sealed class MultiComplexNetworkableUpdateMessage : NetworkMessage
 {
 	/// <summary>
 	/// Contains all data changes relating to <see cref="ComplexNetworkable"/>s.
 	/// </summary>
-	public byte[] PartialBaseNetworkableData { get; private set; } = Array.Empty<byte>();
+	public byte[] PartialComplexNetworkableData { get; private set; } = Array.Empty<byte>();
 
 	/// <summary>
-	/// Initializes a default instance of <see cref="MultiBaseNetworkableUpdateMessage"/>.
+	/// Initializes a default instance of <see cref="MultiComplexNetworkableUpdateMessage"/>.
 	/// </summary>
 	[ClientOnly]
-	public MultiBaseNetworkableUpdateMessage()
+	public MultiComplexNetworkableUpdateMessage()
 	{
 	}
 
 	/// <summary>
-	/// Initializes a new instance of <see cref="MultiBaseNetworkableUpdateMessage"/> with all the <see cref="ComplexNetworkable"/>s that changed.
+	/// Initializes a new instance of <see cref="MultiComplexNetworkableUpdateMessage"/> with all the <see cref="ComplexNetworkable"/>s that changed.
 	/// </summary>
-	/// <param name="changedBaseNetworkables">The <see cref="ComplexNetworkable"/>s that changed.</param>
+	/// <param name="changedComplexNetworkables">The <see cref="ComplexNetworkable"/>s that changed.</param>
 	[ServerOnly]
-	public MultiBaseNetworkableUpdateMessage( IReadOnlyList<ComplexNetworkable> changedBaseNetworkables )
+	public MultiComplexNetworkableUpdateMessage( IReadOnlyList<ComplexNetworkable> changedComplexNetworkables )
 	{
 		var stream = new MemoryStream();
 		var writer = new NetworkWriter( stream );
-		writer.Write( changedBaseNetworkables.Count );
+		writer.Write( changedComplexNetworkables.Count );
 
-		foreach ( var complexNetworkable in changedBaseNetworkables )
+		foreach ( var complexNetworkable in changedComplexNetworkables )
 		{
 			writer.Write( complexNetworkable.NetworkId );
 			complexNetworkable.SerializeChanges( writer );
 		}
 		writer.Close();
 
-		PartialBaseNetworkableData = stream.ToArray();
+		PartialComplexNetworkableData = stream.ToArray();
 	}
 
 	/// <summary>
-	/// Deserializes all information relating to the <see cref="MultiBaseNetworkableUpdateMessage"/>.
+	/// Deserializes all information relating to the <see cref="MultiComplexNetworkableUpdateMessage"/>.
 	/// </summary>
 	/// <param name="reader">The reader to read from.</param>
 	[ClientOnly]
 	public override void Deserialize( NetworkReader reader )
 	{
-		PartialBaseNetworkableData = new byte[reader.ReadInt32()];
-		_ = reader.Read( PartialBaseNetworkableData, 0, PartialBaseNetworkableData.Length );
+		PartialComplexNetworkableData = new byte[reader.ReadInt32()];
+		_ = reader.Read( PartialComplexNetworkableData, 0, PartialComplexNetworkableData.Length );
 	}
 
 	/// <summary>
-	/// Serializes all information relating to the <see cref="MultiBaseNetworkableUpdateMessage"/>.
+	/// Serializes all information relating to the <see cref="MultiComplexNetworkableUpdateMessage"/>.
 	/// </summary>
 	/// <param name="writer">The writer to write to.</param>
 	[ServerOnly]
 	public override void Serialize( NetworkWriter writer )
 	{
-		writer.Write( PartialBaseNetworkableData.Length );
-		writer.Write( PartialBaseNetworkableData );
+		writer.Write( PartialComplexNetworkableData.Length );
+		writer.Write( PartialComplexNetworkableData );
 	}
 
 	/// <summary>
-	/// Returns a string that represents the <see cref="MultiBaseNetworkableUpdateMessage"/>.
+	/// Returns a string that represents the <see cref="MultiComplexNetworkableUpdateMessage"/>.
 	/// </summary>
-	/// <returns> string that represents the <see cref="MultiBaseNetworkableUpdateMessage"/>.</returns>
+	/// <returns> string that represents the <see cref="MultiComplexNetworkableUpdateMessage"/>.</returns>
 	public override string ToString()
 	{
-		return nameof( MultiBaseNetworkableUpdateMessage );
+		return nameof( MultiComplexNetworkableUpdateMessage );
 	}
 }

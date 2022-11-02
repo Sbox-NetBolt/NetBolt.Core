@@ -15,15 +15,15 @@ public interface INetBoltServer
 	/// <summary>
 	/// Invoked when a <see cref="ComplexNetworkable"/> has been created.
 	/// </summary>
-	/// <param name="complexNetworkable">The base networkable that was created.</param>
+	/// <param name="complexNetworkable">The <see cref="ComplexNetworkable"/> that was created.</param>
 	[ServerOnly]
-	void OnBaseNetworkableCreated( ComplexNetworkable complexNetworkable );
+	void OnComplexNetworkableCreated( ComplexNetworkable complexNetworkable );
 	/// <summary>
 	/// Invoked when a <see cref="ComplexNetworkable"/> has been deleted.
 	/// </summary>
-	/// <param name="complexNetworkable">The base networkable that was deleted.</param>
+	/// <param name="complexNetworkable">The <see cref="ComplexNetworkable"/> that was deleted.</param>
 	[ServerOnly]
-	void OnBaseNetworkableDeleted( ComplexNetworkable complexNetworkable );
+	void OnComplexNetworkableDeleted( ComplexNetworkable complexNetworkable );
 
 	/// <summary>
 	/// Sends a message to a client.

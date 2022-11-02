@@ -102,7 +102,7 @@ public sealed class NetworkReader : BinaryReader
 	public T ReadNetworkable<T>() where T : INetworkable
 	{
 		if ( typeof( T ).IsAssignableTo( typeof( ComplexNetworkable ) ) )
-			return ReadBaseNetworkable<T>();
+			return ReadComplexNetworkable<T>();
 
 		var networkable = ReadNetworkable();
 		if ( networkable is not T outputNetworkable )
@@ -128,7 +128,7 @@ public sealed class NetworkReader : BinaryReader
 	/// </summary>
 	/// <returns>The parsed <see cref="ComplexNetworkable"/>.</returns>
 	/// <exception cref="InvalidOperationException">Thrown when reading the <see cref="ComplexNetworkable"/> has failed.</exception>
-	public ComplexNetworkable ReadBaseNetworkable()
+	public ComplexNetworkable ReadComplexNetworkable()
 	{
 		var networkId = ReadInt32();
 		var typeName = ReadString();
@@ -159,9 +159,9 @@ public sealed class NetworkReader : BinaryReader
 	/// <typeparam name="T">The <see cref="ComplexNetworkable"/> type to cast into.</typeparam>
 	/// <returns>The parsed <see cref="ComplexNetworkable"/>.</returns>
 	/// <exception cref="InvalidOperationException">Thrown when reading the <see cref="ComplexNetworkable"/> has failed.</exception>
-	public T ReadBaseNetworkable<T>()
+	public T ReadComplexNetworkable<T>()
 	{
-		var complexNetworkable = ReadBaseNetworkable();
+		var complexNetworkable = ReadComplexNetworkable();
 		if ( complexNetworkable is not T expectedType )
 		{
 			ILogger.Instance.Error( "Failed to read {0} ({1} is not assignable to {2})", nameof( ComplexNetworkable ), complexNetworkable.GetType(), typeof( T ) );

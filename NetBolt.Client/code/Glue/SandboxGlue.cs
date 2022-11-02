@@ -191,7 +191,7 @@ internal class SandboxGlue : IGlue
 		/// Triggers any request callbacks that needs the <see cref="ComplexNetworkable"/> provided.
 		/// </summary>
 		/// <param name="complexNetworkable">The <see cref="ComplexNetworkable"/> that has become available to the client.</param>
-		internal void BaseNetworkableAvailable( ComplexNetworkable complexNetworkable )
+		internal void ComplexNetworkableAvailable( ComplexNetworkable complexNetworkable )
 		{
 			var networkId = complexNetworkable.NetworkId;
 			if ( EntityRequestCallbacks.ContainsKey( networkId ) && complexNetworkable is Shared.Entities.IEntity entity )
@@ -209,7 +209,7 @@ internal class SandboxGlue : IGlue
 		}
 
 		/// <inheritdoc/>
-		public void RequestBaseNetworkable( int networkId, Action<ComplexNetworkable> cb )
+		public void RequestComplexNetworkable( int networkId, Action<ComplexNetworkable> cb )
 		{
 			if ( !RequestCallbacks.ContainsKey( networkId ) )
 				RequestCallbacks.Add( networkId, new List<Action<ComplexNetworkable>>() );
