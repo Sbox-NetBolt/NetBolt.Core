@@ -56,15 +56,15 @@ public sealed class ClientPawnChangedMessage : NetworkMessage
 		var client = INetworkClient.All.FirstOrDefault( client => client.ClientId == clientId );
 		if ( client is null )
 		{
-			IGlue.Instance.Logger.Error( "Failed to get client with ID \"{0}\"", clientId );
+			ILogger.Instance.Error( "Failed to get client with ID \"{0}\"", clientId );
 			return;
 		}
 
 		Client = client;
 		if ( reader.ReadBoolean() )
-			OldPawn = IEntity.GetEntityById( reader.ReadInt32() );
+			OldPawn = IEntity.GetOrRequestById( reader.ReadInt32(), entity => OldPawn = entity );
 		if ( reader.ReadBoolean() )
-			NewPawn = IEntity.GetEntityById( reader.ReadInt32() );
+			NewPawn = IEntity.GetOrRequestById( reader.ReadInt32(), entity => NewPawn = entity );
 	}
 
 	/// <summary>

@@ -64,7 +64,7 @@ internal class Client : WebSocketClient, IClient
 	{
 		var stream = new MemoryStream();
 		var writer = new NetworkWriter( stream );
-		writer.WriteNetworkable( message );
+		writer.Write( message );
 		writer.Close();
 
 		QueueSend( stream.ToArray() );

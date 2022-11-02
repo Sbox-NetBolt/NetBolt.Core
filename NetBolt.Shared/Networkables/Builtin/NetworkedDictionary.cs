@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NetBolt.Shared.Networkables.Builtin;
 
@@ -10,8 +11,18 @@ namespace NetBolt.Shared.Networkables.Builtin;
 /// </summary>
 /// <typeparam name="TKey">The key type contained in the <see cref="Dictionary{TKey, TValue}"/>.</typeparam>
 /// <typeparam name="TValue">The value type contained in the <see cref="Dictionary{TKey, TValue}"/>.</typeparam>
-public class NetworkedDictionary<TKey, TValue> : INetworkable, IEnumerable<KeyValuePair<TKey, TValue>> where TKey : INetworkable where TValue : INetworkable
+public class NetworkedDictionary<TKey, TValue> : INetworkable,
+	ICollection<KeyValuePair<TKey, TValue>>, IReadOnlyCollection<KeyValuePair<TKey, TValue>>,
+	IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable
+	where TKey : INetworkable where TValue : INetworkable
 {
+	/// <inheritdoc/>
+	public int NetworkId => 0;
+	/// <inheritdoc/>
+	public bool SupportEquals => false;
+	/// <inheritdoc/>
+	public bool SupportLerp => false;
+
 	/// <summary>
 	/// The underlying <see cref="Dictionary{TKey, TValue}"/> being contained inside.
 	/// </summary>
@@ -34,14 +45,38 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable, IEnumerable<KeyVa
 	private Dictionary<TKey, TValue> _value = null!;
 
 	/// <summary>
+	/// The indexer to the underlying <see cref="Dictionary{TKey, TValue}"/>.
+	/// </summary>
+	/// <param name="key">The key to look at.</param>
+	/// <returns>The value at that key.</returns>
+	/// <exception cref="ArgumentNullException">key is null.</exception>
+	public TValue this[TKey key]
+	{
+		get => Value[key];
+	}
+
+	/// <summary>
 	/// The number of key/value pairs contained in the <see cref="NetworkedDictionary{TKey, TValue}"/>.
 	/// </summary>
 	public int Count => Value.Count;
 
+	/// <inheritdoc/>
+	public bool IsReadOnly => false;
+
 	/// <summary>
-	/// The list of changes that have happened since the last time this was networked.
+	/// A list of changes that have happened since the last time this was networked.
 	/// </summary>
 	private readonly List<(DictionaryChangeType, TKey?, TValue?)> _changes = new();
+
+	/// <summary>
+	/// Whether or not this <see cref="NetworkedHashSet{T}"/> is containing a key type that is a <see cref="ComplexNetworkable"/>.
+	/// </summary>
+	private readonly bool _containingKeyBaseNetworkable = typeof( TKey ).IsAssignableTo( typeof( ComplexNetworkable ) );
+
+	/// <summary>
+	/// Whether or not this <see cref="NetworkedHashSet{T}"/> is containing a value type that is a <see cref="ComplexNetworkable"/>.
+	/// </summary>
+	private readonly bool _containingValueBaseNetworkable = typeof( TValue ).IsAssignableTo( typeof( ComplexNetworkable ) );
 
 	/// <summary>
 	/// Initializes a default instance of <see cref="NetworkedDictionary{TKey, TValue}"/>.
@@ -75,6 +110,12 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable, IEnumerable<KeyVa
 		_changes.Add( (DictionaryChangeType.Add, key, value) );
 	}
 
+	/// <inheritdoc/>
+	public void Add( KeyValuePair<TKey, TValue> pair )
+	{
+		Add( pair.Key, pair.Value );
+	}
+
 	/// <summary>
 	/// Removes all keys and values from the <see cref="NetworkedDictionary{TKey, TValue}"/>.
 	/// </summary>
@@ -83,6 +124,12 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable, IEnumerable<KeyVa
 		Value.Clear();
 		_changes.Clear();
 		_changes.Add( (DictionaryChangeType.Clear, default( TKey ), default( TValue )) );
+	}
+
+	/// <inheritdoc/>
+	public bool Contains( KeyValuePair<TKey, TValue> pair )
+	{
+		return Value.ContainsKey( pair.Key ) && Value.ContainsValue( pair.Value );
 	}
 
 	/// <summary>
@@ -112,6 +159,35 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable, IEnumerable<KeyVa
 	}
 
 	/// <inheritdoc/>
+	public bool Remove( KeyValuePair<TKey, TValue> pair )
+	{
+		return Value.Remove( pair.Key );
+	}
+
+	/// <summary>
+	/// Gets the value associated with the specified key.
+	/// </summary>
+	/// <param name="key">The key of the value to get.</param>
+	/// <param name="value">When this method returns, contains the value associated with the specified key, if the key is found; otherwise, the default value for the type of the value parameter. This parameter is passed uninitialized.</param>
+	/// <returns>true if the <see cref="NetworkedDictionary{TKey, TValue}"/> contains an element with the specified key; otherwise, false.</returns>
+	/// <exception cref="ArgumentNullException">key is null.</exception>
+	public bool TryGetValue( TKey key, [NotNullWhen( true )] out TValue? value )
+	{
+		return Value.TryGetValue( key, out value );
+	}
+
+	/// <summary>
+	/// Copies the elements of the <see cref="NetworkedDictionary{TKey, TValue}"/> to an <see cref="Array"/>, starting at a particular <see cref="Array"/> index.
+	/// </summary>
+	/// <param name="array">The one-dimensional <see cref="Array"/> that is the destination of the elements copied from <see cref="NetworkedDictionary{TKey, TValue}"/>. The <see cref="Array"/> must have zero-based indexing.</param>
+	/// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
+	/// <exception cref="NotSupportedException">This method is not supported.</exception>
+	public void CopyTo( KeyValuePair<TKey, TValue>[] array, int arrayIndex )
+	{
+		throw new NotSupportedException();
+	}
+
+	/// <inheritdoc/>
 	public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
 	{
 		return Value.GetEnumerator();
@@ -129,8 +205,27 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable, IEnumerable<KeyVa
 	/// <returns>Whether or not the <see cref="NetworkedDictionary{TKey, TValue}"/> has changed.</returns>
 	public bool Changed()
 	{
-		return _changes.Count > 0;
+		if ( _changes.Count > 0 )
+			return true;
+
+		foreach ( var (key, value) in Value )
+		{
+			if ( INetworkable.HasChanged( typeof( TKey ), key, key, !_containingKeyBaseNetworkable ) )
+				return true;
+
+			if ( INetworkable.HasChanged( typeof( TValue ), value, value, !_containingValueBaseNetworkable ) )
+				return true;
+		}
+
+		return false;
 	}
+
+	/// <summary>
+	/// Returns whether or not the <see cref="NetworkedDictionary{TKey, TValue}"/> instance is the same as another.
+	/// </summary>
+	/// <param name="oldValue">The old value.</param>
+	/// <returns>Whether or not the <see cref="NetworkedDictionary{TKey, TValue}"/> instance is the same as another.</returns>
+	public bool Equals( INetworkable? oldValue ) => false;
 
 	/// <summary>
 	/// Lerps a <see cref="NetworkedDictionary{TKey, TValue}"/> between two values.
@@ -153,7 +248,22 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable, IEnumerable<KeyVa
 		Value = new Dictionary<TKey, TValue>();
 		var dictionaryLength = reader.ReadInt32();
 		for ( var i = 0; i < dictionaryLength; i++ )
-			Value.Add( reader.ReadNetworkable<TKey>(), reader.ReadNetworkable<TValue>() );
+		{
+			TKey? key = default;
+			TValue? value = default;
+
+			if ( _containingKeyBaseNetworkable )
+				key = (TKey)(INetworkable)ComplexNetworkable.GetById( reader.ReadInt32() )!;
+			else
+				key = reader.ReadNetworkable<TKey>();
+
+			if ( _containingValueBaseNetworkable )
+				value = (TValue)(INetworkable)ComplexNetworkable.GetById( reader.ReadInt32() )!;
+			else
+				value = reader.ReadNetworkable<TValue>();
+
+			Add( key, value );
+		}
 	}
 
 	/// <summary>
@@ -170,17 +280,32 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable, IEnumerable<KeyVa
 			switch ( changeType )
 			{
 				case DictionaryChangeType.Add:
-					var key = reader.ReadNetworkable<TKey>();
+					TKey key;
+					if ( _containingKeyBaseNetworkable )
+						key = (TKey)(INetworkable)ComplexNetworkable.GetById( reader.ReadInt32() )!;
+					else
+						key = reader.ReadNetworkable<TKey>();
 
 					var hasValue = reader.ReadBoolean();
-					TValue? value = default;
-					if ( hasValue )
+					if ( !hasValue )
+					{
+						Add( key, default! );
+						break;
+					}
+
+					TValue? value;
+					if ( _containingValueBaseNetworkable )
+						value = (TValue)(INetworkable)ComplexNetworkable.GetById( reader.ReadInt32() )!;
+					else
 						value = reader.ReadNetworkable<TValue>();
 
-					Add( key, value! );
+					Add( key, value );
 					break;
 				case DictionaryChangeType.Remove:
-					Remove( reader.ReadNetworkable<TKey>() );
+					if ( _containingKeyBaseNetworkable )
+						Remove( (TKey)(INetworkable)ComplexNetworkable.GetById( reader.ReadInt32() )! );
+					else
+						Remove( reader.ReadNetworkable<TKey>() );
 					break;
 				case DictionaryChangeType.Clear:
 					Clear();
@@ -188,6 +313,25 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable, IEnumerable<KeyVa
 				default:
 					throw new ArgumentOutOfRangeException( nameof( changeType ) );
 			}
+		}
+
+		changeCount = reader.ReadInt32();
+		if ( changeCount == 0 )
+			return;
+
+		var j = -1;
+		var nextIndex = reader.ReadInt32();
+		foreach( var (key, value) in Value )
+		{
+			j++;
+			if ( j != nextIndex )
+				continue;
+
+			if ( reader.ReadBoolean() )
+				key.DeserializeChanges( reader );
+
+			if ( reader.ReadBoolean() )
+				value.DeserializeChanges( reader );
 		}
 	}
 
@@ -200,8 +344,15 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable, IEnumerable<KeyVa
 		writer.Write( Value.Count );
 		foreach ( var (key, value) in Value )
 		{
-			writer.WriteNetworkable( key );
-			writer.WriteNetworkable( value );
+			if ( _containingKeyBaseNetworkable )
+				writer.Write( key.NetworkId );
+			else
+				writer.Write( key );
+
+			if ( _containingValueBaseNetworkable )
+				writer.Write( value.NetworkId );
+			else
+				writer.Write( value );
 		}
 	}
 
@@ -216,18 +367,29 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable, IEnumerable<KeyVa
 		foreach ( var (changeType, key, value) in _changes )
 		{
 			writer.Write( (byte)changeType );
-			switch( changeType )
+			switch ( changeType )
 			{
 				case DictionaryChangeType.Add:
-					writer.WriteNetworkable( key! );
+					if ( _containingKeyBaseNetworkable )
+						writer.Write( key!.NetworkId );
+					else
+						writer.Write( key! );
 
 					var hasValue = value is not null;
 					writer.Write( hasValue );
-					if ( hasValue )
-						writer.WriteNetworkable( value! );
+					if ( !hasValue )
+						break;
+
+					if ( _containingValueBaseNetworkable )
+						writer.Write( value!.NetworkId );
+					else
+						writer.Write( value! );
 					break;
 				case DictionaryChangeType.Remove:
-					writer.WriteNetworkable( key! );
+					if ( _containingKeyBaseNetworkable )
+						writer.Write( key!.NetworkId );
+					else
+						writer.Write( key! );
 					break;
 				case DictionaryChangeType.Clear:
 					break;
@@ -236,6 +398,42 @@ public class NetworkedDictionary<TKey, TValue> : INetworkable, IEnumerable<KeyVa
 			}
 		}
 		_changes.Clear();
+
+		if ( _containingKeyBaseNetworkable && _containingValueBaseNetworkable )
+		{
+			writer.Write( 0 );
+			return;
+		}
+
+		var networkableCountPos = writer.BaseStream.Position;
+		writer.BaseStream.Position += sizeof( int );
+		var networkableChangeCount = 0;
+		var i = -1;
+		foreach ( var (key, value) in Value )
+		{
+			i++;
+			var keyChanged = !INetworkable.HasChanged( typeof( TKey ), key, key, !_containingKeyBaseNetworkable );
+			var valueChanged = !INetworkable.HasChanged( typeof( TValue ), value, value, !_containingValueBaseNetworkable );
+
+			if ( !keyChanged && !valueChanged )
+				continue;
+
+			networkableChangeCount++;
+			writer.Write( i );
+
+			writer.Write( keyChanged );
+			if ( keyChanged )
+				key.SerializeChanges( writer );
+
+			writer.Write( valueChanged );
+			if ( valueChanged )
+				value.SerializeChanges( writer );
+		}
+
+		var tempPos = writer.BaseStream.Position;
+		writer.BaseStream.Position = networkableCountPos;
+		writer.Write( networkableChangeCount );
+		writer.BaseStream.Position = tempPos;
 	}
 
 	/// <summary>

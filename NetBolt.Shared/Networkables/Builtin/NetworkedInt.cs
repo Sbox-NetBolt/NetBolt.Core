@@ -9,6 +9,13 @@ namespace NetBolt.Shared.Networkables.Builtin;
 /// </summary>
 public struct NetworkedInt : INetworkable, IEquatable<NetworkedInt>
 {
+	/// <inheritdoc/>
+	public int NetworkId => 0;
+	/// <inheritdoc/>
+	public bool SupportEquals => true;
+	/// <inheritdoc/>
+	public bool SupportLerp => true;
+
 	/// <summary>
 	/// The underlying <see cref="int"/> being contained inside.
 	/// </summary>
@@ -17,8 +24,8 @@ public struct NetworkedInt : INetworkable, IEquatable<NetworkedInt>
 		get => _value;
 		set
 		{
-			_oldValue = _value;
 			_value = value;
+			_changed = true;
 		}
 	}
 	/// <summary>
@@ -26,9 +33,9 @@ public struct NetworkedInt : INetworkable, IEquatable<NetworkedInt>
 	/// </summary>
 	private int _value;
 	/// <summary>
-	/// The last networked version of <see cref="Value"/>.
+	/// Whether or not the <see cref="NetworkedVector3"/> has changed.
 	/// </summary>
-	private int _oldValue;
+	private bool _changed = false;
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="NetworkedInt"/>.
@@ -37,7 +44,6 @@ public struct NetworkedInt : INetworkable, IEquatable<NetworkedInt>
 	private NetworkedInt( int i )
 	{
 		_value = i;
-		_oldValue = default;
 	}
 
 	/// <summary>
@@ -46,7 +52,20 @@ public struct NetworkedInt : INetworkable, IEquatable<NetworkedInt>
 	/// <returns>Whether or not the <see cref="NetworkedInt"/> has changed.</returns>
 	public bool Changed()
 	{
-		return _value != _oldValue;
+		return _changed;
+	}
+
+	/// <summary>
+	/// Returns whether or not the <see cref="NetworkedInt"/> instance is the same as another.
+	/// </summary>
+	/// <param name="oldValue">The old value.</param>
+	/// <returns>Whether or not the <see cref="NetworkedInt"/> instance is the same as another.</returns>
+	public bool Equals( INetworkable? oldValue )
+	{
+		if ( oldValue is not NetworkedInt networkedInt )
+			return false;
+
+		return Equals( networkedInt );
 	}
 
 	/// <summary>
@@ -97,8 +116,8 @@ public struct NetworkedInt : INetworkable, IEquatable<NetworkedInt>
 	/// <param name="writer">The writer to write to.</param>
 	public void SerializeChanges( NetworkWriter writer )
 	{
-		_oldValue = _value;
 		Serialize( writer );
+		_changed = false;
 	}
 
 	/// <summary>

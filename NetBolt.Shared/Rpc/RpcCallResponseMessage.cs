@@ -69,7 +69,7 @@ public sealed class RpcCallResponseMessage : NetworkMessage
 		var hasReturnValue = ReturnValue is not null;
 		writer.Write( hasReturnValue );
 		if ( hasReturnValue )
-			writer.WriteNetworkable( ReturnValue! );
+			writer.Write( ReturnValue! );
 	}
 
 	/// <summary>

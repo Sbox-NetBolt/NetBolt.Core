@@ -54,13 +54,13 @@ public sealed class NetworkWriter : BinaryWriter
 	/// Writes an instance of <see cref="INetworkable"/>.
 	/// </summary>
 	/// <param name="networkable">The instance of <see cref="INetworkable"/> to write.</param>
-	public void WriteNetworkable( INetworkable networkable )
+	public void Write( INetworkable networkable )
 	{
 		var networkableType = networkable.GetType();
 		Write( networkableType.Name );
 		if ( networkableType.IsGenericType )
 		{
-			var genericArguments = IGlue.Instance.TypeLibrary.GetGenericArguments( networkableType );
+			var genericArguments = ITypeLibrary.Instance.GetGenericArguments( networkableType );
 			Write( genericArguments.Length );
 			foreach ( var type in genericArguments )
 				Write( type.Name );
@@ -70,20 +70,20 @@ public sealed class NetworkWriter : BinaryWriter
 	}
 
 	/// <summary>
-	/// Writes an instance of <see cref="BaseNetworkable"/>.
+	/// Writes an instance of <see cref="ComplexNetworkable"/>.
 	/// </summary>
-	/// <param name="baseNetworkable">The <see cref="BaseNetworkable"/> to write.</param>
-	public void WriteBaseNetworkable( BaseNetworkable baseNetworkable )
+	/// <param name="complexNetworkable">The <see cref="ComplexNetworkable"/> to write.</param>
+	public void Write( ComplexNetworkable complexNetworkable )
 	{
-		Write( baseNetworkable.NetworkId );
-		WriteNetworkable( baseNetworkable );
+		Write( complexNetworkable.NetworkId );
+		Write( (INetworkable)complexNetworkable );
 	}
 
 	/// <summary>
 	/// Writes the changes of an <see cref="INetworkable"/>.
 	/// </summary>
 	/// <param name="networkable">The instance of <see cref="INetworkable"/> to write changes.</param>
-	public void WriteNetworkableChanges( ref INetworkable networkable )
+	public void WriteChanges( ref INetworkable networkable )
 	{
 		networkable.SerializeChanges( this );
 	}

@@ -2,10 +2,10 @@ using NetBolt.Shared.Utility;
 
 namespace NetBolt.Shared.Networkables;
 
-public partial class BaseNetworkable
+public partial class ComplexNetworkable
 {
 	/// <summary>
-	/// The next unique identifier to give to a <see cref="BaseNetworkable"/>.
+	/// The next unique identifier to give to a <see cref="ComplexNetworkable"/>.
 	/// </summary>
 	[ServerOnly]
 	private static int _nextNetworkId = 1;

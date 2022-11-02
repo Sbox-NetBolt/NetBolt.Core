@@ -98,7 +98,7 @@ internal sealed class GameServer : WebSocketServer
 		// Write message once.
 		var stream = new MemoryStream();
 		var writer = new NetworkWriter( stream );
-		writer.WriteNetworkable( message );
+		writer.Write( message );
 		writer.Close();
 
 		var bytes = stream.ToArray();

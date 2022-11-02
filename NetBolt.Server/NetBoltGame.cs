@@ -131,11 +131,11 @@ public class NetBoltGame
 		foreach ( var entity in IEntity.All )
 			entity.Update();
 
-		var changedBaseNetworkables = BaseNetworkable.All.Where( baseNetworkable => baseNetworkable.Changed() ).ToList();
+		var changedBaseNetworkables = ComplexNetworkable.All.Where( complexNetworkable => complexNetworkable.Changed() ).ToList();
 		if ( changedBaseNetworkables.Count == 0 )
 			return;
 
-		Log.Verbose( $"{nameof( BaseNetworkable )}s changed, sending update..." );
+		Log.Verbose( $"{nameof( ComplexNetworkable )}s changed, sending update..." );
 		GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new MultiBaseNetworkableUpdateMessage( changedBaseNetworkables ) );
 	}
 
@@ -150,11 +150,13 @@ public class NetBoltGame
 		var toClient = ToExtensions.Single( client );
 		GameServer.Instance.QueueSend( toClient, new WelcomeMessage( Options.TickRate, Options.WelcomeMessage ) );
 		GameServer.Instance.QueueSend( toClient, new ClientListMessage( GameServer.Instance.Clients ) );
-		GameServer.Instance.QueueSend( toClient, new BaseNetworkableListMessage( BaseNetworkable.All ) );
+		GameServer.Instance.QueueSend( toClient, new BaseNetworkableListMessage( ComplexNetworkable.All ) );
 		GameServer.Instance.QueueSend( ToExtensions.AllExcept( client ), new ClientStateChangedMessage( client, ClientState.Connected ) );
 
 		client.PawnChanged += ClientOnPawnChanged;
-		client.Pawn = new BasePlayer();
+		var player = new BasePlayer();
+		player.Components.AddOrGetComponent<ColorComponent>();
+		client.Pawn = player;
 	}
 
 	/// <summary>
@@ -171,28 +173,28 @@ public class NetBoltGame
 			Log.Info( "{A} has disconnected for reason: {B}", client, reason );
 
 		GameServer.Instance.QueueSend( ToExtensions.AllExcept( client ), new ClientStateChangedMessage( client, ClientState.Disconnected ) );
-		(client.Pawn as BaseNetworkable)?.Delete();
+		(client.Pawn as ComplexNetworkable)?.Delete();
 		client.PawnChanged -= ClientOnPawnChanged;
 	}
 
 	/// <summary>
-	/// Called when a <see cref="BaseNetworkable"/> is created.
+	/// Called when a <see cref="ComplexNetworkable"/> is created.
 	/// </summary>
-	/// <param name="baseNetworkable">The <see cref="BaseNetworkable"/> that has been created.</param>
-	public virtual void OnBaseNetworkableCreated( BaseNetworkable baseNetworkable )
+	/// <param name="complexNetworkable">The <see cref="ComplexNetworkable"/> that has been created.</param>
+	public virtual void OnBaseNetworkableCreated( ComplexNetworkable complexNetworkable )
 	{
-		Log.Verbose( "{A} created", baseNetworkable );
-		GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new CreateBaseNetworkableMessage( baseNetworkable ) );
+		Log.Verbose( "{A} created", complexNetworkable );
+		GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new CreateComplexNetworkableMessage( complexNetworkable ) );
 	}
 
 	/// <summary>
-	/// Called when a <see cref="BaseNetworkable"/> is deleted.
+	/// Called when a <see cref="ComplexNetworkable"/> is deleted.
 	/// </summary>
-	/// <param name="baseNetworkable">The <see cref="BaseNetworkable"/> that has been deleted.</param>
-	public virtual void OnBaseNetworkableDeleted( BaseNetworkable baseNetworkable )
+	/// <param name="complexNetworkable">The <see cref="ComplexNetworkable"/> that has been deleted.</param>
+	public virtual void OnBaseNetworkableDeleted( ComplexNetworkable complexNetworkable )
 	{
-		Log.Verbose( "{A} deleted", baseNetworkable );
-		GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new DeleteBaseNetworkableMessage( baseNetworkable ) );
+		Log.Verbose( "{A} deleted", complexNetworkable );
+		GameServer.Instance.QueueSend( To.All( GameServer.Instance ), new DeleteBaseNetworkableMessage( complexNetworkable ) );
 	}
 
 	/// <summary>
@@ -259,7 +261,7 @@ public class NetBoltGame
 		if ( message is not RpcCallMessage rpcCall )
 			return;
 
-		var type = Type.GetType( rpcCall.ClassName );
+		var type = TypeGlue.Instance.GetTypeByName( rpcCall.ClassName );
 		if ( type is null )
 			throw new InvalidOperationException( $"Failed to handle RPC call (\"{rpcCall.ClassName}\" doesn't exist in any accessible assemblies)." );
 
@@ -267,14 +269,14 @@ public class NetBoltGame
 		if ( method is null )
 			throw new InvalidOperationException( $"Failed to handle RPC call (\"{rpcCall.MethodName}\" does not exist on \"{type}\")." );
 
-		if ( method.GetCustomAttribute<Rpc.ServerAttribute>() is not null )
+		if ( method.GetCustomAttribute<Rpc.ServerAttribute>() is null )
 			throw new InvalidOperationException( "Failed to handle RPC call (Attempted to invoke a non-RPC method)." );
 
-		var baseNetworkable = IEntity.GetEntityById( rpcCall.NetworkId );
-		if ( baseNetworkable is null && rpcCall.NetworkId != -1 )
-			throw new InvalidOperationException( $"Failed to handle RPC call (Attempted to call RPC on a non-existant {nameof( BaseNetworkable )})." );
+		var complexNetworkable = ComplexNetworkable.GetById( rpcCall.BaseNetworkableId );
+		if ( complexNetworkable is null && rpcCall.BaseNetworkableId != -1 )
+			throw new InvalidOperationException( $"Failed to handle RPC call (Attempted to call RPC on a non-existant {nameof( ComplexNetworkable )})." );
 
-		var returnValue = method.Invoke( baseNetworkable, rpcCall.Parameters );
+		var returnValue = method.Invoke( complexNetworkable, rpcCall.Parameters );
 		if ( rpcCall.CallGuid == Guid.Empty )
 			return;
 

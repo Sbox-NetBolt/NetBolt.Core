@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using NetBolt.Shared.Utility;
 
 namespace NetBolt.Shared.Networkables.Builtin;
@@ -11,6 +12,13 @@ namespace NetBolt.Shared.Networkables.Builtin;
 /// <typeparam name="T">The type contained in the <see cref="Array"/>.</typeparam>
 public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : INetworkable
 {
+	/// <inheritdoc/>
+	public int NetworkId => 0;
+	/// <inheritdoc/>
+	public bool SupportEquals => false;
+	/// <inheritdoc/>
+	public bool SupportLerp => false;
+
 	/// <summary>
 	/// The underlying <see cref="Array"/> being contained inside.
 	/// </summary>
@@ -31,9 +39,19 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 	}
 
 	/// <summary>
+	/// Gets the total number of elements in the dimensions of the <see cref="Array"/>.
+	/// </summary>
+	public int Length => Value.Length;
+
+	/// <summary>
 	/// A set of indices that have changed since the last time this was networked.
 	/// </summary>
 	private readonly HashSet<int> _indicesChanged = new();
+
+	/// <summary>
+	/// Whether or not this <see cref="NetworkedList{T}"/> is containing a type that is a <see cref="ComplexNetworkable"/>.
+	/// </summary>
+	private readonly bool _containingBaseNetworkable = typeof( T ).IsAssignableTo( typeof( ComplexNetworkable ) );
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="NetworkedArray{T}"/> with a pre-allocated <see cref="Array"/>.
@@ -81,8 +99,24 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 	/// <returns>Whether or not the <see cref="NetworkedArray{T}"/> has changed.</returns>
 	public bool Changed()
 	{
-		return _indicesChanged.Count > 0;
+		if ( _indicesChanged.Count > 0 )
+			return true;
+
+		foreach ( var item in Value )
+		{
+			if ( INetworkable.HasChanged( typeof( T ), item, item, !_containingBaseNetworkable ) )
+				return true;
+		}
+
+		return false;
 	}
+
+	/// <summary>
+	/// Returns whether or not the <see cref="NetworkedArray{T}"/> instance is the same as another.
+	/// </summary>
+	/// <param name="oldValue">The old value.</param>
+	/// <returns>Whether or not the <see cref="NetworkedArray{T}"/> instance is the same as another.</returns>
+	public bool Equals( INetworkable? oldValue ) => false;
 
 	/// <summary>
 	/// Lerps a <see cref="NetworkedArray{T}"/> between two values.
@@ -104,8 +138,22 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 	{
 		var arrayLength = reader.ReadInt32();
 		Value = new T[arrayLength];
-		for ( var i = 0; i < Value.Length; i++ )
-			Value[i] = reader.ReadNetworkable<T>();
+		if ( _containingBaseNetworkable )
+		{
+			for ( var i = 0; i < arrayLength; i++ )
+			{
+				var networkId = reader.ReadInt32();
+				var complexNetworkable = ComplexNetworkable.GetOrRequestById( networkId, complexNetworkable => Value[i] = (T)(INetworkable)complexNetworkable );
+
+				if ( complexNetworkable is not null )
+					Value[i] = (T)(INetworkable)complexNetworkable;
+			}
+		}
+		else
+		{
+			for ( var i = 0; i < arrayLength; i++ )
+				Value[i] = reader.ReadNetworkable<T>();
+		}
 	}
 
 	/// <summary>
@@ -116,7 +164,16 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 	{
 		var changeCount = reader.ReadInt32();
 		for ( var i = 0; i < changeCount; i++ )
-			Value[reader.ReadInt32()] = reader.ReadNetworkable<T>();
+		{
+			var index = reader.ReadInt32();
+			Value[index] = _containingBaseNetworkable
+				? (T)(INetworkable)ComplexNetworkable.GetOrRequestById( reader.ReadInt32(), complexNetworkable => Value[index] = (T)(INetworkable)complexNetworkable )!
+				: reader.ReadNetworkable<T>();
+		}
+
+		changeCount = reader.ReadInt32();
+		for ( var i = 0; i < changeCount; i++ )
+			Value[reader.ReadInt32()].DeserializeChanges( reader );
 	}
 
 	/// <summary>
@@ -126,8 +183,16 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 	public void Serialize( NetworkWriter writer )
 	{
 		writer.Write( Value.Length );
-		foreach ( var element in Value )
-			writer.WriteNetworkable( element );
+		if ( _containingBaseNetworkable )
+		{
+			foreach ( var item in Value )
+				writer.Write( item.NetworkId );
+		}
+		else
+		{
+			foreach ( var item in Value )
+				writer.Write( item );
+		}
 	}
 
 	/// <summary>
@@ -140,9 +205,34 @@ public sealed class NetworkedArray<T> : INetworkable, IEnumerable<T> where T : I
 		foreach ( var index in _indicesChanged )
 		{
 			writer.Write( index );
-			writer.WriteNetworkable( Value[index] );
+			writer.Write( Value[index] );
 		}
 		_indicesChanged.Clear();
+
+		if ( _containingBaseNetworkable )
+		{
+			writer.Write( 0 );
+			return;
+		}
+
+		var networkableCountPos = writer.BaseStream.Position;
+		writer.BaseStream.Position += sizeof( int );
+		var networkableChangeCount = 0;
+		for ( var i = 0; i < Value.Length; i++ )
+		{
+			var item = Value[i];
+			if ( !INetworkable.HasChanged( typeof( T ), item, item, true ) )
+				continue;
+
+			networkableChangeCount++;
+			writer.Write( i );
+			item.SerializeChanges( writer );
+		}
+
+		var tempPos = writer.BaseStream.Position;
+		writer.BaseStream.Position = networkableCountPos;
+		writer.Write( networkableChangeCount );
+		writer.BaseStream.Position = tempPos;
 	}
 
 	/// <summary>

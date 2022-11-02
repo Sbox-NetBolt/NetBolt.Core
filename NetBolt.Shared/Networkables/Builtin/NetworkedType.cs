@@ -3,11 +3,19 @@ using System;
 
 namespace NetBolt.Shared.Networkables.Builtin;
 
+// TODO: Need to support generics in types.
 /// <summary>
 /// Represents a networkable <see cref="Type"/>.
 /// </summary>
-public class NetworkedType : INetworkable
+public class NetworkedType : INetworkable, IEquatable<NetworkedType>
 {
+	/// <inheritdoc/>
+	public int NetworkId => 0;
+	/// <inheritdoc/>
+	public bool SupportEquals => true;
+	/// <inheritdoc/>
+	public bool SupportLerp => false;
+
 	/// <summary>
 	/// The underlying <see cref="Type"/> contained inside.
 	/// </summary>
@@ -54,6 +62,13 @@ public class NetworkedType : INetworkable
 	public bool Changed() => _changed;
 
 	/// <summary>
+	/// Returns whether or not the <see cref="NetworkedType"/> instance is the same as another.
+	/// </summary>
+	/// <param name="oldValue">The old value.</param>
+	/// <returns>Whether or not the <see cref="NetworkedType"/> instance is the same as another.</returns>
+	public bool Equals( INetworkable? oldValue ) => Equals( oldValue as NetworkedType );
+
+	/// <summary>
 	/// Lerps a <see cref="NetworkedType"/> between two values.
 	/// </summary>
 	/// <param name="fraction">The fraction to lerp at.</param>
@@ -72,14 +87,14 @@ public class NetworkedType : INetworkable
 	public void Deserialize( NetworkReader reader )
 	{
 		var typeName = reader.ReadString();
-		var type = IGlue.Instance.TypeLibrary.GetTypeByName( typeName );
+		var type = ITypeLibrary.Instance.GetTypeByName( typeName );
 
 		if ( type is not null )
 			Value = type;
 		else
 		{
 			Value = typeof( object );
-			IGlue.Instance.Logger.Error( "No type with the name \"{0}\" exists", typeName );
+			ILogger.Instance.Error( "No type with the name \"{0}\" exists", typeName );
 		}
 	}
 
@@ -111,6 +126,55 @@ public class NetworkedType : INetworkable
 		Serialize( writer );
 		_changed = false;
 	}
+
+	/// <summary>
+	/// Indicates whether the current <see cref="NetworkedType"/> is equal to another <see cref="NetworkedType"/>.
+	/// </summary>
+	/// <param name="other">An <see cref="NetworkedType"/> to compare with this <see cref="NetworkedType"/>.</param>
+	/// <returns>true if the current <see cref="NetworkedType"/> is equal to the other <see cref="NetworkedType"/>; otherwise, false.</returns>
+	public bool Equals( NetworkedType? other )
+	{
+		if ( other is null )
+			return false;
+
+		return Value == other.Value;
+	}
+
+	/// <inheritdoc/>
+	public override bool Equals( object? obj )
+	{
+		return obj is NetworkedVector3 other && Equals( other );
+	}
+
+	/// <inheritdoc/>
+	public override int GetHashCode()
+	{
+		return Value.GetHashCode();
+	}
+
+	/// <summary>
+	/// Returns a string that represents the <see cref="NetworkedType"/>.
+	/// </summary>
+	/// <returns>A string that represents the <see cref="NetworkedType"/>.</returns>
+	public override string ToString()
+	{
+		return Value.ToString();
+	}
+
+	/// <summary>
+	/// Returns whether or not the two <see cref="NetworkedType"/>s are equal.
+	/// </summary>
+	/// <param name="left">The left operand.</param>
+	/// <param name="right">The right operand.</param>
+	/// <returns>Whether or not the two <see cref="NetworkedType"/>s are equal.</returns>
+	public static bool operator ==( NetworkedType left, NetworkedType right ) => left.Value == right.Value;
+	/// <summary>
+	/// Returns whether or not the two <see cref="NetworkedType"/>s are not equal.
+	/// </summary>
+	/// <param name="left">The left operand.</param>
+	/// <param name="right">The right operand.</param>
+	/// <returns>Whether or not the two <see cref="NetworkedType"/>s are not equal.</returns>
+	public static bool operator !=( NetworkedType left, NetworkedType right ) => !(left.Value == right.Value);
 
 	/// <summary>
 	/// Returns the underlying <see cref="Type"/> contained in the <see cref="NetworkedType"/>.

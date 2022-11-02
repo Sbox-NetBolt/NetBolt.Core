@@ -46,4 +46,9 @@ public interface ILogger
 	/// <typeparam name="T2">The type of <see ref="obj1"/>.</typeparam>
 	/// <typeparam name="T3">The type of <see ref="obj2"/>.</typeparam>
 	void Error<T1, T2, T3>( string messageTemplate, T1 obj0, T2 obj1, T3 obj2 );
+
+	/// <summary>
+	/// The instance to access for logger glue functionality.
+	/// </summary>
+	public static ILogger Instance { get; internal set; } = null!;
 }

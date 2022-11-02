@@ -11,18 +11,18 @@ namespace NetBolt.Shared.RemoteProcedureCalls;
 public partial class Rpc
 {
 	/// <summary>
-	/// Executes an asynchronous RPC relating to a <see cref="BaseNetworkable"/> instance.
+	/// Executes an asynchronous RPC relating to a <see cref="ComplexNetworkable"/> instance.
 	/// </summary>
-	/// <param name="baseNetworkable">The <see cref="BaseNetworkable"/> instance to call the RPC on.</param>
+	/// <param name="complexNetworkable">The <see cref="ComplexNetworkable"/> instance to call the RPC on.</param>
 	/// <param name="methodName">The name of the method to call.</param>
 	/// <param name="parameters">The parameters to pass to the method.</param>
 	/// <returns>A task that will complete once a <see cref="RpcCallResponseMessage"/> is received that contains the sent <see cref="RpcCallMessage"/>.<see cref="RpcCallMessage.CallGuid"/>.</returns>
 	[ClientOnly]
-	public static async Task<RpcCallResponseMessage> CallAsync( BaseNetworkable baseNetworkable, string methodName,
+	public static async Task<RpcCallResponseMessage> CallAsync( ComplexNetworkable complexNetworkable, string methodName,
 		params INetworkable[] parameters )
 	{
-		var message = CreateRpc( true, baseNetworkable, methodName, parameters );
-		IGlue.Instance.Client.SendToServer( message );
+		var message = CreateRpc( true, complexNetworkable, methodName, parameters );
+		INetBoltClient.Instance.SendToServer( message );
 		return await WaitForResponseAsync( message.CallGuid );
 	}
 
@@ -38,7 +38,7 @@ public partial class Rpc
 		params INetworkable[] parameters )
 	{
 		var message = CreateRpc( true, type, methodName, parameters );
-		IGlue.Instance.Client.SendToServer( message );
+		INetBoltClient.Instance.SendToServer( message );
 		return await WaitForResponseAsync( message.CallGuid );
 	}
 }

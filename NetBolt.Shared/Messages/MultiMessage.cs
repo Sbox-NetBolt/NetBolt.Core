@@ -52,7 +52,7 @@ public sealed class MultiMessage : NetworkMessage
 	{
 		writer.Write( Messages.Length );
 		foreach ( var message in Messages )
-			writer.WriteNetworkable( message );
+			writer.Write( message );
 	}
 
 	/// <summary>

@@ -3,8 +3,8 @@ using NetBolt.Client.UI;
 using NetBolt.Shared;
 using NetBolt.Shared.Clients;
 using NetBolt.Shared.Entities;
+using NetBolt.Shared.Networkables;
 using Sandbox;
-using BaseNetworkable = NetBolt.Shared.Networkables.BaseNetworkable;
 
 namespace NetBolt.Client;
 
@@ -66,11 +66,8 @@ public class NetBoltGame : Game
 		}
 
 		var tickRateDt = (float)1000 / _networkManager.TickRate;
-		foreach ( var baseNetworkable in BaseNetworkable.All )
-		{
-			baseNetworkable.ProcessPendingNetworkables();
-			baseNetworkable.LerpNetworkables( (float)(_tickStopwatch.Elapsed.TotalMilliseconds / tickRateDt) );
-		}
+		foreach ( var complexNetworkable in ComplexNetworkable.All )
+			complexNetworkable.LerpNetworkables( (float)(_tickStopwatch.Elapsed.TotalMilliseconds / tickRateDt) );
 
 		foreach ( var entity in IEntity.All )
 			entity.Update();

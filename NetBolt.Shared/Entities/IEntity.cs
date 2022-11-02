@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NetBolt.Shared.Clients;
 using NetBolt.Shared.Networkables;
+using NetBolt.Shared.Utility;
 
 namespace NetBolt.Shared.Entities;
 
@@ -36,12 +38,32 @@ public interface IEntity : INetworkable
 	internal static List<IEntity> AllEntities { get; } = new();
 
 	/// <summary>
-	/// Gets an entity by its unique network identifier.
+	/// Gets an <see cref="IEntity"/> by its unique network identifier.
 	/// </summary>
-	/// <param name="networkId">The unique network identifier of the entity.</param>
-	/// <returns>An <see cref="IEntity"/> if found. Null if not</returns>
-	public static IEntity? GetEntityById( int networkId )
+	/// <param name="networkId">The unique network identifier of the <see cref="IEntity"/>.</param>
+	/// <returns>The <see cref="IEntity"/> that was found. Null if <see ref="networkId"/> is -1.</returns>
+	public static IEntity? GetById( int networkId )
 	{
-		return All.FirstOrDefault( entity => entity.EntityId == networkId );
+		return networkId == -1 ? null : All.First( entity => entity.EntityId == networkId );
+	}
+
+	/// <summary>
+	/// Attempts to get a <see cref="IEntity"/> by its unique network identifier. If no <see cref="IEntity"/> is found, then a request will be made with the provided callback.
+	/// </summary>
+	/// <param name="networkId">The unique network identifier of the <see cref="IEntity"/>.</param>
+	/// <param name="cb">The callback to invoke when the <see cref="IEntity"/> exists.</param>
+	/// <returns>The <see cref="IEntity"/> if found. Null otherwise.</returns>
+	[ClientOnly]
+	public static IEntity? GetOrRequestById( int networkId, Action<IEntity> cb )
+	{
+		if ( networkId == -1 )
+			return null;
+
+		var entity = All.FirstOrDefault( entity => entity.NetworkId == networkId );
+		if ( entity is not null )
+			return entity;
+
+		INetBoltClient.Instance.RequestEntity( networkId, cb );
+		return null;
 	}
 }

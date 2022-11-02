@@ -9,8 +9,18 @@ namespace NetBolt.Shared.Networkables.Builtin;
 /// Represents a networkable <see cref="HashSet{T}"/>.
 /// </summary>
 /// <typeparam name="T">The type contained in the <see cref="HashSet{T}"/>.</typeparam>
-public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T : INetworkable
+public sealed class NetworkedHashSet<T> : INetworkable,
+	ICollection<T>, IReadOnlyCollection<T>,
+	IEnumerable<T>, IEnumerable
+	where T : INetworkable
 {
+	/// <inheritdoc/>
+	public int NetworkId => 0;
+	/// <inheritdoc/>
+	public bool SupportEquals => false;
+	/// <inheritdoc/>
+	public bool SupportLerp => false;
+
 	/// <summary>
 	/// The underlying <see cref="HashSet{T}"/> being contained inside.
 	/// </summary>
@@ -37,10 +47,23 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 	/// </summary>
 	public int Count => Value.Count;
 
+	/// <inheritdoc/>
+	public bool IsReadOnly => false;
+
 	/// <summary>
-	/// The list of changes that have happened since the last time this was networked.
+	/// A list of changes that have happened since the last time this was networked.
 	/// </summary>
 	private readonly List<(HashSetChangeType, T?)> _changes = new();
+
+	/// <summary>
+	/// Whether or not this <see cref="NetworkedHashSet{T}"/> is containing a type that is a <see cref="ComplexNetworkable"/>.
+	/// </summary>
+	private readonly bool _containingBaseNetworkable = typeof( T ).IsAssignableTo( typeof( ComplexNetworkable ) );
+
+	/// <summary>
+	/// Whether or not this <see cref="NetworkedHashSet{T}"/> is containing a type that is a struct.
+	/// </summary>
+	private readonly bool _containingStruct = ITypeLibrary.Instance.IsStruct( typeof( T ) );
 
 	/// <summary>
 	/// Initializes a default instance of <see cref="NetworkedHashSet{T}"/>.
@@ -112,6 +135,18 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 	}
 
 	/// <inheritdoc/>
+	void ICollection<T>.Add( T item )
+	{
+		Add( item );
+	}
+
+	/// <inheritdoc/>
+	public void CopyTo( T[] array, int arrayIndex )
+	{
+		Value.CopyTo( array, arrayIndex );
+	}
+
+	/// <inheritdoc/>
 	public IEnumerator<T> GetEnumerator()
 	{
 		return Value.GetEnumerator();
@@ -129,8 +164,27 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 	/// <returns>Whether or not the <see cref="NetworkedHashSet{T}"/> has changed.</returns>
 	public bool Changed()
 	{
-		return _changes.Count > 0;
+		if ( _changes.Count > 0 )
+			return true;
+
+		if ( _containingStruct )
+			return false;
+
+		foreach ( var item in Value )
+		{
+			if ( INetworkable.HasChanged( typeof( T ), item, item, !_containingBaseNetworkable ) )
+				return true;
+		}
+
+		return false;
 	}
+
+	/// <summary>
+	/// Returns whether or not the <see cref="NetworkedHashSet{T}"/> instance is the same as another.
+	/// </summary>
+	/// <param name="oldValue">The old value.</param>
+	/// <returns>Whether or not the <see cref="NetworkedHashSet{T}"/> instance is the same as another.</returns>
+	public bool Equals( INetworkable? oldValue ) => false;
 
 	/// <summary>
 	/// Lerps a <see cref="NetworkedHashSet{T}"/> between two values.
@@ -151,9 +205,27 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 	public void Deserialize( NetworkReader reader )
 	{
 		Value = new HashSet<T>();
-		var listLength = reader.ReadInt32();
-		for ( var i = 0; i < listLength; i++ )
-			Value.Add( reader.ReadNetworkable<T>() );
+		var hashSetLength = reader.ReadInt32();
+		if ( _containingBaseNetworkable )
+		{
+			for ( var i = 0; i < hashSetLength; i++ )
+			{
+				var networkId = reader.ReadInt32();
+				var complexNetworkable = ComplexNetworkable.GetById( networkId );
+				if ( complexNetworkable is null )
+				{
+					ILogger.Instance.Error( "Deserialized an unknown {0} (ID: {1})", typeof( T ).Name, networkId );
+					continue;
+				}
+
+				Add( (T)(INetworkable)complexNetworkable );
+			}
+		}
+		else
+		{
+			for ( var i = 0; i < hashSetLength; i++ )
+				Add( reader.ReadNetworkable<T>() );
+		}
 	}
 
 	/// <summary>
@@ -167,17 +239,23 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 		for ( var i = 0; i < changeCount; i++ )
 		{
 			var action = (HashSetChangeType)reader.ReadByte();
-			T? value = default;
-			if ( reader.ReadBoolean() )
-				value = reader.ReadNetworkable<T>();
-
 			switch ( action )
 			{
 				case HashSetChangeType.Add:
-					Add( value! );
-					break;
 				case HashSetChangeType.Remove:
-					Remove( value! );
+					T? value = default;
+					if ( reader.ReadBoolean() )
+					{
+						if ( _containingBaseNetworkable )
+							value = (T)(INetworkable)ComplexNetworkable.GetById( reader.ReadInt32() )!;
+						else
+							value = reader.ReadNetworkable<T>();
+					}
+
+					if ( action == HashSetChangeType.Add )
+						Add( value! );
+					else
+						Remove( value! );
 					break;
 				case HashSetChangeType.Clear:
 					Clear();
@@ -185,6 +263,31 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 				default:
 					throw new ArgumentOutOfRangeException( nameof( action ) );
 			}
+		}
+
+		if ( _containingStruct )
+			return;
+
+		changeCount = reader.ReadInt32();
+		if ( changeCount == 0 )
+			return;
+
+		var nextIndex = reader.ReadInt32();
+		var j = -1;
+		var numProcessed = 0;
+		foreach ( var item in Value )
+		{
+			j++;
+			if ( j != nextIndex )
+				continue;
+
+			numProcessed++;
+			item.DeserializeChanges( reader );
+
+			if ( numProcessed == changeCount )
+				break;
+
+			nextIndex = reader.ReadInt32();
 		}
 	}
 
@@ -195,8 +298,16 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 	public void Serialize( NetworkWriter writer )
 	{
 		writer.Write( Value.Count );
-		foreach ( var item in Value )
-			writer.WriteNetworkable( item );
+		if ( _containingBaseNetworkable )
+		{
+			foreach ( var item in Value )
+				writer.Write( item.NetworkId );
+		}
+		else
+		{
+			foreach ( var item in Value )
+				writer.Write( item );
+		}
 	}
 
 	/// <summary>
@@ -206,16 +317,56 @@ public sealed class NetworkedHashSet<T> : INetworkable, IEnumerable<T> where T :
 	public void SerializeChanges( NetworkWriter writer )
 	{
 		writer.Write( _changes.Count );
-		foreach ( var change in _changes )
+		foreach ( var (changeType, value) in _changes )
 		{
-			writer.Write( (byte)change.Item1 );
-			var isNull = change.Item2 is null;
-			writer.Write( isNull );
-
-			if ( !isNull )
-				writer.WriteNetworkable( change.Item2! );
+			writer.Write( (byte)changeType );
+			switch ( changeType )
+			{
+				case HashSetChangeType.Add:
+				case HashSetChangeType.Remove:
+					var hasValue = value is not null;
+					writer.Write( hasValue );
+					if ( hasValue )
+					{
+						if ( _containingBaseNetworkable )
+							writer.Write( (value as ComplexNetworkable)!.NetworkId );
+						else
+							writer.Write( value! );
+					}
+					break;
+				case HashSetChangeType.Clear:
+					break;
+				default:
+					throw new ArgumentOutOfRangeException( nameof( changeType ) );
+			}
 		}
 		_changes.Clear();
+
+		if ( _containingStruct || _containingBaseNetworkable )
+		{
+			writer.Write( 0 );
+			return;
+		}
+
+		var networkableCountPos = writer.BaseStream.Position;
+		writer.BaseStream.Position += sizeof( int );
+		var networkableChangeCount = 0;
+		var i = -1;
+		foreach ( var item in Value )
+		{
+			i++;
+			if ( !INetworkable.HasChanged( typeof( T ), item, item, true ) )
+				continue;
+
+			networkableChangeCount++;
+			writer.Write( i );
+			item.SerializeChanges( writer );
+		}
+
+		var tempPos = writer.BaseStream.Position;
+		writer.BaseStream.Position = networkableCountPos;
+		writer.Write( networkableChangeCount );
+		writer.BaseStream.Position = tempPos;
 	}
 
 	/// <summary>

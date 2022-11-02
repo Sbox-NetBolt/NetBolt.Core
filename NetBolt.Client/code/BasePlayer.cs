@@ -2,6 +2,7 @@
 using NetBolt.Shared.Clients;
 using NetBolt.Shared.Entities;
 using NetBolt.Shared.Networkables.Builtin;
+using NetBolt.Shared.RemoteProcedureCalls;
 using Sandbox;
 using System.Numerics;
 
@@ -26,6 +27,15 @@ public class BasePlayer : NetworkEntity
 	protected override void UpdateClient()
 	{
 		base.UpdateClient();
+
+		if ( Components.TryGetComponent<ColorComponent>( out var component ) )
+		{
+			var color = component.Color;
+			_player.RenderColor = Color.FromBytes( (int)color.X, (int)color.Y, (int)color.Z );
+
+			if ( Input.Pressed( InputButton.Flashlight ) )
+				component.RotateColorRpc();
+		}
 
 		if ( Local.Client.Pawn != _player )
 		{

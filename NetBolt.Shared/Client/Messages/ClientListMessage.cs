@@ -48,7 +48,7 @@ public sealed class ClientListMessage : NetworkMessage
 
 			var client = isBot ? IGlue.Instance.GetBot( clientId ) : IGlue.Instance.GetClient( clientId );
 			if ( reader.ReadBoolean() )
-				client.Pawn = IEntity.GetEntityById( reader.ReadInt32() );
+				client.Pawn = IEntity.GetOrRequestById( reader.ReadInt32(), entity => client.Pawn = entity );
 
 			list.Add( client );
 		}

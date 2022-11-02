@@ -3,6 +3,7 @@
   "Type": "game",
   "Org": "local",
   "Ident": "netbolt_client",
+  "Tags": null,
   "Schema": 1,
   "HasAssets": false,
   "AssetsPath": "",

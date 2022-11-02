@@ -9,6 +9,13 @@ namespace NetBolt.Shared.Networkables.Builtin;
 /// </summary>
 public struct NetworkedVector3 : INetworkable, IEquatable<NetworkedVector3>
 {
+	/// <inheritdoc/>
+	public int NetworkId => 0;
+	/// <inheritdoc/>
+	public bool SupportEquals => true;
+	/// <inheritdoc/>
+	public bool SupportLerp => true;
+
 	/// <summary>
 	/// The underlying <see cref="System.Numerics.Vector3"/> contained inside.
 	/// </summary>
@@ -17,8 +24,8 @@ public struct NetworkedVector3 : INetworkable, IEquatable<NetworkedVector3>
 		get => _value;
 		set
 		{
-			_oldValue = _value;
 			_value = value;
+			_changed = true;
 		}
 	}
 	/// <summary>
@@ -26,22 +33,46 @@ public struct NetworkedVector3 : INetworkable, IEquatable<NetworkedVector3>
 	/// </summary>
 	private System.Numerics.Vector3 _value;
 	/// <summary>
-	/// The last networked version of <see cref="Value"/>.
+	/// Whether or not the <see cref="NetworkedVector3"/> has changed.
 	/// </summary>
-	private System.Numerics.Vector3 _oldValue;
+	private bool _changed = false;
 
 	/// <summary>
 	/// The <see cref="System.Numerics.Vector3.X"/> component of the <see cref="System.Numerics.Vector3"/>.
 	/// </summary>
-	public float X { get => _value.X; set => _value.X = value; }
+	public float X
+	{
+		get => _value.X;
+		set
+		{
+			_value.X = value;
+			_changed = true;
+		}
+	}
 	/// <summary>
 	/// The <see cref="System.Numerics.Vector3.Y"/> component of the <see cref="System.Numerics.Vector3"/>.
 	/// </summary>
-	public float Y { get => _value.Y; set => _value.Y = value; }
+	public float Y
+	{
+		get => _value.Y;
+		set
+		{
+			_value.Y = value;
+			_changed = true;
+		}
+	}
 	/// <summary>
 	/// The <see cref="System.Numerics.Vector3.Z"/> component of the <see cref="System.Numerics.Vector3"/>.
 	/// </summary>
-	public float Z { get => _value.Z; set => _value.Z = value; }
+	public float Z
+	{
+		get => _value.Z;
+		set
+		{
+			_value.Z = value;
+			_changed = true;
+		}
+	}
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="NetworkedVector3"/> from a <see cref="System.Numerics.Vector3"/>s components.
@@ -53,7 +84,6 @@ public struct NetworkedVector3 : INetworkable, IEquatable<NetworkedVector3>
 	{
 		var vector3 = new System.Numerics.Vector3( x, y, z );
 		_value = vector3;
-		_oldValue = default;
 	}
 
 	/// <summary>
@@ -63,7 +93,6 @@ public struct NetworkedVector3 : INetworkable, IEquatable<NetworkedVector3>
 	public NetworkedVector3( System.Numerics.Vector3 vector3 )
 	{
 		_value = vector3;
-		_oldValue = default;
 	}
 
 	/// <summary>
@@ -72,7 +101,20 @@ public struct NetworkedVector3 : INetworkable, IEquatable<NetworkedVector3>
 	/// <returns>Whether or not the <see cref="NetworkedVector3"/> has changed.</returns>
 	public bool Changed()
 	{
-		return _value != _oldValue;
+		return _changed;
+	}
+
+	/// <summary>
+	/// Returns whether or not the <see cref="NetworkedVector3"/> instance is the same as another.
+	/// </summary>
+	/// <param name="oldValue">The old value.</param>
+	/// <returns>Whether or not the <see cref="NetworkedVector3"/> instance is the same as another.</returns>
+	public bool Equals( INetworkable? oldValue )
+	{
+		if ( oldValue is not NetworkedVector3 networkedVector3 )
+			return false;
+
+		return Equals( networkedVector3 );
 	}
 
 	/// <summary>
@@ -124,8 +166,8 @@ public struct NetworkedVector3 : INetworkable, IEquatable<NetworkedVector3>
 	/// <param name="writer">The writer to write to.</param>
 	public void SerializeChanges( NetworkWriter writer )
 	{
-		_oldValue = _value;
 		Serialize( writer );
+		_changed = false;
 	}
 
 	/// <summary>
@@ -135,7 +177,7 @@ public struct NetworkedVector3 : INetworkable, IEquatable<NetworkedVector3>
 	/// <returns>true if the current <see cref="NetworkedVector3"/> is equal to the other <see cref="NetworkedVector3"/>; otherwise, false.</returns>
 	public bool Equals( NetworkedVector3 other )
 	{
-		return _value.Equals( other._value );
+		return Value.Equals( other.Value );
 	}
 
 	/// <inheritdoc/>
@@ -147,7 +189,7 @@ public struct NetworkedVector3 : INetworkable, IEquatable<NetworkedVector3>
 	/// <inheritdoc/>
 	public override int GetHashCode()
 	{
-		return _value.GetHashCode();
+		return Value.GetHashCode();
 	}
 
 	/// <summary>

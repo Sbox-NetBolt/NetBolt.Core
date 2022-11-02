@@ -7,12 +7,12 @@ using NetBolt.Shared.Utility;
 namespace NetBolt.Shared.Messages;
 
 /// <summary>
-/// A server to client <see cref="NetworkMessage"/> containing information about an <see cref="BaseNetworkable"/> that has updated.
+/// A server to client <see cref="NetworkMessage"/> containing information about an <see cref="ComplexNetworkable"/> that has updated.
 /// </summary>
 public sealed class MultiBaseNetworkableUpdateMessage : NetworkMessage
 {
 	/// <summary>
-	/// Contains all data changes relating to <see cref="BaseNetworkable"/>s.
+	/// Contains all data changes relating to <see cref="ComplexNetworkable"/>s.
 	/// </summary>
 	public byte[] PartialBaseNetworkableData { get; private set; } = Array.Empty<byte>();
 
@@ -25,20 +25,20 @@ public sealed class MultiBaseNetworkableUpdateMessage : NetworkMessage
 	}
 
 	/// <summary>
-	/// Initializes a new instance of <see cref="MultiBaseNetworkableUpdateMessage"/> with all the <see cref="BaseNetworkable"/>s that changed.
+	/// Initializes a new instance of <see cref="MultiBaseNetworkableUpdateMessage"/> with all the <see cref="ComplexNetworkable"/>s that changed.
 	/// </summary>
-	/// <param name="changedBaseNetworkables">The <see cref="BaseNetworkable"/>s that changed.</param>
+	/// <param name="changedBaseNetworkables">The <see cref="ComplexNetworkable"/>s that changed.</param>
 	[ServerOnly]
-	public MultiBaseNetworkableUpdateMessage( IReadOnlyList<BaseNetworkable> changedBaseNetworkables )
+	public MultiBaseNetworkableUpdateMessage( IReadOnlyList<ComplexNetworkable> changedBaseNetworkables )
 	{
 		var stream = new MemoryStream();
 		var writer = new NetworkWriter( stream );
 		writer.Write( changedBaseNetworkables.Count );
 
-		foreach ( var baseNetworkable in changedBaseNetworkables )
+		foreach ( var complexNetworkable in changedBaseNetworkables )
 		{
-			writer.Write( baseNetworkable.NetworkId );
-			baseNetworkable.SerializeChanges( writer );
+			writer.Write( complexNetworkable.NetworkId );
+			complexNetworkable.SerializeChanges( writer );
 		}
 		writer.Close();
 

@@ -11,6 +11,13 @@ namespace NetBolt.Shared.Networkables.Builtin;
 /// <typeparam name="T">The type contained in the <see cref="List{T}"/>.</typeparam>
 public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : INetworkable
 {
+	/// <inheritdoc/>
+	public int NetworkId => 0;
+	/// <inheritdoc/>
+	public bool SupportEquals => false;
+	/// <inheritdoc/>
+	public bool SupportLerp => false;
+
 	/// <summary>
 	/// The underlying <see cref="List{T}"/> being contained inside.
 	/// </summary>
@@ -33,6 +40,22 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	private List<T> _value = null!;
 
 	/// <summary>
+	/// The indexer to the underlying <see cref="List{T}"/>.
+	/// </summary>
+	/// <param name="index">The index to look at.</param>
+	/// <returns>The value at that index.</returns>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when indexing at a location that is not inside of this <see cref="NetworkedList{T}"/>.</exception>
+	public T this[int index]
+	{
+		get => Value[index];
+		set
+		{
+			Value[index] = value;
+			_indicesChanged.Add( index );
+		}
+	}
+
+	/// <summary>
 	/// The number of elements that the <see cref="List{T}"/> can contain before resizing is required.
 	/// </summary>
 	public int Capacity => Value.Capacity;
@@ -45,6 +68,16 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	/// A list containing all the changes made to the list since the last networking update.
 	/// </summary>
 	private readonly List<(ListChangeType, T?)> _changes = new();
+
+	/// <summary>
+	/// A hash set containing all the indices that have changed since the last networking update.
+	/// </summary>
+	private readonly HashSet<int> _indicesChanged = new();
+
+	/// <summary>
+	/// Whether or not this <see cref="NetworkedList{T}"/> is containing a type that is a <see cref="ComplexNetworkable"/>.
+	/// </summary>
+	private readonly bool _containingBaseNetworkable = typeof( T ).IsAssignableTo( typeof( ComplexNetworkable ) );
 
 	/// <summary>
 	/// Initializes a default instance of <see cref="NetworkedList{T}"/>.
@@ -123,8 +156,24 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	/// <returns>Whether or not the <see cref="NetworkedList{T}"/> has changed.</returns>
 	public bool Changed()
 	{
-		return _changes.Count > 0;
+		if ( _changes.Count > 0 || _indicesChanged.Count > 0 )
+			return true;
+
+		foreach ( var item in Value )
+		{
+			if ( INetworkable.HasChanged( typeof( T ), item, item, !_containingBaseNetworkable ) )
+				return true;
+		}
+
+		return false;
 	}
+
+	/// <summary>
+	/// Returns whether or not the <see cref="NetworkedList{T}"/> instance is the same as another.
+	/// </summary>
+	/// <param name="oldValue">The old value.</param>
+	/// <returns>Whether or not the <see cref="NetworkedList{T}"/> instance is the same as another.</returns>
+	public bool Equals( INetworkable? oldValue ) => false;
 
 	/// <summary>
 	/// Lerps a <see cref="NetworkedList{T}"/> between two values.
@@ -146,8 +195,26 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	{
 		Value = new List<T>();
 		var listLength = reader.ReadInt32();
-		for ( var i = 0; i < listLength; i++ )
-			Value.Add( reader.ReadNetworkable<T>() );
+		if ( _containingBaseNetworkable )
+		{
+			for ( var i = 0; i < listLength; i++ )
+			{
+				var networkId = reader.ReadInt32();
+				var complexNetworkable = ComplexNetworkable.GetById( networkId );
+				if ( complexNetworkable is null )
+				{
+					ILogger.Instance.Error( "Deserialized an unknown {0} (ID: {1})", typeof( T ).Name, networkId );
+					continue;
+				}
+
+				Add( (T)(INetworkable)complexNetworkable );
+			}
+		}
+		else
+		{
+			for ( var i = 0; i < listLength; i++ )
+				Add( reader.ReadNetworkable<T>() );
+		}
 	}
 
 	/// <summary>
@@ -160,26 +227,54 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 		var changeCount = reader.ReadInt32();
 		for ( var i = 0; i < changeCount; i++ )
 		{
-			var action = (ListChangeType)reader.ReadByte();
-			T? value = default;
-			if ( reader.ReadBoolean() )
-				value = reader.ReadNetworkable<T>();
-
-			switch ( action )
+			var changeType = (ListChangeType)reader.ReadByte();
+			switch ( changeType )
 			{
 				case ListChangeType.Add:
-					Add( value! );
-					break;
 				case ListChangeType.Remove:
-					Remove( value! );
+					T? value = default;
+					if ( reader.ReadBoolean() )
+					{
+						if ( _containingBaseNetworkable )
+						{
+							var networkId = reader.ReadInt32();
+							var complexNetworkable = ComplexNetworkable.GetById( networkId );
+							if ( complexNetworkable is null )
+							{
+								ILogger.Instance.Error( "Deserialized an unknown {0} (ID: {1})", typeof( T ).Name, networkId );
+								continue;
+							}
+
+							value = (T)(INetworkable)complexNetworkable;
+						}
+						else
+							value = reader.ReadNetworkable<T>();
+					}
+
+					if ( changeType == ListChangeType.Add )
+						Add( value! );
+					else
+						Remove( value! );
 					break;
 				case ListChangeType.Clear:
 					Clear();
 					break;
 				default:
-					throw new ArgumentOutOfRangeException( nameof( action ) );
+					throw new ArgumentOutOfRangeException( nameof( changeType ) );
 			}
 		}
+
+		changeCount = reader.ReadInt32();
+		for ( var i = 0; i < changeCount; i++ )
+		{
+			Value[reader.ReadInt32()] = _containingBaseNetworkable
+				? (T)(INetworkable)ComplexNetworkable.GetById( reader.ReadInt32() )!
+				: reader.ReadNetworkable<T>();
+		}
+
+		changeCount = reader.ReadInt32();
+		for ( var i = 0; i < changeCount; i++ )
+			Value[reader.ReadInt32()].DeserializeChanges( reader );
 	}
 
 	/// <summary>
@@ -189,8 +284,16 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	public void Serialize( NetworkWriter writer )
 	{
 		writer.Write( Value.Count );
-		foreach ( var item in Value )
-			writer.WriteNetworkable( item );
+		if ( _containingBaseNetworkable )
+		{
+			foreach ( var item in Value )
+				writer.Write( item.NetworkId );
+		}
+		else
+		{
+			foreach ( var item in Value )
+				writer.Write( item );
+		}
 	}
 
 	/// <summary>
@@ -200,16 +303,67 @@ public sealed class NetworkedList<T> : INetworkable, IEnumerable<T> where T : IN
 	public void SerializeChanges( NetworkWriter writer )
 	{
 		writer.Write( _changes.Count );
-		foreach ( var change in _changes )
+		foreach ( var (changeType, value) in _changes )
 		{
-			writer.Write( (byte)change.Item1 );
-			var isNull = change.Item2 is null;
-			writer.Write( isNull );
+			writer.Write( (byte)changeType );
+			switch ( changeType )
+			{
+				case ListChangeType.Add:
+				case ListChangeType.Remove:
+					var hasValue = value is not null;
+					writer.Write( hasValue );
 
-			if ( !isNull )
-				writer.WriteNetworkable( change.Item2! );
+					if ( hasValue )
+					{
+						if ( _containingBaseNetworkable )
+							writer.Write( value!.NetworkId );
+						else
+							writer.Write( value! );
+					}
+					break;
+				case ListChangeType.Clear:
+					break;
+				default:
+					throw new ArgumentOutOfRangeException( nameof( changeType ) );
+			}
 		}
 		_changes.Clear();
+
+		writer.Write( _indicesChanged.Count );
+		foreach ( var itemIndex in _indicesChanged )
+		{
+			writer.Write( itemIndex );
+			if ( _containingBaseNetworkable )
+				writer.Write( Value[itemIndex].NetworkId );
+			else
+				writer.Write( Value[itemIndex] );
+		}
+		_indicesChanged.Clear();
+
+		if ( _containingBaseNetworkable )
+		{
+			writer.Write( 0 );
+			return;
+		}
+
+		var networkableCountPos = writer.BaseStream.Position;
+		writer.BaseStream.Position += sizeof( int );
+		var networkableChangeCount = 0;
+		for ( var i = 0; i < Value.Count; i++ )
+		{
+			var item = Value[i];
+			if ( !INetworkable.HasChanged( typeof( T ), item, item, true ) )
+				continue;
+
+			networkableChangeCount++;
+			writer.Write( i );
+			item.SerializeChanges( writer );
+		}
+
+		var tempPos = writer.BaseStream.Position;
+		writer.BaseStream.Position = networkableCountPos;
+		writer.Write( networkableChangeCount );
+		writer.BaseStream.Position = tempPos;
 	}
 
 	/// <summary>

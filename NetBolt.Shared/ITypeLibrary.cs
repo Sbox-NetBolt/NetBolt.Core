@@ -63,4 +63,9 @@ public interface ITypeLibrary
 	/// <param name="type">The type to check if it is a struct.</param>
 	/// <returns>Whether or not the type is a struct.</returns>
 	bool IsStruct( Type type );
+
+	/// <summary>
+	/// The instance to access for type library glue functionality.
+	/// </summary>
+	public static ITypeLibrary Instance { get; internal set; } = null!;
 }

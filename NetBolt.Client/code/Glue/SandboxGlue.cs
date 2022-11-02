@@ -1,6 +1,7 @@
 ﻿using NetBolt.Shared;
 using NetBolt.Shared.Clients;
 using NetBolt.Shared.Messages;
+using NetBolt.Shared.Networkables;
 using NetBolt.Shared.Utility;
 using Sandbox.Internal;
 using System;
@@ -35,7 +36,7 @@ internal class SandboxGlue : IGlue
 	private readonly TypeLibraryGlue _typeLibraryGlue = new();
 
 	/// <inheritdoc/>
-	public INetBoltServer Server => throw new NotSupportedException();
+	public INetBoltServer Server => null!;
 
 	/// <inheritdoc/>
 	public INetBoltClient Client => _clientGlue;
@@ -116,6 +117,9 @@ internal class SandboxGlue : IGlue
 		/// <inheritdoc/>
 		public T? Create<T>( Type type, Type[] genericTypes )
 		{
+			Log.Info( type );
+			foreach ( var genType in genericTypes )
+				Log.Info( genType );
 			return GlobalGameNamespace.TypeLibrary.GetDescription( type ).CreateGeneric<T>( genericTypes );
 		}
 
@@ -160,6 +164,10 @@ internal class SandboxGlue : IGlue
 		public bool IsStruct( Type type )
 		{
 			var description = GlobalGameNamespace.TypeLibrary.GetDescription( type );
+			// TODO: Remove this once https://github.com/sboxgame/issues/issues/2412 is fixed.
+			if ( description is null )
+				return false;
+
 			return description.IsValueType && !description.IsEnum;
 		}
 	}
@@ -168,8 +176,56 @@ internal class SandboxGlue : IGlue
 	/// <summary>
 	/// The glue for client specific functionality.
 	/// </summary>
-	private class ClientSpecificGlue : INetBoltClient
+	internal class ClientSpecificGlue : INetBoltClient
 	{
+		/// <summary>
+		/// A dictionary containing all current <see cref="ComplexNetworkable"/> requests.
+		/// </summary>
+		private readonly Dictionary<int, List<Action<ComplexNetworkable>>> RequestCallbacks = new();
+		/// <summary>
+		/// A dictionary containing all current <see cref="Shared.Entities.IEntity"/> requests.
+		/// </summary>
+		private readonly Dictionary<int, List<Action<Shared.Entities.IEntity>>> EntityRequestCallbacks = new();
+
+		/// <summary>
+		/// Triggers any request callbacks that needs the <see cref="ComplexNetworkable"/> provided.
+		/// </summary>
+		/// <param name="complexNetworkable">The <see cref="ComplexNetworkable"/> that has become available to the client.</param>
+		internal void BaseNetworkableAvailable( ComplexNetworkable complexNetworkable )
+		{
+			var networkId = complexNetworkable.NetworkId;
+			if ( EntityRequestCallbacks.ContainsKey( networkId ) && complexNetworkable is Shared.Entities.IEntity entity )
+			{
+				foreach ( var cb in EntityRequestCallbacks[networkId] )
+					cb( entity );
+				EntityRequestCallbacks.Remove( networkId );
+			}
+			else if ( RequestCallbacks.ContainsKey( networkId ) )
+			{
+				foreach ( var cb in RequestCallbacks[networkId] )
+					cb( complexNetworkable );
+				RequestCallbacks.Remove( networkId );
+			}
+		}
+
+		/// <inheritdoc/>
+		public void RequestBaseNetworkable( int networkId, Action<ComplexNetworkable> cb )
+		{
+			if ( !RequestCallbacks.ContainsKey( networkId ) )
+				RequestCallbacks.Add( networkId, new List<Action<ComplexNetworkable>>() );
+
+			RequestCallbacks[networkId].Add( cb );
+		}
+
+		/// <inheritdoc/>
+		public void RequestEntity( int networkId, Action<Shared.Entities.IEntity> cb )
+		{
+			if ( !EntityRequestCallbacks.ContainsKey( networkId ) )
+				EntityRequestCallbacks.Add( networkId, new List<Action<Shared.Entities.IEntity>>() );
+
+			EntityRequestCallbacks[networkId].Add( cb );
+		}
+
 		/// <inheritdoc/>
 		public void SendToServer( NetworkMessage message )
 		{

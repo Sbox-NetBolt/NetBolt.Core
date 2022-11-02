@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using NetBolt.Client.UI;
 using NetBolt.Client.Utility;
+using NetBolt.Shared;
 using NetBolt.Shared.Clients;
 using NetBolt.Shared.Entities;
 using NetBolt.Shared.Messages;
@@ -12,7 +13,6 @@ using NetBolt.Shared.Networkables;
 using NetBolt.Shared.RemoteProcedureCalls;
 using NetBolt.Shared.Utility;
 using Sandbox;
-using BaseNetworkable = NetBolt.Shared.Networkables.BaseNetworkable;
 
 namespace NetBolt.Client;
 
@@ -213,10 +213,10 @@ public sealed class NetworkManager
 	/// Gets a client by its identifier.
 	/// </summary>
 	/// <param name="clientId">The identifier of the client to find.</param>
-	/// <returns>The client if found. Null if not found.</returns>
+	/// <returns>The client if found. Null if provided -1.</returns>
 	public INetworkClient? GetClientById( long clientId )
 	{
-		return clientId == -1 ? null : Clients.FirstOrDefault( client => client.ClientId == clientId );
+		return clientId == -1 ? null : Clients.First( client => client.ClientId == clientId );
 	}
 
 	/// <summary>
@@ -265,7 +265,7 @@ public sealed class NetworkManager
 		var stream = new MemoryStream();
 		var writer = new NetworkWriter( stream );
 
-		writer.WriteNetworkableChanges( ref pawn );
+		writer.WriteChanges( ref pawn );
 		writer.Close();
 
 		SendToServer( new ClientPawnUpdateMessage( stream.ToArray() ) );
@@ -298,7 +298,7 @@ public sealed class NetworkManager
 #endif
 			var stream = new MemoryStream();
 			var writer = new NetworkWriter( stream );
-			writer.WriteNetworkable( message );
+			writer.Write( message );
 			writer.Close();
 
 			_ = _webSocket?.Send( stream.ToArray() );
@@ -323,7 +323,7 @@ public sealed class NetworkManager
 		_clients.Clear();
 		var entities = IEntity.All.ToArray();
 		foreach ( var entity in entities )
-			(entity as BaseNetworkable)?.Delete();
+			(entity as ComplexNetworkable)?.Delete();
 		IEntity.AllEntities.Clear();
 
 #if DEBUG
@@ -390,17 +390,17 @@ public sealed class NetworkManager
 			return;
 		}
 
-		var baseNetworkable = BaseNetworkable.All.FirstOrDefault( baseNetworkable => baseNetworkable.NetworkId == rpcCall.NetworkId );
-		if ( baseNetworkable is null && rpcCall.NetworkId != -1 )
+		var complexNetworkable = ComplexNetworkable.GetById( rpcCall.BaseNetworkableId );
+		if ( complexNetworkable is null && rpcCall.NetworkId != -1 )
 		{
-			Log.Error( $"Failed to handle RPC call (Attempted to call RPC on a non-existant {nameof( BaseNetworkable )})." );
+			Log.Error( $"Failed to handle RPC call (Attempted to call RPC on a non-existant {nameof( ComplexNetworkable )})." );
 			return;
 		}
 
 		var parameters = new List<object>();
 		parameters.AddRange( rpcCall.Parameters );
-		if ( baseNetworkable is not null )
-			parameters.Insert( 0, baseNetworkable );
+		if ( complexNetworkable is not null )
+			parameters.Insert( 0, complexNetworkable );
 
 		if ( rpcCall.CallGuid == Guid.Empty )
 		{
@@ -493,21 +493,24 @@ public sealed class NetworkManager
 	/// <param name="message">The <see cref="BaseNetworkableListMessage"/> that was received.</param>
 	private void HandleBaseNetworkableListMessage( NetworkMessage message )
 	{
-		// All the needed logic is handled when the message is deserialized
+		if ( message is not BaseNetworkableListMessage baseNetworkableListMessage )
+			return;
+
+		var clientGlue = (SandboxGlue.ClientSpecificGlue)INetBoltClient.Instance;
+		foreach ( var complexNetworkable in baseNetworkableListMessage.BaseNetworkables )
+			clientGlue.BaseNetworkableAvailable( complexNetworkable );
 	}
 
 	/// <summary>
-	/// Handles a <see cref="CreateBaseNetworkableMessage"/>.
+	/// Handles a <see cref="CreateComplexNetworkableMessage"/>.
 	/// </summary>
-	/// <param name="message">The <see cref="CreateBaseNetworkableMessage"/> that was received.</param>
+	/// <param name="message">The <see cref="CreateComplexNetworkableMessage"/> that was received.</param>
 	private void HandleCreateBaseNetworkableMessage( NetworkMessage message )
 	{
-		if ( message is not CreateBaseNetworkableMessage createBaseNetworkableMessage )
+		if ( message is not CreateComplexNetworkableMessage createComplexNetworkableMessage )
 			return;
 
-		var baseNetworkable = TypeLibrary.Create<BaseNetworkable>( createBaseNetworkableMessage.BaseNetworkableClass );
-		if ( baseNetworkable is not null )
-			baseNetworkable.NetworkId = createBaseNetworkableMessage.NetworkId;
+		((SandboxGlue.ClientSpecificGlue)INetBoltClient.Instance).BaseNetworkableAvailable( createComplexNetworkableMessage.ComplexNetworkable );
 	}
 
 	/// <summary>
@@ -519,9 +522,9 @@ public sealed class NetworkManager
 		if ( message is not DeleteBaseNetworkableMessage deleteBaseNetworkableMessage )
 			return;
 
-		var baseNetworkable = BaseNetworkable.All.FirstOrDefault( baseNetworkable =>
-			baseNetworkable.NetworkId == deleteBaseNetworkableMessage.NetworkId );
-		baseNetworkable?.Delete();
+		var complexNetworkable = ComplexNetworkable.All.FirstOrDefault( complexNetworkable =>
+			complexNetworkable.NetworkId == deleteBaseNetworkableMessage.NetworkId );
+		complexNetworkable?.Delete();
 	}
 
 	/// <summary>
@@ -592,14 +595,14 @@ public sealed class NetworkManager
 		for ( var i = 0; i < baseNetworkableCount; i++ )
 		{
 			var networkId = reader.ReadInt32();
-			var baseNetworkable = BaseNetworkable.All.FirstOrDefault( baseNetworkable => baseNetworkable.NetworkId == networkId );
-			if ( baseNetworkable is null )
+			var complexNetworkable = ComplexNetworkable.All.FirstOrDefault( complexNetworkable => complexNetworkable.NetworkId == networkId );
+			if ( complexNetworkable is null )
 			{
-				Log.Error( $"Attempted to update a {nameof( BaseNetworkable )} that does not exist." );
+				Log.Error( $"Attempted to update a {nameof( ComplexNetworkable )} that does not exist." );
 				continue;
 			}
 
-			reader.ReadNetworkableChanges( baseNetworkable );
+			reader.ReadNetworkableChanges( complexNetworkable );
 		}
 		reader.Close();
 	}

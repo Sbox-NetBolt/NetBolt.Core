@@ -9,7 +9,7 @@ namespace NetBolt.Shared.Entities;
 /// <summary>
 /// The base class for all of your entity needs.
 /// </summary>
-public partial class NetworkEntity : BaseNetworkable, IEntity
+public partial class NetworkEntity : ComplexNetworkable, IEntity
 {
 	/// <summary>
 	/// The unique identifier of the <see cref="NetworkEntity"/>.
@@ -47,10 +47,16 @@ public partial class NetworkEntity : BaseNetworkable, IEntity
 	public NetworkedQuaternion Rotation { get; set; }
 
 	/// <summary>
+	/// A container for components on the <see cref="NetworkEntity"/>.
+	/// </summary>
+	public EntityComponentContainer Components { get; set; }
+
+	/// <summary>
 	/// Initializes a new instance of <see cref="NetworkEntity"/>.
 	/// </summary>
 	public NetworkEntity()
 	{
+		Components = new EntityComponentContainer( this );
 		IEntity.AllEntities.Add( this );
 	}
 
@@ -88,7 +94,7 @@ public partial class NetworkEntity : BaseNetworkable, IEntity
 	/// Deserializes all changes relating to the <see cref="NetworkEntity"/>.
 	/// </summary>
 	/// <param name="reader">The reader to read from.</param>
-	public sealed override void DeserializeChanges( NetworkReader reader )
+	public override void DeserializeChanges( NetworkReader reader )
 	{
 		var changedCount = reader.ReadInt32();
 		for ( var i = 0; i < changedCount; i++ )
@@ -99,36 +105,51 @@ public partial class NetworkEntity : BaseNetworkable, IEntity
 			if ( Realm.IsClient && Owner == INetworkClient.Local && property.HasAttribute<ClientAuthorityAttribute>() )
 			{
 				// TODO: What a cunt of a workaround
-				IGlue.Instance.TypeLibrary.Create<INetworkable>( property.PropertyType )!.DeserializeChanges( reader );
+				ITypeLibrary.Instance.Create<INetworkable>( property.PropertyType )!.DeserializeChanges( reader );
 				continue;
 			}
 
-			if ( property.PropertyType.IsAssignableTo( typeof( BaseNetworkable ) ) )
+			if ( property.PropertyType.IsAssignableTo( typeof( ComplexNetworkable ) ) )
 			{
 				var networkId = reader.ReadInt32();
-				var networkable = All.FirstOrDefault( networkable => networkable.NetworkId == networkId );
-				if ( networkable is not null )
-					property.SetValue( this, networkable );
-				else if ( Realm.IsClient )
-					PendingNetworkables.Add( networkId, propertyName );
+				INetworkable? networkable;
+
+				if ( Realm.IsClient )
+				{
+					networkable = GetOrRequestById( networkId, complexNetworkable =>
+					{
+						property.SetValue( this, complexNetworkable );
+						_referenceBucket[propertyName] = complexNetworkable;
+					} );
+				}
+				else
+					networkable = GetById( networkId );
+
+				property.SetValue( this, networkable );
+				_referenceBucket[propertyName] = networkable;
+			}
+			else if ( Realm.IsClient && property.HasAttribute<LerpAttribute>() )
+			{
+				var oldValue = (INetworkable)property.GetValue( this )!;
+				var newValue = (INetworkable)property.GetValue( this )!;
+				newValue.DeserializeChanges( reader );
+
+				LerpBucket[propertyName] = (oldValue, newValue);
+				_referenceBucket[propertyName] = newValue;
 			}
 			else
 			{
-				if ( Realm.IsClient && property.HasAttribute<LerpAttribute>() )
+				if ( property.GetValue( this ) is not INetworkable currentValue )
 				{
-					var oldValue = property.GetValue( this ) as INetworkable;
-					var newValue = property.GetValue( this ) as INetworkable;
-					newValue!.DeserializeChanges( reader );
+					ILogger.Instance.Error( "{0} is missing its value on {1}", this, propertyName );
+					continue;
+				}
 
-					LerpBucket[propertyName] = (oldValue, newValue);
-				}
-				else
-				{
-					var currentValue = property.GetValue( this );
-					(currentValue as INetworkable)!.DeserializeChanges( reader );
-					if ( IGlue.Instance.TypeLibrary.IsStruct( property.PropertyType ) )
-						property.SetValue( this, currentValue );
-				}
+				currentValue.DeserializeChanges( reader );
+				if ( ITypeLibrary.Instance.IsStruct( property.PropertyType ) )
+					property.SetValue( this, currentValue );
+
+				_referenceBucket[propertyName] = currentValue;
 			}
 		}
 	}

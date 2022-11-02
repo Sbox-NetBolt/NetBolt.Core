@@ -1,4 +1,10 @@
-﻿using Serilog.Events;
+﻿using NetBolt.Server.Glue;
+using NetBolt.Shared;
+using NetBolt.Shared.Networkables.Builtin;
+using NetBolt.Shared.Utility;
+using Serilog.Events;
+using System;
+using System.IO;
 
 namespace NetBolt.Server;
 
@@ -21,7 +27,7 @@ public static class Program
 		var options = new GameOptions()
 			.WithTickRate( 60 )
 			.WithWelcomeMessage( "Welcome to the server!" )
-			.WithLogLevel( LogEventLevel.Information );
+			.WithLogLevel( LogEventLevel.Verbose );
 
 		_game = new NetBoltGame( options );
 		_game.Start();

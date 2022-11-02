@@ -47,67 +47,37 @@ public class TypeGlue : ITypeLibrary
 		Assemblies.Add( assembly );
 	}
 
-	/// <summary>
-	/// Creates an instance of <see ref="T"/>.
-	/// </summary>
-	/// <typeparam name="T">The type to create an instance of.</typeparam>
-	/// <returns>The created instance of <see ref="T"/>.</returns>
+	/// <inheritdoc/>
 	public T Create<T>()
 	{
 		return Activator.CreateInstance<T>();
 	}
 
-	/// <summary>
-	/// Creates an instance of <see ref="typeToCreate"/> and casts it to <see ref="T"/>.
-	/// </summary>
-	/// <param name="typeToCreate">The type to create.</param>
-	/// <typeparam name="T">The type to cast the created instance to.</typeparam>
-	/// <returns>The created isntance of <see ref="typeToCreate"/> casted to <see ref="T"/>.</returns>
+	/// <inheritdoc/>
 	public T? Create<T>( Type typeToCreate )
 	{
 		return (T?)Activator.CreateInstance( typeToCreate );
 	}
 
-	/// <summary>
-	/// Creates an instance of <see ref="T"/>.
-	/// </summary>
-	/// <param name="parameters">The parameters to pass to the public constructor.</param>
-	/// <typeparam name="T">The type to create an instance of.</typeparam>
-	/// <returns>The created instance of <see ref="T"/>.</returns>
+	/// <inheritdoc/>
 	public T? Create<T>( params object[] parameters )
 	{
 		return (T?)Activator.CreateInstance( typeof( T ), parameters );
 	}
 
-	/// <summary>
-	/// Creates an instance of <see ref="typeToCreate"/> and casts it to <see ref="T"/>.
-	/// </summary>
-	/// <param name="typeToCreate">The type to create.</param>
-	/// <param name="parameters">The parameters to pass to the public constructor.</param>
-	/// <typeparam name="T">The type to cast the created instance to.</typeparam>
-	/// <returns>The created instance of <see ref="typeToCreate"/> casted to <see ref="T"/>.</returns>
+	/// <inheritdoc/>
 	public T? Create<T>( Type typeToCreate, params object?[] parameters )
 	{
 		return (T?)Activator.CreateInstance( typeToCreate, parameters );
 	}
 
-	/// <summary>
-	/// Creates an instance of <see ref="baseTypeToCreate"/> with <see ref="genericTypes"/> generics and casted to <see ref="T"/>.
-	/// </summary>
-	/// <param name="baseTypeToCreate">The base type to create.</param>
-	/// <param name="genericTypes">The generic arguments of <see ref="baseTypeToCreate"/>.</param>
-	/// <typeparam name="T">The type to cast the created instance to.</typeparam>
-	/// <returns>The created instance casted to <see ref="T"/>.</returns>
+	/// <inheritdoc/>
 	public T? Create<T>( Type baseTypeToCreate, Type[] genericTypes )
 	{
 		return (T?)Activator.CreateInstance( baseTypeToCreate.MakeGenericType( genericTypes ) );
 	}
 
-	/// <summary>
-	/// Gets all properties on the type.
-	/// </summary>
-	/// <param name="type">The type to get the properties of.</param>
-	/// <returns>The properties on the type.</returns>
+	/// <inheritdoc/>
 	public IEnumerable<IProperty> GetAllProperties( Type type )
 	{
 		var properties = type.GetProperties( BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic );
@@ -115,33 +85,20 @@ public class TypeGlue : ITypeLibrary
 			yield return new PropertyInfoWrapper( property );
 	}
 
-	/// <summary>
-	/// Gets a method on a type.
-	/// </summary>
-	/// <param name="type">The type to search in for the method.</param>
-	/// <param name="methodName">The name of the method to search for.</param>
-	/// <returns>The method if found. Null otherwise.</returns>
+	/// <inheritdoc/>
 	public IMethod? GetMethodByName( Type type, string methodName )
 	{
 		var method = type.GetMethod( methodName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic );
 		return method is not null ? new MethodInfoWrapper( method ) : null;
 	}
 
-	/// <summary>
-	/// Gets the generic arguments of a type.
-	/// </summary>
-	/// <param name="type">The type to get the generic arguments of.</param>
-	/// <returns>The generic arguments on the type.</returns>
+	/// <inheritdoc/>
 	public Type[] GetGenericArguments( Type type )
 	{
 		return type.GetGenericArguments();
 	}
 
-	/// <summary>
-	/// Gets a C# type by its name.
-	/// </summary>
-	/// <param name="name">The name of the type.</param>
-	/// <returns>The type that was found. Null if none were found.</returns>
+	/// <inheritdoc/>
 	public Type? GetTypeByName( string name )
 	{
 		if ( TypeNameCache.TryGetValue( name, out var cachedType ) )
@@ -162,21 +119,13 @@ public class TypeGlue : ITypeLibrary
 		return null;
 	}
 
-	/// <summary>
-	/// Returns whether or not a type is a class.
-	/// </summary>
-	/// <param name="type">The type to check if it is a class.</param>
-	/// <returns>Whether or not the type is a class.</returns>
+	/// <inheritdoc/>
 	public bool IsClass( Type type )
 	{
 		return type.IsClass;
 	}
 
-	/// <summary>
-	/// Returns whether or not a type is a struct.
-	/// </summary>
-	/// <param name="type">The type to check if it is a struct.</param>
-	/// <returns>Whether or not a type is a struct.</returns>
+	/// <inheritdoc/>
 	public bool IsStruct( Type type )
 	{
 		return type.IsValueType && !type.IsEnum;

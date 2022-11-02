@@ -13,15 +13,15 @@ namespace NetBolt.Server.Glue;
 internal class ServerSpecificGlue : INetBoltServer
 {
 	/// <inheritdoc/>
-	public void OnBaseNetworkableCreated( BaseNetworkable baseNetworkable )
+	public void OnBaseNetworkableCreated( ComplexNetworkable complexNetworkable )
 	{
-		NetBoltGame.Current.OnBaseNetworkableCreated( baseNetworkable );
+		NetBoltGame.Current.OnBaseNetworkableCreated( complexNetworkable );
 	}
 
 	/// <inheritdoc/>
-	public void OnBaseNetworkableDeleted( BaseNetworkable baseNetworkable )
+	public void OnBaseNetworkableDeleted( ComplexNetworkable complexNetworkable )
 	{
-		NetBoltGame.Current.OnBaseNetworkableDeleted( baseNetworkable );
+		NetBoltGame.Current.OnBaseNetworkableDeleted( complexNetworkable );
 	}
 
 	/// <inheritdoc/>

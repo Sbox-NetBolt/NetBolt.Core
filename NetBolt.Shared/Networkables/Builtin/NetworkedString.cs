@@ -8,6 +8,13 @@ namespace NetBolt.Shared.Networkables.Builtin;
 /// </summary>
 public struct NetworkedString : INetworkable, IEquatable<NetworkedString>
 {
+	/// <inheritdoc/>
+	public int NetworkId => 0;
+	/// <inheritdoc/>
+	public bool SupportEquals => true;
+	/// <inheritdoc/>
+	public bool SupportLerp => false;
+
 	/// <summary>
 	/// The underlying <see cref="string"/> contained inside.
 	/// </summary>
@@ -16,7 +23,6 @@ public struct NetworkedString : INetworkable, IEquatable<NetworkedString>
 		get => _value;
 		set
 		{
-			_oldValue = _value;
 			_value = value;
 		}
 	}
@@ -25,9 +31,9 @@ public struct NetworkedString : INetworkable, IEquatable<NetworkedString>
 	/// </summary>
 	private string _value;
 	/// <summary>
-	/// The last networked version of <see cref="Value"/>.
+	/// Whether or not the <see cref="NetworkedString"/> has changed.
 	/// </summary>
-	private string _oldValue;
+	private bool _changed = false;
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="NetworkedString"/>.
@@ -36,7 +42,6 @@ public struct NetworkedString : INetworkable, IEquatable<NetworkedString>
 	private NetworkedString( string s )
 	{
 		_value = s;
-		_oldValue = string.Empty;
 	}
 
 	/// <summary>
@@ -45,7 +50,20 @@ public struct NetworkedString : INetworkable, IEquatable<NetworkedString>
 	/// <returns>Whether or not the <see cref="NetworkedString"/> has changed.</returns>
 	public bool Changed()
 	{
-		return _value != _oldValue;
+		return _changed;
+	}
+
+	/// <summary>
+	/// Returns whether or not the <see cref="NetworkedString"/> instance is the same as another.
+	/// </summary>
+	/// <param name="oldValue">The old value.</param>
+	/// <returns>Whether or not the <see cref="NetworkedString"/> instance is the same as another.</returns>
+	public bool Equals( INetworkable? oldValue )
+	{
+		if ( oldValue is not NetworkedString networkedString )
+			return false;
+
+		return Equals( networkedString );
 	}
 
 	/// <summary>
@@ -93,8 +111,8 @@ public struct NetworkedString : INetworkable, IEquatable<NetworkedString>
 	/// <param name="writer">The writer to write to.</param>
 	public void SerializeChanges( NetworkWriter writer )
 	{
-		_oldValue = _value;
 		Serialize( writer );
+		_changed = false;
 	}
 
 	/// <summary>

@@ -4,14 +4,14 @@ using NetBolt.Shared.Utility;
 namespace NetBolt.Shared.Messages;
 
 /// <summary>
-/// A server to client <see cref="NetworkMessage"/> that contains an <see cref="BaseNetworkable"/> to delete.
+/// A server to client <see cref="NetworkMessage"/> that contains an <see cref="ComplexNetworkable"/> to delete.
 /// </summary>
 public sealed class DeleteBaseNetworkableMessage : NetworkMessage
 {
 	/// <summary>
-	/// The unique identifier of the <see cref="BaseNetworkable"/> to delete.
+	/// The unique identifier of the <see cref="ComplexNetworkable"/> to delete.
 	/// </summary>
-	public int NetworkId { get; private set; }
+	public int BaseNetworkableId { get; private set; }
 
 	/// <summary>
 	/// Initializes a default instance of <see cref="DeleteBaseNetworkableMessage"/>.
@@ -22,13 +22,13 @@ public sealed class DeleteBaseNetworkableMessage : NetworkMessage
 	}
 
 	/// <summary>
-	/// Initializes a new instance of <see cref="DeleteBaseNetworkableMessage"/> with the <see cref="BaseNetworkable"/> that is being deleted.
+	/// Initializes a new instance of <see cref="DeleteBaseNetworkableMessage"/> with the <see cref="ComplexNetworkable"/> that is being deleted.
 	/// </summary>
-	/// <param name="baseNetworkable">The <see cref="BaseNetworkable"/> that is being deleted.</param>
+	/// <param name="complexNetworkable">The <see cref="ComplexNetworkable"/> that is being deleted.</param>
 	[ServerOnly]
-	public DeleteBaseNetworkableMessage( BaseNetworkable baseNetworkable )
+	public DeleteBaseNetworkableMessage( ComplexNetworkable complexNetworkable )
 	{
-		NetworkId = baseNetworkable.NetworkId;
+		BaseNetworkableId = complexNetworkable.NetworkId;
 	}
 
 	/// <summary>
@@ -38,7 +38,7 @@ public sealed class DeleteBaseNetworkableMessage : NetworkMessage
 	[ClientOnly]
 	public override void Deserialize( NetworkReader reader )
 	{
-		NetworkId = reader.ReadInt32();
+		BaseNetworkableId = reader.ReadInt32();
 	}
 
 	/// <summary>
@@ -48,7 +48,7 @@ public sealed class DeleteBaseNetworkableMessage : NetworkMessage
 	[ServerOnly]
 	public override void Serialize( NetworkWriter writer )
 	{
-		writer.Write( NetworkId );
+		writer.Write( BaseNetworkableId );
 	}
 
 	/// <summary>

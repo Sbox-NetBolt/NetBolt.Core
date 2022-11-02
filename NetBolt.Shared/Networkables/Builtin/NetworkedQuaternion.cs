@@ -9,6 +9,13 @@ namespace NetBolt.Shared.Networkables.Builtin;
 /// </summary>
 public struct NetworkedQuaternion : INetworkable, IEquatable<NetworkedQuaternion>
 {
+	/// <inheritdoc/>
+	public int NetworkId => 0;
+	/// <inheritdoc/>
+	public bool SupportEquals => true;
+	/// <inheritdoc/>
+	public bool SupportLerp => true;
+
 	/// <summary>
 	/// The underlying <see cref="Quaternion"/> contained inside.
 	/// </summary>
@@ -17,8 +24,8 @@ public struct NetworkedQuaternion : INetworkable, IEquatable<NetworkedQuaternion
 		get => _value;
 		set
 		{
-			_oldValue = _value;
 			_value = value;
+			_changed = true;
 		}
 	}
 	/// <summary>
@@ -26,9 +33,9 @@ public struct NetworkedQuaternion : INetworkable, IEquatable<NetworkedQuaternion
 	/// </summary>
 	private Quaternion _value;
 	/// <summary>
-	/// The last networked version of <see cref="Value"/>.
+	/// Whether or not the <see cref="NetworkedQuaternion"/> has changed.
 	/// </summary>
-	private Quaternion _oldValue;
+	private bool _changed = false;
 
 	/// <summary>
 	/// The <see cref="Quaternion.X"/> component of the <see cref="Quaternion"/>.
@@ -56,8 +63,8 @@ public struct NetworkedQuaternion : INetworkable, IEquatable<NetworkedQuaternion
 	/// <param name="w">The w component.</param>
 	public NetworkedQuaternion( float x, float y, float z, float w )
 	{
-		_value = new Quaternion( x, y, z, w );
-		_oldValue = default;
+		var quaternion = new Quaternion( x, y, z, w );
+		_value = quaternion;
 	}
 
 	/// <summary>
@@ -67,7 +74,6 @@ public struct NetworkedQuaternion : INetworkable, IEquatable<NetworkedQuaternion
 	public NetworkedQuaternion( Quaternion quaternion )
 	{
 		_value = quaternion;
-		_oldValue = default;
 	}
 
 	/// <summary>
@@ -76,7 +82,20 @@ public struct NetworkedQuaternion : INetworkable, IEquatable<NetworkedQuaternion
 	/// <returns>Whether or not the <see cref="NetworkedQuaternion"/> has changed.</returns>
 	public bool Changed()
 	{
-		return _value != _oldValue;
+		return _changed;
+	}
+
+	/// <summary>
+	/// Returns whether or not the <see cref="NetworkedQuaternion"/> instance is the same as another.
+	/// </summary>
+	/// <param name="oldValue">The old value.</param>
+	/// <returns>Whether or not the <see cref="NetworkedQuaternion"/> instance is the same as another.</returns>
+	public bool Equals( INetworkable? oldValue )
+	{
+		if ( oldValue is not NetworkedQuaternion networkedQuaternion )
+			return false;
+
+		return Equals( networkedQuaternion );
 	}
 
 	/// <summary>
@@ -131,8 +150,8 @@ public struct NetworkedQuaternion : INetworkable, IEquatable<NetworkedQuaternion
 	/// <param name="writer">The writer to write to.</param>
 	public void SerializeChanges( NetworkWriter writer )
 	{
-		_oldValue = _value;
 		Serialize( writer );
+		_changed = false;
 	}
 
 	/// <summary>

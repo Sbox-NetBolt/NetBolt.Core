@@ -72,7 +72,7 @@ public static class Log
 	public static void Info( string message )
 	{
 #if !NOLOGS
-		_logger.Information( "{A}", message );
+		_logger.Information( message );
 #endif
 	}
 
@@ -173,7 +173,7 @@ public static class Log
 	public static void Warning( string message )
 	{
 #if !NOLOGS
-		_logger.Warning( "{A}", message );
+		_logger.Warning( message );
 #endif
 	}
 
@@ -274,7 +274,7 @@ public static class Log
 	public static void Error( string message )
 	{
 #if !NOLOGS
-		_logger.Error( "{A}", message );
+		_logger.Error( message );
 #endif
 	}
 
@@ -390,7 +390,7 @@ public static class Log
 	public static void Debug( string message )
 	{
 #if !NOLOGS
-		_logger.Debug( "{A}", message );
+		_logger.Debug( message );
 #endif
 	}
 
@@ -491,7 +491,7 @@ public static class Log
 	public static void Verbose( string message )
 	{
 #if !NOLOGS
-		_logger.Verbose( "{A}", message );
+		_logger.Verbose( message );
 #endif
 	}
 

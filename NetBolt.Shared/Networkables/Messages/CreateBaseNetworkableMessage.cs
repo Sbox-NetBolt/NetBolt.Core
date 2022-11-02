@@ -4,66 +4,59 @@ using NetBolt.Shared.Utility;
 namespace NetBolt.Shared.Messages;
 
 /// <summary>
-/// A server to client <see cref="NetworkMessage"/> that contains information to create a new <see cref="BaseNetworkable"/>.
+/// A server to client <see cref="NetworkMessage"/> that contains a new <see cref="ComplexNetworkable"/>.
 /// </summary>
-public sealed class CreateBaseNetworkableMessage : NetworkMessage
+public sealed class CreateComplexNetworkableMessage : NetworkMessage
 {
 	/// <summary>
-	/// The class name of the <see cref="BaseNetworkable"/>.
+	/// The <see cref="Networkables.ComplexNetworkable"/> that was created.
 	/// </summary>
-	public string BaseNetworkableClass { get; private set; } = "";
-	/// <summary>
-	/// The unique identifier the <see cref="BaseNetworkable"/> has.
-	/// </summary>
-	public int NetworkId { get; private set; }
+	public ComplexNetworkable ComplexNetworkable { get; private set; } = null!;
 
 	/// <summary>
-	/// Initializes a default instance of <see cref="CreateBaseNetworkableMessage"/>.
+	/// Initializes a default instance of <see cref="CreateComplexNetworkableMessage"/>.
 	/// </summary>
 	[ClientOnly]
-	public CreateBaseNetworkableMessage()
+	public CreateComplexNetworkableMessage()
 	{
 	}
 
 	/// <summary>
-	/// Initializes a new instance of <see cref="CreateBaseNetworkableMessage"/> with the <see cref="BaseNetworkable"/> that is being created.
+	/// Initializes a new instance of <see cref="CreateComplexNetworkableMessage"/> with the <see cref="ComplexNetworkable"/> that is being created.
 	/// </summary>
-	/// <param name="baseNetworkable">The <see cref="BaseNetworkable"/> that is being created.</param>
+	/// <param name="complexNetworkable">The <see cref="ComplexNetworkable"/> that is being created.</param>
 	[ServerOnly]
-	public CreateBaseNetworkableMessage( BaseNetworkable baseNetworkable )
+	public CreateComplexNetworkableMessage( ComplexNetworkable complexNetworkable )
 	{
-		BaseNetworkableClass = baseNetworkable.GetType().Name;
-		NetworkId = baseNetworkable.NetworkId;
+		ComplexNetworkable = complexNetworkable;
 	}
 
 	/// <summary>
-	/// Deserializes all information relating to the <see cref="CreateBaseNetworkableMessage"/>.
+	/// Deserializes all information relating to the <see cref="CreateComplexNetworkableMessage"/>.
 	/// </summary>
 	/// <param name="reader">The reader to read from.</param>
 	[ClientOnly]
 	public override void Deserialize( NetworkReader reader )
 	{
-		BaseNetworkableClass = reader.ReadString();
-		NetworkId = reader.ReadInt32();
+		ComplexNetworkable = reader.ReadNetworkable<ComplexNetworkable>();
 	}
 
 	/// <summary>
-	/// Serializes all information relating to the <see cref="CreateBaseNetworkableMessage"/>.
+	/// Serializes all information relating to the <see cref="CreateComplexNetworkableMessage"/>.
 	/// </summary>
 	/// <param name="writer">The writer to write to.</param>
 	[ServerOnly]
 	public override void Serialize( NetworkWriter writer )
 	{
-		writer.Write( BaseNetworkableClass );
-		writer.Write( NetworkId );
+		writer.Write( ComplexNetworkable );
 	}
 
 	/// <summary>
-	/// Returns a string that represents the <see cref="CreateBaseNetworkableMessage"/>.
+	/// Returns a string that represents the <see cref="CreateComplexNetworkableMessage"/>.
 	/// </summary>
-	/// <returns> string that represents the <see cref="CreateBaseNetworkableMessage"/>.</returns>
+	/// <returns> string that represents the <see cref="CreateComplexNetworkableMessage"/>.</returns>
 	public override string ToString()
 	{
-		return nameof( CreateBaseNetworkableMessage );
+		return nameof( CreateComplexNetworkableMessage );
 	}
 }

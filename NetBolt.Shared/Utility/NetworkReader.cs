@@ -53,10 +53,10 @@ public sealed class NetworkReader : BinaryReader
 	public INetworkable ReadNetworkable()
 	{
 		var typeName = ReadString();
-		var type = IGlue.Instance.TypeLibrary.GetTypeByName( typeName );
+		var type = ITypeLibrary.Instance.GetTypeByName( typeName );
 		if ( type is null )
 		{
-			IGlue.Instance.Logger.Error( "Failed to read networkable (\"{0}\" does not exist)", typeName );
+			ILogger.Instance.Error( "Failed to read networkable (\"{0}\" does not exist)", typeName );
 			return null!;
 		}
 
@@ -68,24 +68,24 @@ public sealed class NetworkReader : BinaryReader
 			for ( var i = 0; i < genericCount; i++ )
 			{
 				var genericTypeName = ReadString();
-				var genericType = IGlue.Instance.TypeLibrary.GetTypeByName( genericTypeName );
+				var genericType = ITypeLibrary.Instance.GetTypeByName( genericTypeName );
 				if ( genericType is null )
 				{
-					IGlue.Instance.Logger.Error( "Failed to read networkable (Generic argument \"{0}\" does not exist).", genericTypeName );
+					ILogger.Instance.Error( "Failed to read networkable (Generic argument \"{0}\" does not exist).", genericTypeName );
 					return null!;
 				}
 
 				genericTypes[i] = genericType;
 			}
 
-			networkable = IGlue.Instance.TypeLibrary.Create<INetworkable>( type, genericTypes );
+			networkable = ITypeLibrary.Instance.Create<INetworkable>( type, genericTypes );
 		}
 		else
-			networkable = IGlue.Instance.TypeLibrary.Create<INetworkable>( type );
+			networkable = ITypeLibrary.Instance.Create<INetworkable>( type );
 
 		if ( networkable is null )
 		{
-			IGlue.Instance.Logger.Error( "Failed to read networkable (instance creation failed)." );
+			ILogger.Instance.Error( "Failed to read networkable (instance creation failed)." );
 			return null!;
 		}
 
@@ -101,13 +101,13 @@ public sealed class NetworkReader : BinaryReader
 	/// <exception cref="InvalidOperationException">Thrown when reading the <see cref="INetworkable"/> has failed.</exception>
 	public T ReadNetworkable<T>() where T : INetworkable
 	{
-		if ( typeof( T ).IsAssignableTo( typeof( BaseNetworkable ) ) )
+		if ( typeof( T ).IsAssignableTo( typeof( ComplexNetworkable ) ) )
 			return ReadBaseNetworkable<T>();
 
 		var networkable = ReadNetworkable();
 		if ( networkable is not T outputNetworkable )
 		{
-			IGlue.Instance.Logger.Error( "Failed to read networkable ({0} is not assignable to {1}).", networkable.GetType(), typeof( T ) );
+			ILogger.Instance.Error( "Failed to read networkable ({0} is not assignable to {1}).", networkable.GetType(), typeof( T ) );
 			return default!;
 		}
 
@@ -124,47 +124,47 @@ public sealed class NetworkReader : BinaryReader
 	}
 
 	/// <summary>
-	/// Reads an instance of <see cref="BaseNetworkable"/>.
+	/// Reads an instance of <see cref="ComplexNetworkable"/>.
 	/// </summary>
-	/// <returns>The parsed <see cref="BaseNetworkable"/>.</returns>
-	/// <exception cref="InvalidOperationException">Thrown when reading the <see cref="BaseNetworkable"/> has failed.</exception>
-	public BaseNetworkable ReadBaseNetworkable()
+	/// <returns>The parsed <see cref="ComplexNetworkable"/>.</returns>
+	/// <exception cref="InvalidOperationException">Thrown when reading the <see cref="ComplexNetworkable"/> has failed.</exception>
+	public ComplexNetworkable ReadBaseNetworkable()
 	{
 		var networkId = ReadInt32();
 		var typeName = ReadString();
 
-		var type = IGlue.Instance.TypeLibrary.GetTypeByName( typeName );
+		var type = ITypeLibrary.Instance.GetTypeByName( typeName );
 		if ( type is null )
 		{
-			IGlue.Instance.Logger.Error( "Failed to read {0} (\"{1}\" does not exist)", nameof( BaseNetworkable ), typeName );
+			ILogger.Instance.Error( "Failed to read {0} (\"{1}\" does not exist)", nameof( ComplexNetworkable ), typeName );
 			return null!;
 		}
 
-		var baseNetworkable = IGlue.Instance.TypeLibrary.Create<BaseNetworkable?>( type );
-		if ( baseNetworkable is null )
+		var complexNetworkable = ITypeLibrary.Instance.Create<ComplexNetworkable?>( type );
+		if ( complexNetworkable is null )
 		{
-			IGlue.Instance.Logger.Error( "Failed to read {0} (instance creation failed).", nameof( BaseNetworkable ) );
+			ILogger.Instance.Error( "Failed to read {0} (instance creation failed).", nameof( ComplexNetworkable ) );
 			return null!;
 		}
 		else
-			baseNetworkable.NetworkId = networkId;
+			complexNetworkable.NetworkId = networkId;
 
-		baseNetworkable.Deserialize( this );
-		return baseNetworkable;
+		complexNetworkable.Deserialize( this );
+		return complexNetworkable;
 	}
 
 	/// <summary>
-	/// Reads an instance of <see cref="BaseNetworkable"/> and casts it to <see ref="T"/>.
+	/// Reads an instance of <see cref="ComplexNetworkable"/> and casts it to <see ref="T"/>.
 	/// </summary>
-	/// <typeparam name="T">The <see cref="BaseNetworkable"/> type to cast into.</typeparam>
-	/// <returns>The parsed <see cref="BaseNetworkable"/>.</returns>
-	/// <exception cref="InvalidOperationException">Thrown when reading the <see cref="BaseNetworkable"/> has failed.</exception>
+	/// <typeparam name="T">The <see cref="ComplexNetworkable"/> type to cast into.</typeparam>
+	/// <returns>The parsed <see cref="ComplexNetworkable"/>.</returns>
+	/// <exception cref="InvalidOperationException">Thrown when reading the <see cref="ComplexNetworkable"/> has failed.</exception>
 	public T ReadBaseNetworkable<T>()
 	{
-		var baseNetworkable = ReadBaseNetworkable();
-		if ( baseNetworkable is not T expectedType )
+		var complexNetworkable = ReadBaseNetworkable();
+		if ( complexNetworkable is not T expectedType )
 		{
-			IGlue.Instance.Logger.Error( "Failed to read {0} ({1} is not assignable to {2})", nameof( BaseNetworkable ), baseNetworkable.GetType(), typeof( T ) );
+			ILogger.Instance.Error( "Failed to read {0} ({1} is not assignable to {2})", nameof( ComplexNetworkable ), complexNetworkable.GetType(), typeof( T ) );
 			return default!;
 		}
 

@@ -13,17 +13,17 @@ namespace NetBolt.Shared;
 public interface INetBoltServer
 {
 	/// <summary>
-	/// Invoked when a <see cref="BaseNetworkable"/> has been created.
+	/// Invoked when a <see cref="ComplexNetworkable"/> has been created.
 	/// </summary>
-	/// <param name="baseNetworkable">The base networkable that was created.</param>
+	/// <param name="complexNetworkable">The base networkable that was created.</param>
 	[ServerOnly]
-	void OnBaseNetworkableCreated( BaseNetworkable baseNetworkable );
+	void OnBaseNetworkableCreated( ComplexNetworkable complexNetworkable );
 	/// <summary>
-	/// Invoked when a <see cref="BaseNetworkable"/> has been deleted.
+	/// Invoked when a <see cref="ComplexNetworkable"/> has been deleted.
 	/// </summary>
-	/// <param name="baseNetworkable">The base networkable that was deleted.</param>
+	/// <param name="complexNetworkable">The base networkable that was deleted.</param>
 	[ServerOnly]
-	void OnBaseNetworkableDeleted( BaseNetworkable baseNetworkable );
+	void OnBaseNetworkableDeleted( ComplexNetworkable complexNetworkable );
 
 	/// <summary>
 	/// Sends a message to a client.
@@ -39,4 +39,9 @@ public interface INetBoltServer
 	/// <param name="message">The message to send.</param>
 	[ServerOnly]
 	void Send( IEnumerable<INetworkClient> clients, NetworkMessage message );
+
+	/// <summary>
+	/// The instance to access for server glue functionality.
+	/// </summary>
+	public static INetBoltServer Instance { get; internal set; } = null!;
 }

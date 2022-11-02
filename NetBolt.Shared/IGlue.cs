@@ -70,5 +70,20 @@ public interface IGlue
 	/// <summary>
 	/// The instance to access for glue functionality.
 	/// </summary>
-	public static IGlue Instance { get; set; } = null!;
+	public static IGlue Instance
+	{
+		get => instance;
+		set
+		{
+			instance = value;
+			ILogger.Instance = value.Logger;
+			ITypeLibrary.Instance = value.TypeLibrary;
+			INetBoltServer.Instance = value.Server;
+			INetBoltClient.Instance = value.Client;
+		}
+	}
+	/// <summary>
+	/// See <see cref="Instance"/>.
+	/// </summary>
+	private static IGlue instance = null!;
 }

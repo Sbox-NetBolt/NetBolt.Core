@@ -26,7 +26,7 @@ public partial class NetworkEntity
 
 			var value = property.GetValue( this ) as INetworkable;
 			value?.Lerp( fraction, values.Item1, values.Item2 );
-			if ( IGlue.Instance.TypeLibrary.IsStruct( property.PropertyType ) )
+			if ( ITypeLibrary.Instance.IsStruct( property.PropertyType ) )
 				property.SetValue( this, value );
 		}
 	}

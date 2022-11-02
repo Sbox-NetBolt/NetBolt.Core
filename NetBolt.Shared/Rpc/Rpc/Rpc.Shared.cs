@@ -19,17 +19,17 @@ public static partial class Rpc
 	public static readonly Dictionary<Guid, RpcCallResponseMessage> Responses = new();
 
 	/// <summary>
-	/// Executes an RPC relating to a <see cref="BaseNetworkable"/> instance.
+	/// Executes an RPC relating to a <see cref="ComplexNetworkable"/> instance.
 	/// </summary>
-	/// <param name="baseNetworkable">The <see cref="BaseNetworkable"/> instance to call the RPC on.</param>
+	/// <param name="complexNetworkable">The <see cref="ComplexNetworkable"/> instance to call the RPC on.</param>
 	/// <param name="methodName">The name of the method to call.</param>
 	/// <param name="parameters">The parameters to pass to the method.</param>
-	public static void Call( BaseNetworkable baseNetworkable, string methodName, params INetworkable[] parameters )
+	public static void Call( ComplexNetworkable complexNetworkable, string methodName, params INetworkable[] parameters )
 	{
 		if ( Realm.IsClient )
-			IGlue.Instance.Client.SendToServer( CreateRpc( false, baseNetworkable, methodName, parameters ) );
+			INetBoltClient.Instance.SendToServer( CreateRpc( false, complexNetworkable, methodName, parameters ) );
 		else
-			Call( INetworkClient.All, baseNetworkable, methodName, parameters );
+			Call( INetworkClient.All, complexNetworkable, methodName, parameters );
 	}
 
 	/// <summary>
@@ -41,7 +41,7 @@ public static partial class Rpc
 	public static void Call( Type type, string methodName, params INetworkable[] parameters )
 	{
 		if ( Realm.IsClient )
-			IGlue.Instance.Client.SendToServer( CreateRpc( false, type, methodName, parameters ) );
+			INetBoltClient.Instance.SendToServer( CreateRpc( false, type, methodName, parameters ) );
 		else
 			Call( INetworkClient.All, type, methodName, parameters );
 	}
@@ -50,14 +50,14 @@ public static partial class Rpc
 	/// Creates an RPC call message for an entity.
 	/// </summary>
 	/// <param name="respondable">Whether or not the RPC is expecting a response.</param>
-	/// <param name="baseNetworkable">The <see cref="BaseNetworkable"/> that is the target of the RPC.</param>
+	/// <param name="complexNetworkable">The <see cref="ComplexNetworkable"/> that is the target of the RPC.</param>
 	/// <param name="methodName">The name of the method to call.</param>
 	/// <param name="parameters">The parameters to pass to the method.</param>
 	/// <returns>The built RPC message.</returns>
-	private static RpcCallMessage CreateRpc( bool respondable, BaseNetworkable baseNetworkable, string methodName,
+	private static RpcCallMessage CreateRpc( bool respondable, ComplexNetworkable complexNetworkable, string methodName,
 		INetworkable[] parameters )
 	{
-		return new RpcCallMessage( respondable, baseNetworkable.GetType(), baseNetworkable, methodName, parameters );
+		return new RpcCallMessage( respondable, complexNetworkable.GetType(), complexNetworkable, methodName, parameters );
 	}
 
 	/// <summary>
@@ -87,7 +87,7 @@ public static partial class Rpc
 		Responses.Remove( callGuid, out var response );
 		if ( response is null )
 		{
-			IGlue.Instance.Logger.Error( "Failed to return RPC response (\"{0}\" became invalid unexpectedly).", callGuid );
+			ILogger.Instance.Error( "Failed to return RPC response (\"{0}\" became invalid unexpectedly).", callGuid );
 			return default!;
 		}
 

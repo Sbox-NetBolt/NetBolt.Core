@@ -9,11 +9,25 @@ namespace NetBolt.Shared.Messages;
 /// </summary>
 public abstract class NetworkMessage : INetworkable
 {
+	/// <inheritdoc/>
+	public int NetworkId => 0;
+	/// <inheritdoc/>
+	public bool SupportEquals => false;
+	/// <inheritdoc/>
+	public bool SupportLerp => false;
+
 	/// <summary>
 	/// Network messages can never "change"
 	/// </summary>
 	/// <returns>False</returns>
 	public bool Changed() => false;
+
+	/// <summary>
+	/// Returns whether or not the <see cref="NetworkMessage"/> instance is the same as another.
+	/// </summary>
+	/// <param name="oldValue">The old value.</param>
+	/// <returns>Whether or not the <see cref="NetworkMessage"/> instance is the same as another.</returns>
+	public bool Equals( INetworkable? oldValue ) => false;
 
 	/// <summary>
 	/// Lerps a <see cref="NetworkMessage"/> between two values.
