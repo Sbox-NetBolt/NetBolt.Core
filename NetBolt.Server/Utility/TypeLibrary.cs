@@ -1,20 +1,22 @@
-﻿using NetBolt.Shared;
+﻿using NetBolt.Server.Glue;
+using NetBolt.Shared;
+using NetBolt.Shared.Networkables;
 using NetBolt.Shared.Utility;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace NetBolt.Server.Glue;
+namespace NetBolt.Server.Utility;
 
 /// <summary>
 /// The glue required for reflection actions in NetBolt.
 /// </summary>
-public class TypeGlue : ITypeLibrary
+public class TypeLibrary : ITypeLibrary
 {
 	/// <summary>
-	/// The singleton instance of <see cref="TypeGlue"/>.
+	/// The singleton instance of <see cref="TypeLibrary"/>.
 	/// </summary>
-	public static TypeGlue Instance = null!;
+	public static TypeLibrary Instance = null!;
 
 	/// <summary>
 	/// The assembly to search for types.
@@ -24,11 +26,15 @@ public class TypeGlue : ITypeLibrary
 	/// A cache of type names mapped to their C# type.
 	/// </summary>
 	private readonly Dictionary<string, Type> TypeNameCache = new();
+	/// <summary>
+	/// A cache containing all types that derive from <see cref="INetworkable"/> with a unique number attached.
+	/// </summary>
+	private Dictionary<Type, ushort> NetworkableTypeCache = null!;
 
 	/// <summary>
-	/// Initializes a default instance of <see cref="TypeGlue"/>.
+	/// Initializes a default instance of <see cref="TypeLibrary"/>.
 	/// </summary>
-	internal TypeGlue()
+	internal TypeLibrary()
 	{
 		Instance = this;
 		AddAssembly( Assembly.GetExecutingAssembly() );
@@ -78,11 +84,44 @@ public class TypeGlue : ITypeLibrary
 	}
 
 	/// <inheritdoc/>
+	public IEnumerable<Type> GetAllNetworkableTypes()
+	{
+		if ( NetworkableTypeCache is not null )
+		{
+			foreach ( var (type, _) in NetworkableTypeCache )
+				yield return type;
+		}
+
+		NetworkableTypeCache = new();
+		ushort i = 1;
+		foreach ( var assembly in Assemblies )
+		{
+			foreach ( var type in assembly.DefinedTypes )
+			{
+				if ( !type.IsAssignableTo( typeof( INetworkable ) ) )
+					continue;
+
+				if ( i == 0 )
+					Log.Error( "Ran out of networkable type indices" );
+
+				NetworkableTypeCache.Add( type, i++ );
+				yield return type;
+			}
+		}
+	}
+
+	/// <inheritdoc/>
 	public IEnumerable<IProperty> GetAllProperties( Type type )
 	{
 		var properties = type.GetProperties( BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic );
 		foreach ( var property in properties )
 			yield return new PropertyInfoWrapper( property );
+	}
+
+	/// <inheritdoc/>
+	public Type[] GetGenericArguments( Type type )
+	{
+		return type.GetGenericArguments();
 	}
 
 	/// <inheritdoc/>
@@ -93,9 +132,9 @@ public class TypeGlue : ITypeLibrary
 	}
 
 	/// <inheritdoc/>
-	public Type[] GetGenericArguments( Type type )
+	public Type? GetNetworkableTypeByIdentifier( ushort identifier )
 	{
-		return type.GetGenericArguments();
+		
 	}
 
 	/// <inheritdoc/>
@@ -129,5 +168,10 @@ public class TypeGlue : ITypeLibrary
 	public bool IsStruct( Type type )
 	{
 		return type.IsValueType && !type.IsEnum;
+	}
+
+	public ushort GetIdentifierFromNetworkableType( Type type )
+	{
+		throw new NotImplementedException();
 	}
 }

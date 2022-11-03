@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -148,7 +149,7 @@ public class NetBoltGame
 		Log.Info( "{A} has connected", client );
 
 		var toClient = ToExtensions.Single( client );
-		GameServer.Instance.QueueSend( toClient, new WelcomeMessage( Options.TickRate, Options.WelcomeMessage ) );
+		GameServer.Instance.QueueSend( toClient, new WelcomeMessage( Options.TickRate, Options.WelcomeMessage, NetworkableTypeCache ) );
 		GameServer.Instance.QueueSend( toClient, new ClientListMessage( GameServer.Instance.Clients ) );
 		GameServer.Instance.QueueSend( toClient, new ComplexNetworkableListMessage( ComplexNetworkable.All ) );
 		GameServer.Instance.QueueSend( ToExtensions.AllExcept( client ), new ClientStateChangedMessage( client, ClientState.Connected ) );
@@ -261,7 +262,7 @@ public class NetBoltGame
 		if ( message is not RpcCallMessage rpcCall )
 			return;
 
-		var type = TypeGlue.Instance.GetTypeByName( rpcCall.ClassName );
+		var type = TypeLibrary.Instance.GetTypeByName( rpcCall.ClassName );
 		if ( type is null )
 			throw new InvalidOperationException( $"Failed to handle RPC call (\"{rpcCall.ClassName}\" doesn't exist in any accessible assemblies)." );
 

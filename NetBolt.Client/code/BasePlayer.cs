@@ -2,7 +2,6 @@
 using NetBolt.Shared.Clients;
 using NetBolt.Shared.Entities;
 using NetBolt.Shared.Networkables.Builtin;
-using NetBolt.Shared.RemoteProcedureCalls;
 using Sandbox;
 using System.Numerics;
 

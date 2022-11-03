@@ -1,4 +1,5 @@
-﻿using NetBolt.Shared;
+﻿using NetBolt.Server.Utility;
+using NetBolt.Shared;
 using NetBolt.Shared.Clients;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,7 @@ public class ServerGlue : IGlue
 	/// <summary>
 	/// The type glue.
 	/// </summary>
-	private readonly TypeGlue _typeGlue = new();
+	private readonly TypeLibrary _typeGlue = new();
 
 	/// <inheritdoc/>
 	public virtual INetBoltServer Server => _serverSpecificGlue;

@@ -2,7 +2,6 @@
 using NetBolt.Shared.Networkables.Builtin;
 using NetBolt.Shared.RemoteProcedureCalls;
 using NetBolt.Shared.Utility;
-using System.Threading.Tasks;
 
 namespace NetBolt.Shared;
 

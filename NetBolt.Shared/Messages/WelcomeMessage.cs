@@ -1,4 +1,6 @@
 using NetBolt.Shared.Utility;
+using System;
+using System.Collections.Generic;
 
 namespace NetBolt.Shared.Messages;
 
@@ -15,6 +17,10 @@ public sealed class WelcomeMessage : NetworkMessage
 	/// A welcome message for the client.
 	/// </summary>
 	public string Message { get; private set; } = "";
+	/// <summary>
+	/// A cache containing all potentially networkable types with an integer to represent them in data.
+	/// </summary>
+	public IReadOnlyDictionary<Type, ushort> TypeCacheMap = null!;
 
 	/// <summary>
 	/// Initializes a default instance of <see cref="WelcomeMessage"/>.
@@ -27,13 +33,15 @@ public sealed class WelcomeMessage : NetworkMessage
 	/// <summary>
 	/// Initializes a new instance of <see cref="WelcomeMessage"/> with the servers tick rate and a welcome message to the client.
 	/// </summary>
-	/// <param name="tickRate"></param>
-	/// <param name="message"></param>
+	/// <param name="tickRate">The target tick rate of the server.</param>
+	/// <param name="message">A welcome message for the client.</param>
+	/// <param name="typeCacheMap">A cache containing all potentially networkable types.</param>
 	[ServerOnly]
-	public WelcomeMessage( int tickRate, string message )
+	public WelcomeMessage( int tickRate, string message, IReadOnlyDictionary<Type, ushort> typeCacheMap )
 	{
 		TickRate = tickRate;
 		Message = message;
+		TypeCacheMap = typeCacheMap;
 	}
 
 	/// <summary>
@@ -45,6 +53,22 @@ public sealed class WelcomeMessage : NetworkMessage
 	{
 		TickRate = reader.ReadInt32();
 		Message = reader.ReadString();
+
+		var typeCacheMap = new Dictionary<Type, int>();
+		var cacheCount = reader.ReadInt32();
+		for ( var i = 0; i < cacheCount; i++ )
+		{
+			var typeName = reader.ReadString();
+			var type = ITypeLibrary.Instance.GetTypeByName( typeName );
+			if ( type is null )
+			{
+				ILogger.Instance.Error( "Failed to find type with name \"{0}\"", typeName );
+				reader.ReadInt32();
+				continue;
+			}
+
+			typeCacheMap.Add( type, reader.ReadUInt16() );
+		}
 	}
 
 	/// <summary>
@@ -56,6 +80,13 @@ public sealed class WelcomeMessage : NetworkMessage
 	{
 		writer.Write( TickRate );
 		writer.Write( Message );
+
+		writer.Write( TypeCacheMap.Count );
+		foreach ( var (type, id) in TypeCacheMap )
+		{
+			writer.Write( type.FullName ?? type.Name );
+			writer.Write( id );
+		}
 	}
 
 	/// <summary>

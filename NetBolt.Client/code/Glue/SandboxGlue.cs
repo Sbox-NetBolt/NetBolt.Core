@@ -124,6 +124,13 @@ internal class SandboxGlue : IGlue
 		}
 
 		/// <inheritdoc/>
+		public IEnumerable<Type> GetAllNetworkableTypes()
+		{
+			foreach ( var description in GlobalGameNamespace.TypeLibrary.GetDescriptions<INetworkable>() )
+				yield return description.TargetType;
+		}
+
+		/// <inheritdoc/>
 		public IEnumerable<IProperty> GetAllProperties( Type type )
 		{
 			foreach ( var property in GlobalGameNamespace.TypeLibrary.GetDescription( type ).Properties )
@@ -151,6 +158,10 @@ internal class SandboxGlue : IGlue
 		/// <inheritdoc/>
 		public Type? GetTypeByName( string typeName )
 		{
+			// TODO: Support full name when fixed https://github.com/sboxgame/issues/issues/2413.
+			if ( typeName.Contains( '.' ) )
+				typeName = typeName.Split( '.' )[^1];
+
 			return GlobalGameNamespace.TypeLibrary.GetDescription( typeName ).TargetType;
 		}
 

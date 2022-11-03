@@ -46,40 +46,92 @@ public sealed class NetworkReader : BinaryReader
 	}
 
 	/// <summary>
+	/// Reads a type.
+	/// </summary>
+	/// <param name="genericArguments">The generic arguments that were alongside the base type.</param>
+	/// <returns>The base type.</returns>
+	public Type ReadType( out Type[] genericArguments )
+	{
+		Type? type;
+		if ( ReadBoolean() )
+		{
+			var typeIdentifier = ReadUInt16();
+			type = ITypeLibrary.Instance.GetNetworkableTypeByIdentifier( typeIdentifier );
+
+			if ( type is null )
+			{
+				ILogger.Instance.Error( "Failed to read type (type with identifier {0} was not found)", typeIdentifier );
+				genericArguments = null!;
+				return null!;
+			}
+		}
+		else
+		{
+			var typeName = ReadString();
+			type = ITypeLibrary.Instance.GetTypeByName( typeName );
+
+			if ( type is null )
+			{
+				ILogger.Instance.Error( "Failed to read type (type with name \"{0}\" was not found)", typeName );
+				genericArguments = null!;
+					return null!;
+			}
+		}
+
+		if ( type.IsGenericType )
+		{
+			var genericCount = ReadInt32();
+			genericArguments = new Type[genericCount];
+			for ( var i = 0; i < genericCount; i++ )
+			{
+				Type? genericType;
+				if ( ReadBoolean() )
+				{
+					var genericTypeIdentifier = ReadUInt16();
+					genericType = ITypeLibrary.Instance.GetNetworkableTypeByIdentifier( genericTypeIdentifier );
+
+					if ( genericType is null )
+					{
+						ILogger.Instance.Error( "Failed to read type (generic argument #{0} with identifier {1} was not found)", i + 1, genericTypeIdentifier );
+						genericArguments = null!;
+						return null!;
+					}
+				}
+				else
+				{
+					var genericTypeName = ReadString();
+					genericType = ITypeLibrary.Instance.GetTypeByName( genericTypeName );
+
+					if ( genericType is null )
+					{
+						ILogger.Instance.Error( "Failed to read type (generic argument #{0} with name \"{1}\" was not found)", i + 1, genericTypeName );
+						genericArguments = null!;
+						return null!;
+					}
+				}
+
+				genericArguments[i] = genericType;
+			}
+
+			return type;
+		}
+
+		genericArguments = Array.Empty<Type>();
+		return type;
+	}
+
+	/// <summary>
 	/// Reads an instance of <see cref="INetworkable"/>.
 	/// </summary>
 	/// <returns>The parsed <see cref="INetworkable"/>.</returns>
 	/// <exception cref="InvalidOperationException">Thrown when reading the <see cref="INetworkable"/> has failed.</exception>
 	public INetworkable ReadNetworkable()
 	{
-		var typeName = ReadString();
-		var type = ITypeLibrary.Instance.GetTypeByName( typeName );
-		if ( type is null )
-		{
-			ILogger.Instance.Error( "Failed to read networkable (\"{0}\" does not exist)", typeName );
-			return null!;
-		}
+		var type = ReadType( out var genericArguments );
 
 		INetworkable? networkable;
-		if ( type.IsGenericType )
-		{
-			var genericCount = ReadInt32();
-			var genericTypes = new Type[genericCount];
-			for ( var i = 0; i < genericCount; i++ )
-			{
-				var genericTypeName = ReadString();
-				var genericType = ITypeLibrary.Instance.GetTypeByName( genericTypeName );
-				if ( genericType is null )
-				{
-					ILogger.Instance.Error( "Failed to read networkable (Generic argument \"{0}\" does not exist).", genericTypeName );
-					return null!;
-				}
-
-				genericTypes[i] = genericType;
-			}
-
-			networkable = ITypeLibrary.Instance.Create<INetworkable>( type, genericTypes );
-		}
+		if ( genericArguments.Length > 0 )
+			networkable = ITypeLibrary.Instance.Create<INetworkable>( type, genericArguments );
 		else
 			networkable = ITypeLibrary.Instance.Create<INetworkable>( type );
 
@@ -131,16 +183,14 @@ public sealed class NetworkReader : BinaryReader
 	public ComplexNetworkable ReadComplexNetworkable()
 	{
 		var networkId = ReadInt32();
-		var typeName = ReadString();
+		var type = ReadType( out var genericArguments );
 
-		var type = ITypeLibrary.Instance.GetTypeByName( typeName );
-		if ( type is null )
-		{
-			ILogger.Instance.Error( "Failed to read {0} (\"{1}\" does not exist)", nameof( ComplexNetworkable ), typeName );
-			return null!;
-		}
+		ComplexNetworkable? complexNetworkable;
+		if ( genericArguments.Length > 0 )
+			complexNetworkable = ITypeLibrary.Instance.Create<ComplexNetworkable?>( type, genericArguments );
+		else
+			complexNetworkable = ITypeLibrary.Instance.Create<ComplexNetworkable?>( type );
 
-		var complexNetworkable = ITypeLibrary.Instance.Create<ComplexNetworkable?>( type );
 		if ( complexNetworkable is null )
 		{
 			ILogger.Instance.Error( "Failed to read {0} (instance creation failed).", nameof( ComplexNetworkable ) );
