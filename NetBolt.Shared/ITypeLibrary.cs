@@ -47,7 +47,7 @@ public interface ITypeLibrary
 	/// Gets the cache identifier for the provided <see cref="INetworkable"/> derived type.
 	/// </summary>
 	/// <param name="type">The type to get the identifier of.</param>
-	/// <returns>The identifier of the type.</returns>
+	/// <returns>The identifier of the type. 0 if invalid.</returns>
 	ushort GetIdentifierFromNetworkableType( Type type );
 	/// <summary>
 	/// Gets a method by its name and type it is a member of.

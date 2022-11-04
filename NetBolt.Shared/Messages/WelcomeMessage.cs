@@ -20,7 +20,7 @@ public sealed class WelcomeMessage : NetworkMessage
 	/// <summary>
 	/// A cache containing all potentially networkable types with an integer to represent them in data.
 	/// </summary>
-	public IReadOnlyDictionary<Type, ushort> TypeCacheMap = null!;
+	public IReadOnlyDictionary<Type, ushort> TypeCacheMap { get; private set; } = null!;
 
 	/// <summary>
 	/// Initializes a default instance of <see cref="WelcomeMessage"/>.
@@ -54,7 +54,7 @@ public sealed class WelcomeMessage : NetworkMessage
 		TickRate = reader.ReadInt32();
 		Message = reader.ReadString();
 
-		var typeCacheMap = new Dictionary<Type, int>();
+		var typeCacheMap = new Dictionary<Type, ushort>();
 		var cacheCount = reader.ReadInt32();
 		for ( var i = 0; i < cacheCount; i++ )
 		{
@@ -69,6 +69,8 @@ public sealed class WelcomeMessage : NetworkMessage
 
 			typeCacheMap.Add( type, reader.ReadUInt16() );
 		}
+
+		TypeCacheMap = typeCacheMap;
 	}
 
 	/// <summary>

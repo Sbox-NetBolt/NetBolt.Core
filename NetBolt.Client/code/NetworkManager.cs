@@ -81,6 +81,11 @@ public sealed class NetworkManager
 	public int Port { get; private set; }
 
 	/// <summary>
+	/// A cache containing all types that derive from <see cref="INetworkable"/> with a unique number attached.
+	/// </summary>
+	public IReadOnlyDictionary<Type, ushort> NetworkableTypeCache { get; private set; } = null!;
+
+	/// <summary>
 	/// The delegate for handling when the client has connected to a server.
 	/// </summary>
 	public delegate void ConnectedEventHandler();
@@ -467,6 +472,7 @@ public sealed class NetworkManager
 
 		TickRate = welcomeMessage.TickRate;
 		ClientChatBox.AddInformation( welcomeMessage.Message );
+		NetworkableTypeCache = welcomeMessage.TypeCacheMap;
 	}
 
 	/// <summary>

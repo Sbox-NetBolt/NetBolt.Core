@@ -27,7 +27,7 @@ public static class Program
 		var options = new GameOptions()
 			.WithTickRate( 60 )
 			.WithWelcomeMessage( "Welcome to the server!" )
-			.WithLogLevel( LogEventLevel.Information );
+			.WithLogLevel( LogEventLevel.Verbose );
 
 		_game = new NetBoltGame( options );
 		_game.Start();

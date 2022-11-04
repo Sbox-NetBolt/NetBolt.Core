@@ -1,5 +1,6 @@
 ﻿using NetBolt.Server.Glue;
 using NetBolt.Shared;
+using NetBolt.Shared.Messages;
 using NetBolt.Shared.Networkables;
 using NetBolt.Shared.Utility;
 using System;
@@ -29,7 +30,7 @@ public class TypeLibrary : ITypeLibrary
 	/// <summary>
 	/// A cache containing all types that derive from <see cref="INetworkable"/> with a unique number attached.
 	/// </summary>
-	private Dictionary<Type, ushort> NetworkableTypeCache = null!;
+	private Dictionary<Type, ushort>? NetworkableTypeCache = null;
 
 	/// <summary>
 	/// Initializes a default instance of <see cref="TypeLibrary"/>.
@@ -51,6 +52,35 @@ public class TypeLibrary : ITypeLibrary
 	public void AddAssembly( Assembly assembly )
 	{
 		Assemblies.Add( assembly );
+	}
+
+	/// <summary>
+	/// Gets the internal dictionary for cached networkable types.
+	/// </summary>
+	public IReadOnlyDictionary<Type, ushort> GetNetworkableDictionary()
+	{
+		if ( NetworkableTypeCache is null )
+			CacheNetworkableTypes();
+
+		return NetworkableTypeCache!;
+	}
+
+	/// <summary>
+	/// Resets the <see cref="NetworkableTypeCache"/>. Used for when adding new assmeblies and needing to flush the cache.
+	/// </summary>
+	public void ResetNetworkableTypeCache()
+	{
+		NetworkableTypeCache = null!;
+	}
+
+	/// <summary>
+	/// Caches the <see cref="NetworkableTypeCache"/>.
+	/// </summary>
+	internal void CacheNetworkableTypes()
+	{
+		foreach ( var _ in GetAllNetworkableTypes() )
+		{
+		}
 	}
 
 	/// <inheritdoc/>
@@ -125,6 +155,24 @@ public class TypeLibrary : ITypeLibrary
 	}
 
 	/// <inheritdoc/>
+	public ushort GetIdentifierFromNetworkableType( Type type )
+	{
+		if ( !type.IsAssignableTo( typeof( INetworkable ) ) )
+		{
+			Log.Error( $"{type} does not implement {typeof( INetworkable )}" );
+			return 0;
+		}
+
+		if ( NetworkableTypeCache is null )
+			CacheNetworkableTypes();
+
+		if ( type.IsConstructedGenericType )
+			return NetworkableTypeCache![type.GetGenericTypeDefinition()];
+
+		return NetworkableTypeCache![type];
+	}
+
+	/// <inheritdoc/>
 	public IMethod? GetMethodByName( Type type, string methodName )
 	{
 		var method = type.GetMethod( methodName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic );
@@ -134,7 +182,16 @@ public class TypeLibrary : ITypeLibrary
 	/// <inheritdoc/>
 	public Type? GetNetworkableTypeByIdentifier( ushort identifier )
 	{
-		
+		if ( NetworkableTypeCache is null )
+			CacheNetworkableTypes();
+
+		foreach ( var (type, id) in NetworkableTypeCache! )
+		{
+			if ( id == identifier )
+				return type;
+		}
+
+		return null;
 	}
 
 	/// <inheritdoc/>
@@ -168,10 +225,5 @@ public class TypeLibrary : ITypeLibrary
 	public bool IsStruct( Type type )
 	{
 		return type.IsValueType && !type.IsEnum;
-	}
-
-	public ushort GetIdentifierFromNetworkableType( Type type )
-	{
-		throw new NotImplementedException();
 	}
 }

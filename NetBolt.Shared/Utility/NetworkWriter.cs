@@ -10,12 +10,16 @@ namespace NetBolt.Shared.Utility;
 /// </summary>
 public sealed class NetworkWriter : BinaryWriter
 {
+	private readonly bool UsingCachedTypes;
+
 	/// <summary>
 	/// Initializes a new instance of <see cref="NetworkWriter"/> with the <see cref="Stream"/> to write to.
 	/// </summary>
 	/// <param name="output">The underlying <see cref="Stream"/> to write to.</param>
-	public NetworkWriter( Stream output ) : base( output )
+	/// <param name="useCachedTypes">Whether or not to use cached <see cref="INetworkable"/> types.</param>
+	public NetworkWriter( Stream output, bool useCachedTypes = true ) : base( output )
 	{
+		UsingCachedTypes = useCachedTypes;
 	}
 
 	/// <summary>
@@ -56,7 +60,7 @@ public sealed class NetworkWriter : BinaryWriter
 	/// <param name="type">The type to write.</param>
 	public void Write( Type type )
 	{
-		var isNetworkableType = type.IsAssignableTo( typeof( INetworkable ) );
+		var isNetworkableType = type.IsAssignableTo( typeof( INetworkable ) ) && UsingCachedTypes;
 		Write( isNetworkableType );
 
 		if ( isNetworkableType )

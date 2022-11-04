@@ -149,7 +149,7 @@ public class NetBoltGame
 		Log.Info( "{A} has connected", client );
 
 		var toClient = ToExtensions.Single( client );
-		GameServer.Instance.QueueSend( toClient, new WelcomeMessage( Options.TickRate, Options.WelcomeMessage, NetworkableTypeCache ) );
+		GameServer.Instance.QueueSend( toClient, new WelcomeMessage( Options.TickRate, Options.WelcomeMessage, TypeLibrary.Instance.GetNetworkableDictionary() ) );
 		GameServer.Instance.QueueSend( toClient, new ClientListMessage( GameServer.Instance.Clients ) );
 		GameServer.Instance.QueueSend( toClient, new ComplexNetworkableListMessage( ComplexNetworkable.All ) );
 		GameServer.Instance.QueueSend( ToExtensions.AllExcept( client ), new ClientStateChangedMessage( client, ClientState.Connected ) );
