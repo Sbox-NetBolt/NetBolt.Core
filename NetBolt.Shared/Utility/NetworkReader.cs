@@ -74,7 +74,7 @@ public sealed class NetworkReader : BinaryReader
 			{
 				ILogger.Instance.Error( "Failed to read type (type with name \"{0}\" was not found)", typeName );
 				genericArguments = null!;
-					return null!;
+				return null!;
 			}
 		}
 
