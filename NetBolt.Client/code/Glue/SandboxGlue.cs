@@ -117,10 +117,14 @@ internal class SandboxGlue : IGlue
 		/// <inheritdoc/>
 		public T? Create<T>( Type type, Type[] genericTypes )
 		{
-			Log.Info( type );
-			foreach ( var genType in genericTypes )
-				Log.Info( genType );
 			return GlobalGameNamespace.TypeLibrary.GetDescription( type ).CreateGeneric<T>( genericTypes );
+		}
+
+		/// <inheritdoc/>
+		public IEnumerable<Type> GetAllNetworkableTypes()
+		{
+			foreach ( var description in GlobalGameNamespace.TypeLibrary.GetDescriptions<INetworkable>() )
+				yield return description.TargetType;
 		}
 
 		/// <inheritdoc/>
@@ -137,6 +141,18 @@ internal class SandboxGlue : IGlue
 		}
 
 		/// <inheritdoc/>
+		public ushort GetIdentifierFromNetworkableType( Type type )
+		{
+			if ( !type.IsAssignableTo( typeof( INetworkable ) ) )
+			{
+				Log.Error( $"{type} does not implement {typeof( INetworkable )}" );
+				return 0;
+			}
+
+			return NetworkManager.Instance.NetworkableTypeCache[type];
+		}
+
+		/// <inheritdoc/>
 		public IMethod? GetMethodByName( Type type, string methodName )
 		{
 			foreach ( var method in GlobalGameNamespace.TypeLibrary.FindStaticMethods( methodName ) )
@@ -149,8 +165,25 @@ internal class SandboxGlue : IGlue
 		}
 
 		/// <inheritdoc/>
+		public Type? GetNetworkableTypeByIdentifier( ushort identifier )
+		{
+			foreach ( var (type, id) in NetworkManager.Instance.NetworkableTypeCache )
+			{
+				if ( id == identifier )
+					return type;
+			}
+
+			return null;
+		}
+
+		/// <inheritdoc/>
 		public Type? GetTypeByName( string typeName )
 		{
+			// TODO: Support full name when fixed https://github.com/sboxgame/issues/issues/2413.
+			if ( typeName.Contains( '.' ) )
+				typeName = typeName.Split( '.' )[^1];
+
+			Log.Info( typeName );
 			return GlobalGameNamespace.TypeLibrary.GetDescription( typeName ).TargetType;
 		}
 

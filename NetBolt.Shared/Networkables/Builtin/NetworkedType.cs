@@ -86,16 +86,8 @@ public class NetworkedType : INetworkable, IEquatable<NetworkedType>
 	/// <param name="reader">The reader to read from.</param>
 	public void Deserialize( NetworkReader reader )
 	{
-		var typeName = reader.ReadString();
-		var type = ITypeLibrary.Instance.GetTypeByName( typeName );
-
-		if ( type is not null )
-			Value = type;
-		else
-		{
-			Value = typeof( object );
-			ILogger.Instance.Error( "No type with the name \"{0}\" exists", typeName );
-		}
+		// TODO: Support creating generic types once S&box fixes it: 
+		Value = reader.ReadType( out _ );
 	}
 
 	/// <summary>
@@ -113,8 +105,7 @@ public class NetworkedType : INetworkable, IEquatable<NetworkedType>
 	/// <param name="writer">The writer to write to.</param>
 	public void Serialize( NetworkWriter writer )
 	{
-		// TODO: Use FullName once S&box supports finding types by full name. https://github.com/Facepunch/sbox-issues/issues/2413
-		writer.Write( Value.Name );
+		writer.Write( Value );
 	}
 
 	/// <summary>

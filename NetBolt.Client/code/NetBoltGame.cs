@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using NetBolt.Client.UI;
 using NetBolt.Shared;
 using NetBolt.Shared.Clients;

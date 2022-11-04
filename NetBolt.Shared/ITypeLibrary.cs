@@ -1,4 +1,5 @@
-﻿using NetBolt.Shared.Utility;
+﻿using NetBolt.Shared.Networkables;
+using NetBolt.Shared.Utility;
 using System;
 using System.Collections.Generic;
 
@@ -26,6 +27,11 @@ public interface ITypeLibrary
 	T? Create<T>( Type type, Type[] genericTypes );
 
 	/// <summary>
+	/// Gets all networkable types in any assemblies that could be used during runtime.
+	/// </summary>
+	/// <returns>All networkable types in any assemblies that could be used during runtime.</returns>
+	IEnumerable<Type> GetAllNetworkableTypes();
+	/// <summary>
 	/// Gets all properties on a type.
 	/// </summary>
 	/// <param name="type">The type to get all properties from.</param>
@@ -38,12 +44,24 @@ public interface ITypeLibrary
 	/// <returns>The generic arguments on the type.</returns>
 	Type[] GetGenericArguments( Type type );
 	/// <summary>
+	/// Gets the cache identifier for the provided <see cref="INetworkable"/> derived type.
+	/// </summary>
+	/// <param name="type">The type to get the identifier of.</param>
+	/// <returns>The identifier of the type. 0 if invalid.</returns>
+	ushort GetIdentifierFromNetworkableType( Type type );
+	/// <summary>
 	/// Gets a method by its name and type it is a member of.
 	/// </summary>
 	/// <param name="type">The type that the method is a member of.</param>
 	/// <param name="methodName">The name of the method to get.</param>
 	/// <returns>The found method. Null otherwise.</returns>
 	IMethod? GetMethodByName( Type type, string methodName );
+	/// <summary>
+	/// Gets a <see cref="INetworkable"/> derived type by its cache identifier.
+	/// </summary>
+	/// <param name="identifier">The identifier of the type.</param>
+	/// <returns>The derived type if found. Null otherwise.</returns>
+	Type? GetNetworkableTypeByIdentifier( ushort identifier );
 	/// <summary>
 	/// Gets a C# type by its type name.
 	/// </summary>

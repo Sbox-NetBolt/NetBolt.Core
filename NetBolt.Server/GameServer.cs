@@ -97,7 +97,7 @@ internal sealed class GameServer : WebSocketServer
 
 		// Write message once.
 		var stream = new MemoryStream();
-		var writer = new NetworkWriter( stream );
+		var writer = new NetworkWriter( stream, message is not WelcomeMessage );
 		writer.Write( message );
 		writer.Close();
 
@@ -107,7 +107,7 @@ internal sealed class GameServer : WebSocketServer
 			if ( client is Bot )
 				continue;
 
-			Log.Verbose( "Sent {A} to {B}", message, client );
+			Log.Verbose( "Sent {A} to {B} ({C} bytes)", message, client, bytes.Length );
 			client.QueueSend( bytes );
 		}
 	}

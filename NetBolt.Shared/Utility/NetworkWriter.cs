@@ -10,12 +10,16 @@ namespace NetBolt.Shared.Utility;
 /// </summary>
 public sealed class NetworkWriter : BinaryWriter
 {
+	private readonly bool UsingCachedTypes;
+
 	/// <summary>
 	/// Initializes a new instance of <see cref="NetworkWriter"/> with the <see cref="Stream"/> to write to.
 	/// </summary>
 	/// <param name="output">The underlying <see cref="Stream"/> to write to.</param>
-	public NetworkWriter( Stream output ) : base( output )
+	/// <param name="useCachedTypes">Whether or not to use cached <see cref="INetworkable"/> types.</param>
+	public NetworkWriter( Stream output, bool useCachedTypes = true ) : base( output )
 	{
+		UsingCachedTypes = useCachedTypes;
 	}
 
 	/// <summary>
@@ -51,21 +55,43 @@ public sealed class NetworkWriter : BinaryWriter
 	}
 
 	/// <summary>
+	/// Writes an instance of <see cref="Type"/>.
+	/// </summary>
+	/// <param name="type">The type to write.</param>
+	public void Write( Type type )
+	{
+		var isNetworkableType = type.IsAssignableTo( typeof( INetworkable ) ) && UsingCachedTypes;
+		Write( isNetworkableType );
+
+		if ( isNetworkableType )
+			Write( ITypeLibrary.Instance.GetIdentifierFromNetworkableType( type ) );
+		else
+			Write( type.FullName ?? type.Name );
+
+		if ( type.IsGenericType )
+		{
+			var genericArguments = ITypeLibrary.Instance.GetGenericArguments( type );
+			Write( genericArguments.Length );
+			foreach ( var genericType in genericArguments )
+			{
+				isNetworkableType = type.IsAssignableTo( typeof( INetworkable ) );
+				Write( isNetworkableType );
+
+				if ( isNetworkableType )
+					Write( ITypeLibrary.Instance.GetIdentifierFromNetworkableType( genericType ) );
+				else
+					Write( genericType.FullName ?? genericType.Name );
+			}
+		}
+	}
+
+	/// <summary>
 	/// Writes an instance of <see cref="INetworkable"/>.
 	/// </summary>
 	/// <param name="networkable">The instance of <see cref="INetworkable"/> to write.</param>
 	public void Write( INetworkable networkable )
 	{
-		var networkableType = networkable.GetType();
-		Write( networkableType.Name );
-		if ( networkableType.IsGenericType )
-		{
-			var genericArguments = ITypeLibrary.Instance.GetGenericArguments( networkableType );
-			Write( genericArguments.Length );
-			foreach ( var type in genericArguments )
-				Write( type.Name );
-		}
-
+		Write( networkable.GetType() );
 		networkable.Serialize( this );
 	}
 

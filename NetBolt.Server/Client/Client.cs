@@ -63,7 +63,7 @@ internal class Client : WebSocketClient, IClient
 	public void QueueSend( NetworkMessage message )
 	{
 		var stream = new MemoryStream();
-		var writer = new NetworkWriter( stream );
+		var writer = new NetworkWriter( stream, message is not WelcomeMessage );
 		writer.Write( message );
 		writer.Close();
 
@@ -74,6 +74,8 @@ internal class Client : WebSocketClient, IClient
 	protected override void OnData( ReadOnlySpan<byte> bytes )
 	{
 		base.OnData( bytes );
+
+		Log.Verbose( "Received {A} bytes from {B}", bytes.Length, this );
 
 		var reader = new NetworkReader( new MemoryStream( bytes.ToArray() ) );
 		var message = NetworkMessage.DeserializeMessage( reader );
