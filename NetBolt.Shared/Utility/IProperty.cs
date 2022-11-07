@@ -8,6 +8,10 @@ namespace NetBolt.Shared.Utility;
 public interface IProperty
 {
 	/// <summary>
+	/// Whether or not the property is static.
+	/// </summary>
+	bool IsStatic { get; }
+	/// <summary>
 	/// The name of the property.
 	/// </summary>
 	string Name { get; }

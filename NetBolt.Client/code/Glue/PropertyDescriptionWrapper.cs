@@ -10,6 +10,9 @@ namespace NetBolt.Client;
 internal class PropertyDescriptionWrapper : IProperty
 {
 	/// <inheritdoc/>
+	public bool IsStatic => _propertyDescription.IsStatic;
+
+	/// <inheritdoc/>
 	public string Name => _propertyDescription.Name;
 
 	/// <inheritdoc/>

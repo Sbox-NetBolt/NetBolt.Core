@@ -10,6 +10,10 @@ namespace NetBolt.Server.Glue;
 internal class PropertyInfoWrapper : IProperty
 {
 	/// <inheritdoc/>
+	public bool IsStatic => isStatic;
+	private readonly bool isStatic;
+
+	/// <inheritdoc/>
 	public string Name => _propertyInfo.Name;
 
 	/// <inheritdoc/>
@@ -27,6 +31,10 @@ internal class PropertyInfoWrapper : IProperty
 	internal PropertyInfoWrapper( PropertyInfo propertyInfo )
 	{
 		_propertyInfo = propertyInfo;
+
+		var method = _propertyInfo.GetGetMethod() ?? _propertyInfo.GetSetMethod();
+		if ( method?.IsStatic ?? false )
+			isStatic = true;
 	}
 
 	/// <inheritdoc/>
