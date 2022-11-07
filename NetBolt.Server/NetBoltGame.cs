@@ -35,6 +35,11 @@ public class NetBoltGame
 	public IReadOnlyGameOptions Options { get; }
 
 	/// <summary>
+	/// The current tick of the server.
+	/// </summary>
+	protected int CurrentTick { get; set; }
+
+	/// <summary>
 	/// Whether or not the game is currently running.
 	/// </summary>
 	protected bool Running { get; private set; }
@@ -42,12 +47,12 @@ public class NetBoltGame
 	/// <summary>
 	/// The games cancellation source. If you want to exit the game then cancel this and the game will exit at the end of the tick.
 	/// </summary>
-	protected static readonly CancellationTokenSource ProgramCancellation = new();
+	protected readonly CancellationTokenSource ProgramCancellation = new();
 
 	/// <summary>
 	/// The network server handling communication of the game.
 	/// </summary>
-	private static GameServer _server = null!;
+	private GameServer _server = null!;
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="NetBoltGame"/> with the provided configuration.
@@ -74,8 +79,9 @@ public class NetBoltGame
 	/// <summary>
 	/// Called at the start of the program. Use this to do a one-time startup of all needed things in your game.
 	/// <remarks>At this point the networking server has not started.</remarks>
+	/// <param name="execute">Whether or not the server should run the update logic itself.</param>
 	/// </summary>
-	public virtual void Start()
+	public virtual void Start( bool execute = true )
 	{
 		Log.Verbose( "Starting game..." );
 		Running = true;
@@ -88,8 +94,10 @@ public class NetBoltGame
 		_server.Start();
 		Log.Info( "Server started on {A}:{B}", Options.ReadOnlyNetworkingOptions.IpAddress, Options.ReadOnlyNetworkingOptions.Port );
 
+		if ( !execute )
+			return;
+
 		var tickRateDt = (float)1000 / Options.TickRate;
-		var currentTick = 0;
 		var sw = Stopwatch.StartNew();
 		while ( !ProgramCancellation.IsCancellationRequested )
 		{
@@ -98,12 +106,10 @@ public class NetBoltGame
 			{
 			}
 
-			Time.Delta = (float)sw.Elapsed.TotalMilliseconds;
-			Time.Tick = ++currentTick;
+			var dt = (float)sw.Elapsed.TotalMilliseconds;
 			sw.Restart();
 
-			_server.DispatchIncoming();
-			Update();
+			Tick( dt );
 
 			Log.Debug( "Tick took {A}ms", sw.Elapsed.TotalMilliseconds );
 		}
@@ -127,8 +133,13 @@ public class NetBoltGame
 	/// Called at every tick of the program. Use this for your core game logic.
 	/// <remarks>If overriding, it is highly recommended to call the base class method after your code. Otherwise, networked entities you have edited won't be sent to clients till the next tick.</remarks>
 	/// </summary>
-	public virtual void Update()
+	public virtual void Tick( float dt )
 	{
+		Time.Delta = dt;
+		Time.Tick = ++CurrentTick;
+
+		_server.DispatchIncoming();
+
 		foreach ( var entity in IEntity.All )
 			entity.Update();
 

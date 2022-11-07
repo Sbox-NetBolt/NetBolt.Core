@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NetBolt.Shared.Utility;
+namespace NetBolt.Shared;
 
 /// <summary>
 /// An abstraction over a typical <see cref="System.Reflection.MethodInfo"/>.

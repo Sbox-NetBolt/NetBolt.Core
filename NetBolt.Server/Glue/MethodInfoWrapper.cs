@@ -1,4 +1,4 @@
-﻿using NetBolt.Shared.Utility;
+﻿using NetBolt.Shared;
 using System;
 using System.Reflection;
 
