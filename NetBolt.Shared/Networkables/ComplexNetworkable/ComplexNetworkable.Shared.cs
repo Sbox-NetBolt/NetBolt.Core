@@ -29,23 +29,22 @@ public abstract partial class ComplexNetworkable : INetworkable
 	internal readonly Dictionary<string, IProperty> PropertyNameCache = new();
 
 	/// <summary>
-	/// Initializes a new instance of <see cref="ComplexNetworkable"/>.
+	/// Initializes a default instance of <see cref="ComplexNetworkable"/>.
 	/// </summary>
 	protected ComplexNetworkable()
 	{
 		if ( Realm.IsServer )
 			NetworkId = StepNextId();
 
-		foreach ( var property in ITypeLibrary.Instance.GetAllProperties( GetType() )
-					 .Where( property => property.PropertyType.IsAssignableTo( typeof( INetworkable ) ) ) )
+		foreach ( var property in ITypeLibrary.Instance.GetAllProperties( GetType() ) )
 		{
-			if ( property.HasAttribute<NoNetworkAttribute>() )
+			if ( !property.IsNetworkable )
 				continue;
 
 			if ( Realm.IsClient && property.HasAttribute<LerpAttribute>() )
 				LerpBucket.Add( property.Name, (null, null) );
 
-			_referenceBucket.Add( property.Name, null );
+			_referenceBucket.Add( property.Name, (INetworkable?)property.GetValue( this ) );
 			PropertyNameCache.Add( property.Name, property );
 		}
 

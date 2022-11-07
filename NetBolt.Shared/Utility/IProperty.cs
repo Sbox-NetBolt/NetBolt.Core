@@ -8,6 +8,10 @@ namespace NetBolt.Shared.Utility;
 public interface IProperty
 {
 	/// <summary>
+	/// Whether or not the property is networkable.
+	/// </summary>
+	bool IsNetworkable { get; }
+	/// <summary>
 	/// Whether or not the property is static.
 	/// </summary>
 	bool IsStatic { get; }
@@ -39,4 +43,20 @@ public interface IProperty
 	/// <param name="instance">The instance to set the value on.</param>
 	/// <param name="obj">The value to set on the property.</param>
 	void SetValue( object? instance, object? obj );
+
+	/// <summary>
+	/// The default implementation to determine whether or not a property is networkable.
+	/// </summary>
+	/// <param name="property">The property to check if it is networkable.</param>
+	/// <returns>Whether or not the property is networkable.</returns>
+	public static bool DefaultIsNetworkable( IProperty property )
+	{
+		if ( !property.PropertyType.IsAssignableTo( typeof( ComplexNetworkable ) ) )
+			return false;
+
+		if ( property.HasAttribute<NoNetworkAttribute>() || property.IsStatic )
+			return false;
+
+		return true;
+	}
 }

@@ -10,6 +10,10 @@ namespace NetBolt.Server.Glue;
 internal class PropertyInfoWrapper : IProperty
 {
 	/// <inheritdoc/>
+	public bool IsNetworkable => isNetworkable;
+	private readonly bool isNetworkable;
+
+	/// <inheritdoc/>
 	public bool IsStatic => isStatic;
 	private readonly bool isStatic;
 
@@ -35,6 +39,8 @@ internal class PropertyInfoWrapper : IProperty
 		var method = _propertyInfo.GetGetMethod() ?? _propertyInfo.GetSetMethod();
 		if ( method?.IsStatic ?? false )
 			isStatic = true;
+
+		isNetworkable = IProperty.DefaultIsNetworkable( this );
 	}
 
 	/// <inheritdoc/>

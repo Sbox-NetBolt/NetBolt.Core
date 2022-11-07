@@ -10,6 +10,10 @@ namespace NetBolt.Client;
 internal class PropertyDescriptionWrapper : IProperty
 {
 	/// <inheritdoc/>
+	public bool IsNetworkable => isNetworkable;
+	private bool isNetworkable;
+
+	/// <inheritdoc/>
 	public bool IsStatic => _propertyDescription.IsStatic;
 
 	/// <inheritdoc/>
@@ -30,6 +34,7 @@ internal class PropertyDescriptionWrapper : IProperty
 	internal PropertyDescriptionWrapper( PropertyDescription propertyDescription )
 	{
 		_propertyDescription = propertyDescription;
+		isNetworkable = IProperty.DefaultIsNetworkable( this );
 	}
 
 	/// <inheritdoc/>
