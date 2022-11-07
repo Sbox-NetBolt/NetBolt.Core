@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetBolt.Shared.Networkables;
+using System;
 
 namespace NetBolt.Shared.Utility;
 
