@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <RootNamespace>NetBolt.Server</RootNamespace>
@@ -14,17 +13,9 @@
         <PackageIcon>icon.png</PackageIcon>
         <PackageTags>Networking S&amp;box</PackageTags>
         <RepositoryType>git</RepositoryType>
-        <RepositoryUrl>https://github.com/Sbox-NetBolt/NetBolt</RepositoryUrl>
-        <PackageProjectUrl>https://github.com/Sbox-NetBolt/NetBolt</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Sbox-NetBolt/NetBolt.Core</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/Sbox-NetBolt/NetBolt.Core</PackageProjectUrl>
         <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <DefineConstants>TRACE;SERVER</DefineConstants>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <DefineConstants>TRACE;SERVER;NOLOGS</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>

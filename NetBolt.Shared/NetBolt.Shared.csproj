@@ -6,6 +6,21 @@
 		<RootNamespace>NetBolt.Shared</RootNamespace>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <Title>NetBolt.Shared</Title>
+    <Description>A custom networking solution for S&amp;box. This is the shared (server AND client) portion.</Description>
+    <Authors>peter-r-g</Authors>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageTags>Networking S&amp;box</PackageTags>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/Sbox-NetBolt/NetBolt.Core</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Sbox-NetBolt/NetBolt.Core</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
 	</PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../LICENSE.md" Pack="true" PackagePath="" />
+    <None Include="../icon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
 	
 </Project>
