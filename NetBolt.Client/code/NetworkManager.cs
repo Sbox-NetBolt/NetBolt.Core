@@ -319,6 +319,7 @@ public sealed class NetworkManager
 		TickRate = 0;
 		Address = string.Empty;
 		Port = 0;
+		NetworkableTypeCache = null!;
 
 		_webSocket = new WebSocket();
 		_webSocket.OnDisconnected += WebSocketOnDisconnected;
