@@ -1,10 +1,10 @@
 ﻿using NetBolt.Server.Glue;
 using NetBolt.Shared;
-using NetBolt.Shared.Messages;
 using NetBolt.Shared.Networkables;
 using NetBolt.Shared.Utility;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace NetBolt.Server.Utility;
@@ -52,6 +52,7 @@ public class TypeLibrary : ITypeLibrary
 	public void AddAssembly( Assembly assembly )
 	{
 		Assemblies.Add( assembly );
+		CacheAssemblies();
 	}
 
 	/// <summary>
@@ -59,28 +60,26 @@ public class TypeLibrary : ITypeLibrary
 	/// </summary>
 	public IReadOnlyDictionary<Type, ushort> GetNetworkableDictionary()
 	{
-		if ( NetworkableTypeCache is null )
-			CacheNetworkableTypes();
-
 		return NetworkableTypeCache!;
 	}
 
 	/// <summary>
-	/// Resets the <see cref="NetworkableTypeCache"/>. Used for when adding new assmeblies and needing to flush the cache.
+	/// Caches the <see cref="NetworkableTypeCache"/> and <see cref="NetworkablePropertyCache"/>.
 	/// </summary>
-	public void ResetNetworkableTypeCache()
+	internal void CacheAssemblies()
 	{
-		NetworkableTypeCache = null!;
-	}
+		NetworkableTypeCache = null;
 
-	/// <summary>
-	/// Caches the <see cref="NetworkableTypeCache"/>.
-	/// </summary>
-	internal void CacheNetworkableTypes()
-	{
-		foreach ( var _ in GetAllNetworkableTypes() )
+		var networkableTypeCache = new Dictionary<Type, ushort>();
+		ushort i = 1;
+		foreach ( var type in GetAllNetworkableTypes() )
 		{
+			if ( i == 0 )
+				Log.Error( "Ran out of networkable type indices" );
+
+			networkableTypeCache.Add( type, i++ );
 		}
+		NetworkableTypeCache = networkableTypeCache;
 	}
 
 	/// <inheritdoc/>
@@ -122,8 +121,6 @@ public class TypeLibrary : ITypeLibrary
 				yield return type;
 		}
 
-		NetworkableTypeCache = new();
-		ushort i = 1;
 		foreach ( var assembly in Assemblies )
 		{
 			foreach ( var type in assembly.DefinedTypes )
@@ -131,10 +128,6 @@ public class TypeLibrary : ITypeLibrary
 				if ( !type.IsAssignableTo( typeof( INetworkable ) ) )
 					continue;
 
-				if ( i == 0 )
-					Log.Error( "Ran out of networkable type indices" );
-
-				NetworkableTypeCache.Add( type, i++ );
 				yield return type;
 			}
 		}
@@ -163,9 +156,6 @@ public class TypeLibrary : ITypeLibrary
 			return 0;
 		}
 
-		if ( NetworkableTypeCache is null )
-			CacheNetworkableTypes();
-
 		if ( type.IsConstructedGenericType )
 			return NetworkableTypeCache![type.GetGenericTypeDefinition()];
 
@@ -182,8 +172,6 @@ public class TypeLibrary : ITypeLibrary
 	/// <inheritdoc/>
 	public Type? GetNetworkableTypeByIdentifier( ushort identifier )
 	{
-		if ( NetworkableTypeCache is null )
-			CacheNetworkableTypes();
 
 		foreach ( var (type, id) in NetworkableTypeCache! )
 		{
